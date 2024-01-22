@@ -72,6 +72,15 @@ export class PlnEntity extends CommonEntity {
   @Column({
     type: "varchar",
     length: 100,
+    comment: "유튜브 채널 url",
+    nullable: true,
+  })
+  ytbUrl;
+
+  @ApiProperty({ type: String, required: false })
+  @Column({
+    type: "varchar",
+    length: 100,
     comment: "파일그룹 아이디",
     nullable: true,
   })

@@ -4,11 +4,16 @@ import { response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
 
+/**
+ * PlnController : 플랜 테이블을 관리한다
+ */
 @Controller("/pln")
 export class PlnController {
   constructor(private readonly plnService: PlnService) {}
 
-  // S : getPlnById
+  /**
+   * S : getPlnById
+   */
   @Get("/getPlnById")
   @ApiOperation({
     summary: "플랜 ID로 플랜 상세 조회",
@@ -44,9 +49,13 @@ export class PlnController {
 
     return res;
   }
-  // E : getPlnById
+  /**
+   * E : getPlnById
+   */
 
-  // S : getPlndPln
+  /**
+   * S : getPlndPln
+   */
   @Get("/getPlndPln")
   @ApiOperation({
     summary: "내가 기획한 플랜 조회",
@@ -73,9 +82,13 @@ export class PlnController {
 
     return res;
   }
-  // E : getPlndPln
+  /**
+   * E : getPlndPln
+   */
 
-  // S : upsrtPln
+  /**
+   * S : upsrtPln
+   */
   @Post("/upsrtPln")
   @ApiOperation({
     summary: "플랜 생성/수정",
@@ -99,8 +112,13 @@ export class PlnController {
       console.error(e);
     }
   }
-  // E : upsrtPln
+  /**
+   * E : upsrtPln
+   */
 
+  /**
+   * S : srchPln
+   */
   @Get("/srchPln")
   @ApiOperation({
     summary: "플랜 검색",
@@ -128,4 +146,7 @@ export class PlnController {
     };
     return response;
   }
+  /**
+   * E : srchPln
+   */
 }
