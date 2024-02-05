@@ -3,6 +3,7 @@ import { ApiCreatedResponse, ApiOperation, ApiParam } from "@nestjs/swagger";
 import { response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
+import { SrchPlnDto } from "./dtos/pln.dto";
 
 /**
  * PlnController : 플랜 테이블을 관리한다
@@ -56,7 +57,7 @@ export class PlnController {
   /**
    * S : getPlndPln
    */
-  @Get("/getPlndPln")
+  @Get("/getPlndPlnByMbrId")
   @ApiOperation({
     summary: "내가 기획한 플랜 조회",
     description: "Member Id로 기획한 플랜 리스트를 가져온다.",
@@ -128,17 +129,9 @@ export class PlnController {
     description: "플랜 검색 결과 Response 생성.",
     type: PlnEntity,
   })
-  async srchPln(@Query() pln: PlnEntity) {
+  async srchPln(@Query() pln: SrchPlnDto) {
     const result = await this.plnService.srchPln(pln);
-    let res: response<PlnEntity>;
-    let title: string = "";
-    let message: string;
-    if (pln) {
-      message = "검색 성공";
-    } else {
-      title = "해당 플랜이 없습니다.";
-      message = "새로운 플랜을 등록해보시는건 어떨까요?";
-    }
+
     const response: response<PlnEntity[]> = {
       message: "플랜 검색 결과",
       data: result,

@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 
 import { Repository } from "typeorm";
+import { SrchPlnDto } from "./dtos/pln.dto";
 
 @Injectable()
 export class PlnService {
@@ -42,7 +43,7 @@ export class PlnService {
     this.plnRepository.upsert(pln, ["id"]);
   }
 
-  srchPln(pln: PlnEntity): Promise<PlnEntity[]> {
+  srchPln(pln: SrchPlnDto): Promise<PlnEntity[]> {
     return this.plnRepository.find({
       where: {
         id: pln.id,
