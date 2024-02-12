@@ -1,9 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Post, Query } from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiParam } from "@nestjs/swagger";
 import { response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
-import { SrchPlnDto } from "./dtos/pln.dto";
+import { SrchPlnDto, UpsertPlanDto } from "./dtos/pln.dto";
+import { Pagination } from "nestjs-typeorm-paginate";
 
 /**
  * PlnController : 플랜 테이블을 관리한다
@@ -100,7 +101,7 @@ export class PlnController {
     description: "새로운 플랜을 생성 한다.",
     type: null,
   })
-  upsrtPln(@Body() pln: PlnEntity) {
+  upsrtPln(@Body() pln: UpsertPlanDto) {
     try {
       this.plnService.upsrtPln(pln);
       const response: response<PlnEntity[]> = {
@@ -120,7 +121,7 @@ export class PlnController {
   /**
    * S : srchPln
    */
-  @Get("/srchPln")
+  @Get('/srchPln')
   @ApiOperation({
     summary: "플랜 검색",
     description: "pln Entity로 검색하여 플랜 리스트를 가져온다.",
@@ -129,17 +130,16 @@ export class PlnController {
     description: "플랜 검색 결과 Response 생성.",
     type: PlnEntity,
   })
-  async srchPln(@Query() pln: SrchPlnDto) {
-    const result = await this.plnService.srchPln(pln);
-
-    const response: response<PlnEntity[]> = {
-      message: "플랜 검색 결과",
-      data: result,
-      status: 200,
-    };
-    return response;
+  async srchPln(@Query() pln: SrchPlnDto): Promise<Pagination<PlnEntity>> {
+    return this.plnService.srchPln({
+      ...pln,
+      page: pln.page,
+      limit: pln.limit,
+      route: '/srchPln',
+    });
   }
   /**
    * E : srchPln
    */
+
 }

@@ -5,7 +5,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from "typeorm";
-import { ApiProperty } from "@nestjs/swagger";
 
 export class CommonEntity extends BaseEntity {
   @PrimaryGeneratedColumn("uuid", { comment: "id" })
@@ -26,6 +25,6 @@ export class CommonEntity extends BaseEntity {
   @UpdateDateColumn({ type: "timestamp", comment: "데이터 수정 일시" })
   updateStmp;
 
-  @Column({ type: "varchar", length: 100, comment: "데이터 수정자 아이디" })
+  @Column({ type: "varchar", length: 100, comment: "데이터 수정자 아이디", nullable: true })
   updateMbrId;
 }

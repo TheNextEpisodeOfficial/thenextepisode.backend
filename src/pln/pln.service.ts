@@ -2,8 +2,9 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 
-import { Repository } from "typeorm";
-import { SrchPlnDto } from "./dtos/pln.dto";
+import { Like, Repository } from "typeorm";
+import { SrchPlnDto, UpsertPlanDto } from "./dtos/pln.dto";
+import { IPaginationOptions, Pagination, paginate } from "nestjs-typeorm-paginate";
 
 @Injectable()
 export class PlnService {
@@ -32,25 +33,33 @@ export class PlnService {
   getPlndPln(mbrId: string): Promise<PlnEntity[]> {
     return this.plnRepository.find({
       where: {
-        createMbrId: mbrId,
+        // createMbrId: mbrId,
         delYn: "N",
       },
       order: { createStmp: "DESC" },
     });
   }
 
-  upsrtPln(pln: PlnEntity): void {
+  upsrtPln(pln: UpsertPlanDto): void {
     this.plnRepository.upsert(pln, ["id"]);
   }
 
-  srchPln(pln: SrchPlnDto): Promise<PlnEntity[]> {
-    return this.plnRepository.find({
-      where: {
-        id: pln.id,
-        plnNm: pln.plnNm,
-        plnTypeCd: pln.plnTypeCd,
-        delYn: pln.delYn || "N",
-      },
-    });
+  async srchPln(srchPlnDto: SrchPlnDto): Promise<Pagination<PlnEntity>> {
+    const queryBuilder = this.plnRepository.createQueryBuilder();
+    const queryBuildOpts: Partial<SrchPlnDto> = {};
+
+    if (srchPlnDto.id) queryBuildOpts.id = srchPlnDto.id;
+    if (srchPlnDto.plnTypeCd) queryBuildOpts.plnTypeCd = srchPlnDto.plnTypeCd;
+    if (srchPlnDto.plnStTm) queryBuildOpts.plnStTm = srchPlnDto.plnStTm;
+    if (srchPlnDto.plnEndTm) queryBuildOpts.plnEndTm = srchPlnDto.plnEndTm;
+    if (srchPlnDto.rRatedYn) queryBuildOpts.rRatedYn = srchPlnDto.rRatedYn;
+    if (srchPlnDto.delYn) queryBuildOpts.delYn = srchPlnDto.delYn;
+    if (srchPlnDto.plnNm) queryBuildOpts.plnNm = Like(`%${srchPlnDto.plnNm}%`);
+    if (srchPlnDto.plnLctnNm) queryBuildOpts.plnLctnNm = Like(`%${srchPlnDto.plnLctnNm}%`);
+
+    queryBuilder.where(queryBuildOpts).orderBy('createStmp', 'DESC');
+
+    return paginate<PlnEntity>(queryBuilder, srchPlnDto);
   }
+  
 }
