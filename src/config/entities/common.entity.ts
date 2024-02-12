@@ -22,9 +22,18 @@ export class CommonEntity extends BaseEntity {
   @Column({ type: "varchar", length: 100, comment: "데이터 생성자 아이디" })
   createMbrId;
 
-  @UpdateDateColumn({ type: "timestamp", comment: "데이터 수정 일시" })
+  @UpdateDateColumn({
+    type: "timestamp",
+    comment: "데이터 수정 일시",
+    nullable: true,
+  })
   updateStmp;
 
-  @Column({ type: "varchar", length: 100, comment: "데이터 수정자 아이디", nullable: true })
+  @Column({
+    type: "varchar",
+    length: 100,
+    comment: "데이터 수정자 아이디",
+    nullable: true,
+  })
   updateMbrId;
 }
