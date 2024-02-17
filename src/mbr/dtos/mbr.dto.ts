@@ -4,6 +4,10 @@ import { CommonEntity } from "@src/config/entities/common.entity";
 import { Column } from "typeorm";
 
 export class UpsertMbrDto extends UpsertCommonDto {
+  @ApiProperty({ type: String, required: true, default: '회원 아이디' })
+  @Column({ type: "varchar", length: 100, comment: "회원 아이디" })
+  mbrId;
+
   @ApiProperty({ type: String, required: true, default: '회원명' })
   @Column({ type: "varchar", length: 100, comment: "회원명" })
   mbrNm;

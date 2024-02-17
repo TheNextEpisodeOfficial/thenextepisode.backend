@@ -9,6 +9,8 @@ export const SocialUser = createParamDecorator(
 
 export interface SocialUserAfterAuth {
   email: string;
-  password: string;
-  nickname: string;
+  id: string;
+  mbrNm: string;
+  accessToken: string,
+  refreshToken: string
 }

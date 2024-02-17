@@ -9,22 +9,17 @@ export class AuthService {
   ) {}
 
   async OAuthLogin({ socialLoginDto }: {socialLoginDto: SocialUserAfterAuth}) {
-    const { email } = socialLoginDto;
+    const { id, email, mbrNm, accessToken, refreshToken } = socialLoginDto;
 
-    console.log('socialLoginDto:::', socialLoginDto)
     let user = await this.mbrService.findByEmail(email);
 
     if (!user){
       user = await this.mbrService.createMbr({
-        mbrNm: '',
-        email: ''
+        mbrId: id,
+        mbrNm: mbrNm,
+        email: email
       });
     }
-
-    const accessToken = 'at'
-    const refreshToken = 'rt'
-    // const accessToken = this.getAccessToken(user.id);
-    // const refreshToken = this.getRefreshToken(user.id);
 
     return { accessToken, refreshToken };
   }
