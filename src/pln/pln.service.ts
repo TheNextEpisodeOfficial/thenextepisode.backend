@@ -2,7 +2,7 @@ import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 
-import { Like, Repository } from "typeorm";
+import { InsertResult, Like, Repository } from "typeorm";
 import { SrchPlnDto, UpsertPlanDto } from "./dtos/pln.dto";
 import { IPaginationOptions, Pagination, paginate } from "nestjs-typeorm-paginate";
 
@@ -40,8 +40,8 @@ export class PlnService {
     });
   }
 
-  upsrtPln(pln: UpsertPlanDto): void {
-    this.plnRepository.upsert(pln, ["id"]);
+  upsrtPln(pln: UpsertPlanDto): Promise<InsertResult> {
+    return this.plnRepository.upsert(pln, ["id"]);
   }
 
   async srchPln(srchPlnDto: SrchPlnDto): Promise<Pagination<PlnEntity>> {

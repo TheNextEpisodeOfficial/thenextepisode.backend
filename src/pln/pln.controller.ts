@@ -5,6 +5,7 @@ import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
 import { SrchPlnDto, UpsertPlanDto } from "./dtos/pln.dto";
 import { Pagination } from "nestjs-typeorm-paginate";
+import { InsertResult } from "typeorm";
 
 /**
  * PlnController : 플랜 테이블을 관리한다
@@ -103,10 +104,10 @@ export class PlnController {
   })
   upsrtPln(@Body() pln: UpsertPlanDto) {
     try {
-      this.plnService.upsrtPln(pln);
-      const response: response<PlnEntity[]> = {
+      let upsrtPlnRslt = this.plnService.upsrtPln(pln);
+      const response: response<Promise<InsertResult>> = {
         message: "플랜을 성공적으로 등록하였습니다.",
-        data: void 0,
+        data: upsrtPlnRslt,
         status: 200,
       };
       return response;
