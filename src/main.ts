@@ -11,8 +11,8 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cors());
   app.use(cookieParser());
-  app.use('/public', express.static(join(__dirname, 'public')));
-  console.log("__dirname::",__dirname)
+  app.use('/public', express.static(join(process.cwd(), 'src', 'public')));
+
   app.enableCors({
     origin: true,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
