@@ -9,6 +9,11 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cors());
   app.use(cookieParser());
+  app.enableCors({
+    origin: true,
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    credentials: true,
+  });
   setupSwagger(app);
   await app.listen(9090);
   if (module.hot) {

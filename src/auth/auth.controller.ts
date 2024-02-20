@@ -27,12 +27,11 @@ export class AuthController {
     res.cookie("refreshToken", refreshToken);
     res.cookie("accessToken", accessToken);
 
-    // res.send({
-    //   user: user,
-    //   isFirstLogin: isFirstLogin,
-    // });
-
-    res.redirect("/api-docs");
+    if (isFirstLogin) {
+      res.redirect("http://localhost:4200/join");
+    } else {
+      res.redirect("http://localhost:4200/savememberInfo");
+    }
   }
 
   @Get("getUserInfo")
