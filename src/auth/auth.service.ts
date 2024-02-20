@@ -6,8 +6,8 @@ import { SocialUserAfterAuth } from "./auth.decorator";
 export class AuthService {
   constructor(private readonly mbrService: MbrService) {}
 
-  async getUserInfo() {
-    this.mbrService;
+  async getUserInfo(mbrId: string) {
+    return this.mbrService.getUserInfo(mbrId);
   }
 
   async OAuthLogin({

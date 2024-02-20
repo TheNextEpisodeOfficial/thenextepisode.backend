@@ -12,7 +12,7 @@ export class MbrService {
     private readonly mbrRepository: Repository<MbrEntity>
   ) {}
 
-  findByEmail(email:string): Promise<MbrEntity>{
+  findByEmail(email: string): Promise<MbrEntity> {
     return this.mbrRepository.findOne({
       where: {
         email: email,
@@ -21,7 +21,15 @@ export class MbrService {
     });
   }
 
-  createMbr(upsertMbrDto: UpsertMbrDto):Promise<UpsertMbrDto & MbrEntity>{
-    return this.mbrRepository.save(upsertMbrDto)
+  createMbr(upsertMbrDto: UpsertMbrDto): Promise<UpsertMbrDto & MbrEntity> {
+    return this.mbrRepository.save(upsertMbrDto);
+  }
+
+  getUserInfo(mbrId: string): Promise<MbrEntity> {
+    return this.mbrRepository.findOne({
+      where: {
+        mbrId: mbrId,
+      },
+    });
   }
 }

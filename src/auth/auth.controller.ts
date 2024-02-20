@@ -34,14 +34,23 @@ export class AuthController {
     }
   }
 
-  @Get("getUserInfo")
-  async getUserInfo(@Req() req: Request, @Res() res: Response): Promise<void> {
+  @Get("/getUserInfo")
+  async getUserInfo(@Req() req: Request) {
     const userInfo = await axios.get(this.DATA_URL, {
       headers: {
         Authorization: `Bearer ${req.cookies.accessToken}`,
       },
     });
 
-    res.send(userInfo.data);
+    const mbr = await this.authService.getUserInfo(userInfo.data.id);
+
+    let res = {
+      title: "",
+      message: "로그인 성공",
+      data: mbr,
+      status: 200,
+    };
+
+    return res;
   }
 }
