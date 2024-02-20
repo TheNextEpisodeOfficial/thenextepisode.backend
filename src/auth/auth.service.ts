@@ -4,23 +4,36 @@ import { SocialUserAfterAuth } from "./auth.decorator";
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private readonly mbrService: MbrService,
-  ) {}
+  constructor(private readonly mbrService: MbrService) {}
 
-  async OAuthLogin({ socialLoginDto }: {socialLoginDto: SocialUserAfterAuth}) {
-    const { id, email, mbrNm, accessToken, refreshToken } = socialLoginDto;
+  async OAuthLogin({
+    socialLoginDto,
+  }: {
+    socialLoginDto: SocialUserAfterAuth;
+  }) {
+    const { id, email, mbrNm, gender, flatform, accessToken, refreshToken } =
+      socialLoginDto;
 
     let user = await this.mbrService.findByEmail(email);
+    let isFirstLogin = !user || user.nickNm || user.dncrYn ? true : false;
 
-    if (!user){
+    if (isFirstLogin) {
       user = await this.mbrService.createMbr({
         mbrId: id,
         mbrNm: mbrNm,
-        email: email
+        email: email,
+        gender: gender,
+
+        mbrPhn: "",
+        birth: "",
+        mbrTypeCd: "",
+
+        acntPltfrm: flatform,
+        lstLgnTm: new Date(),
+        mbrSttCd: "",
       });
     }
 
-    return { accessToken, refreshToken };
+    return { accessToken, refreshToken, isFirstLogin };
   }
 }
