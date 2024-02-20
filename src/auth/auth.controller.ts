@@ -4,8 +4,10 @@ import { AuthService } from "./auth.service";
 import { SocialUser, SocialUserAfterAuth } from "./auth.decorator";
 import { Request, Response } from "express";
 import axios from "axios";
+import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 
 @Controller("api/auth")
+@ApiTags('Auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -34,8 +36,17 @@ export class AuthController {
     }
   }
 
-  @Get("/getUserInfo")
-  async getUserInfo(@Req() req: Request) {
+  @Get("/getUserInfoByToken")
+  @ApiOperation({
+    summary: "토큰기반 로그인 유저 정보 조회",
+    description:
+      "access token을 기반으로 mbr 테이블의 유저정보를 가져온다."
+  })
+  @ApiCreatedResponse({
+    description: "access token을 기반으로 mbr 테이블의 유저정보를 가져온다.",
+    type: null,
+  })
+  async getUserInfoByToken(@Req() req: Request) {
     const userInfo = await axios.get(this.DATA_URL, {
       headers: {
         Authorization: `Bearer ${req.cookies.accessToken}`,
@@ -46,7 +57,7 @@ export class AuthController {
 
     let res = {
       title: "",
-      message: "로그인 성공",
+      message: "access token을 기반으로 mbr 테이블의 유저정보를 가져온다.",
       data: mbr,
       status: 200,
     };

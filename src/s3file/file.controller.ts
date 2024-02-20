@@ -1,9 +1,10 @@
 import { Controller, Get, Param } from "@nestjs/common";
-import { ApiCreatedResponse, ApiOperation } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { FileService } from "@src/s3file/file.service";
 
 @Controller("/file")
+@ApiTags('File')
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 

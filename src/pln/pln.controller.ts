@@ -1,5 +1,5 @@
 import { Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Post, Query } from "@nestjs/common";
-import { ApiCreatedResponse, ApiOperation, ApiParam } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
 import { response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
@@ -11,6 +11,7 @@ import { InsertResult } from "typeorm";
  * PlnController : 플랜 테이블을 관리한다
  */
 @Controller("/pln")
+@ApiTags('Plan')
 export class PlnController {
   constructor(private readonly plnService: PlnService) {}
 
@@ -54,39 +55,6 @@ export class PlnController {
   }
   /**
    * E : getPlnById
-   */
-
-  /**
-   * S : getPlndPln
-   */
-  @Get("/getPlndPlnByMbrId")
-  @ApiOperation({
-    summary: "내가 기획한 플랜 조회",
-    description: "Member Id로 기획한 플랜 리스트를 가져온다.",
-  })
-  @ApiCreatedResponse({
-    description: "Member Id로 기획한 플랜 리스트를 가져온다.",
-    type: PlnEntity,
-  })
-  async getPlndPln(@Query("mbrId") mbrId) {
-    const pln = await this.plnService.getPlndPln(mbrId);
-    let res: response<PlnEntity[]>;
-    let message: string;
-    if (pln.length) {
-      message = "기획한 플랜 리스트.";
-    } else {
-      message = "기획한 플랜이 없습니다.";
-    }
-    res = {
-      message: message,
-      data: pln,
-      status: 200,
-    };
-
-    return res;
-  }
-  /**
-   * E : getPlndPln
    */
 
   /**

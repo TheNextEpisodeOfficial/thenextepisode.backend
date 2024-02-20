@@ -1,10 +1,11 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
-import { ApiCreatedResponse, ApiOperation } from "@nestjs/swagger";
+import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { SysDictItemEntity } from "@src/sys/entities/sysDictItem.entity";
 import { SysService } from "@src/sys/sys.service";
 import { response } from "@src/types/response";
 
 @Controller("/sys")
+@ApiTags('System')
 export class SysController {
   constructor(private readonly sysService: SysService) {}
 
