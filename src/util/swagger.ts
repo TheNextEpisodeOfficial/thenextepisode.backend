@@ -19,23 +19,38 @@ export function setupSwagger(app: INestApplication): void {
         letter-spacing: -0.5px
       }
       html {
-        background-image: url(public/bg.jpeg)!important;
+        background-image: url(public/swg-bg.jpeg)!important;
+        background-repeat: no-repeat!important;
+        background-size: cover!important;
+        height: 100%;
+        overflow: hidden;
       }
       body {
         background: unset;
       }
+      body > #swagger-ui { position: fixed; width: 100%; height: 100%; overflow-y: auto; }
       .topbar, .title span { display: none!important; }
-      .arrow { fill: white }
-      .swagger-ui > div .wrapper .block{ border-radius: 8px; padding: 0px; }
-      .swagger-ui > div .wrapper:not(.information-container) .block, .topbar{ background-color: rgba(255,255,255,.05)!important;-webkit-backdrop-filter: blur(10px);backdrop-filter: blur(10px);}
-      .swagger-ui .no-margin { padding: 20px; }
-      .swagger-ui .opblock-tag, .swagger-ui section.models h4{ padding: 20px; }
-      .swagger-ui .opblock-tag { margin: 0 }
+      .title { width: 320px; height: 44px; background-image: url(public/bad-logo.png); background-size: 100%; background-repeat: no-repeat; background-position: center left; font-size: 0!important; }
+      .arrow { fill: white; }
+      .swagger-ui > div .wrapper .block{ padding: 0px; }
+      .swagger-ui > div .wrapper:not(.information-container) .block, .topbar{ background-color: #00022380!important;-webkit-backdrop-filter: blur(10px);backdrop-filter: blur(10px);}
+      .swagger-ui .no-margin { padding: 20px; border-bottom: 1px solid #b0bdff40 }
+      .swagger-ui .opblock-tag, .swagger-ui section.models.is-open h4, .swagger-ui section.models h4 {border-color: transparent; padding: 20px; color: #fff}
+      .swagger-ui .opblock-tag, .swagger-ui section.models h4 { margin: 0; background: rgba(0,0,0,.2); }
+      .swagger-ui .opblock-tag:hover, .swagger-ui section.models h4:hover {background: rgba(0,0,0,.3);}
+      .swagger-ui section.models h4 > button, .swagger-ui section.models h4:hover > button { background-color: unset; }
       .swagger-ui .opblock-body pre.microlight, .swagger-ui textarea.curl { background-color: #111!important; line-height: 1.4; padding: 16px!important; border-radius: 8px; }
       .swagger-ui .opblock .opblock-section-header { background-color: #111!important; border-radius: 8px; }
-      .swagger-ui .opblock-tag { font-size: 20px; }
-      .swagger-ui .opblock-tag .nostyle span::before {content:'\\2022'}
+      .swagger-ui .opblock-tag { font-size: 16px; }
+      .swagger-ui .opblock-tag .nostyle span::before { content:'\\2022'; }
       .swagger-ui .inner-object > .model {margin-top: 10px}
+      .swagger-ui .opblock .opblock-summary-path{
+        color: #fff!important
+      }
+      .swagger-ui .opblock .opblock-summary-operation-id, .swagger-ui .opblock .opblock-summary-path, .swagger-ui .opblock .opblock-summary-path__deprecated { font-size: 14px!important }
+      
+      .swagger-ui section.models .model-container { background-color: rgba(0,0,0,.2) }
+      .swagger-ui section.models .model-container:hover { background-color: rgba(0,0,0,.3) }
     `
   const theme = new SwaggerTheme();
   const themeOptions = {
