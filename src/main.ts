@@ -2,11 +2,13 @@ import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
 import { setupSwagger } from "./util/swagger";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(cors());
+  app.use(cookieParser());
   setupSwagger(app);
   await app.listen(9090);
   if (module.hot) {
