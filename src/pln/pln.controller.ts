@@ -102,8 +102,6 @@ export class PlnController {
   async srchPln(@Query() pln: SrchPlnDto): Promise<Pagination<PlnEntity>> {
     return this.plnService.srchPln({
       ...pln,
-      page: pln.page,
-      limit: pln.limit,
       route: '/srchPln',
     });
   }

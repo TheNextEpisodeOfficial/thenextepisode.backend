@@ -42,7 +42,7 @@ export class SrchCommonDto {
   limit;
 
   @ApiProperty({ type: String, required: false })
-  order;
+  orderBy;
 }
 
 export class UpsertCommonDto {

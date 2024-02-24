@@ -15,6 +15,14 @@ export class SrchPlnDto extends SrchCommonDto {
   @ApiProperty({ type: String, format: "date", required: false })
   @Column({ type: "date", comment: "플랜시작일시" })
   plnDt;
+  
+  @ApiProperty({ type: String, format: "date", required: false })
+  @Column({ type: "date", comment: "플랜 검색 시작일" })
+  plnSrchStDt;
+
+  @ApiProperty({ type: String, format: "date", required: false })
+  @Column({ type: "date", comment: "플랜 검색 종료일" })
+  plnSrchEndDt;
 
   @ApiProperty({ type: String, required: false })
   @Column({ type: "time", comment: "플랜시작시간" })
