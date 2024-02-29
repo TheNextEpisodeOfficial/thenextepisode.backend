@@ -1,5 +1,19 @@
-import { Body, Controller, DefaultValuePipe, Get, Param, ParseIntPipe, Post, Query } from "@nestjs/common";
-import { ApiCreatedResponse, ApiOperation, ApiParam, ApiTags } from "@nestjs/swagger";
+import {
+  Body,
+  Controller,
+  DefaultValuePipe,
+  Get,
+  Param,
+  ParseIntPipe,
+  Post,
+  Query,
+} from "@nestjs/common";
+import {
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from "@nestjs/swagger";
 import { response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
@@ -11,7 +25,7 @@ import { InsertResult } from "typeorm";
  * PlnController : 플랜 테이블을 관리한다
  */
 @Controller("/pln")
-@ApiTags('Plan')
+@ApiTags("Plan")
 export class PlnController {
   constructor(private readonly plnService: PlnService) {}
 
@@ -30,7 +44,7 @@ export class PlnController {
   @ApiParam({
     name: "plnId",
     required: true,
-    description: "플랜 검색 파라미터",
+    description: "플랜 아이디",
     type: String,
   })
   async getPlnById(@Query("plnId") plnId) {
@@ -73,6 +87,7 @@ export class PlnController {
   upsrtPln(@Body() pln: UpsertPlanDto) {
     try {
       let upsrtPlnRslt = this.plnService.upsrtPln(pln);
+      console.log("pln.bttlOptns:", pln.bttlOptns);
       const response: response<Promise<InsertResult>> = {
         message: "플랜을 성공적으로 등록하였습니다.",
         data: upsrtPlnRslt,
@@ -90,7 +105,7 @@ export class PlnController {
   /**
    * S : srchPln
    */
-  @Get('/srchPln')
+  @Get("/srchPln")
   @ApiOperation({
     summary: "플랜 검색",
     description: "pln Entity로 검색하여 플랜 리스트를 가져온다.",
@@ -102,11 +117,10 @@ export class PlnController {
   async srchPln(@Query() pln: SrchPlnDto): Promise<Pagination<PlnEntity>> {
     return this.plnService.srchPln({
       ...pln,
-      route: '/srchPln',
+      route: "/srchPln",
     });
   }
   /**
    * E : srchPln
    */
-
 }

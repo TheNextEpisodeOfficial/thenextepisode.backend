@@ -1,6 +1,6 @@
-import { INestApplication } from '@nestjs/common';
-import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { SwaggerTheme, SwaggerThemeName } from 'swagger-themes'
+import { INestApplication } from "@nestjs/common";
+import { SwaggerModule, DocumentBuilder } from "@nestjs/swagger";
+import { SwaggerTheme, SwaggerThemeName } from "swagger-themes";
 
 /**
  * Swagger 세팅
@@ -9,12 +9,12 @@ import { SwaggerTheme, SwaggerThemeName } from 'swagger-themes'
  */
 export function setupSwagger(app: INestApplication): void {
   const options = new DocumentBuilder()
-    .setTitle('Bridge API Docs')
-    .setDescription('Bridge API Documents with Swagger')
-    .setVersion('1.0.0')
+    .setTitle("Bridge API Docs")
+    .setDescription("Bridge API Documents with Swagger")
+    .setVersion("1.0.0")
     .build();
 
-    const addCss = `
+  const addCss = `
       * {
         letter-spacing: -0.5px
       }
@@ -51,17 +51,19 @@ export function setupSwagger(app: INestApplication): void {
       
       .swagger-ui section.models .model-container { background-color: rgba(0,0,0,.2) }
       .swagger-ui section.models .model-container:hover { background-color: rgba(0,0,0,.3) }
-    `
+
+      .swagger-ui table thead tr td, .swagger-ui table thead tr th{ border-color: #b0bdff40 }
+    `;
   const theme = new SwaggerTheme();
   const themeOptions = {
     explorer: true,
-    customCss: theme.getBuffer('dark' as SwaggerThemeName) + addCss,
+    customCss: theme.getBuffer("dark" as SwaggerThemeName) + addCss,
     customfavIcon: "public/favicon.ico",
-    customSiteTitle:'Bridge API Docs',
+    customSiteTitle: "Bridge API Docs",
     swaggerOptions: {
-      docExpansion: 'none'
-    }
+      docExpansion: "none",
+    },
   };
   const document = SwaggerModule.createDocument(app, options);
-  SwaggerModule.setup('api-docs', app, document, themeOptions);
+  SwaggerModule.setup("api-docs", app, document, themeOptions);
 }

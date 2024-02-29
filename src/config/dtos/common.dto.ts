@@ -16,6 +16,14 @@ export class SrchCommonDto {
   @Column({ type: "varchar", length: 1, comment: "삭제여부", default: "N" })
   delYn;
 
+  @ApiProperty({ type: String, format: "date", required: false })
+  @Column({ type: "date", comment: "검색시작일" })
+  srchStDt;
+
+  @ApiProperty({ type: String, format: "date", required: false })
+  @Column({ type: "date", comment: "검색종료일" })
+  srchEndDt;
+
   @ApiProperty({ type: String, required: false, format: "date" })
   @CreateDateColumn({ type: "timestamp", comment: "데이터 생성 일시" })
   createStmp;
@@ -47,22 +55,26 @@ export class SrchCommonDto {
 
 export class UpsertCommonDto {
   @PrimaryGeneratedColumn("uuid", { comment: "id" })
-  @ApiProperty({ type: String, required: false, default: 'generated-uuid-here' })
+  @ApiProperty({
+    type: String,
+    required: false,
+    default: "generated-uuid-here",
+  })
   id?;
 
-  @ApiProperty({ type: String, required: false, default: 'N' })
-  @Column({ type: "varchar", length: 1, comment: "삭제여부", default: 'N' })
+  @ApiProperty({ type: String, required: false, default: "N" })
+  @Column({ type: "varchar", length: 1, comment: "삭제여부", default: "N" })
   delYn?;
 
   @ApiProperty({ type: String, required: false, format: "date" })
   @CreateDateColumn({ type: "timestamp", comment: "데이터 생성 일시" })
   createStmp?;
 
-  @ApiProperty({ type: String, required: false, default: 'userid' })
+  @ApiProperty({ type: String, required: false, default: "userid" })
   @Column({ type: "varchar", length: 100, comment: "데이터 생성자 아이디" })
   createMbrId?;
 
-  @ApiProperty({ type: String, required: false, default: 'auto-update' })
+  @ApiProperty({ type: String, required: false, default: "auto-update" })
   @UpdateDateColumn({ type: "timestamp", comment: "데이터 수정 일시" })
   updateStmp?;
 
