@@ -1,16 +1,16 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from "@nestjs/typeorm";
-import * as mysqlDriver from "mysql2";
+import * as pg from "pg";
+import { SnakeNamingStrategy } from "typeorm-naming-strategies";
 
 @Injectable()
-export class MySqlConfigService implements TypeOrmOptionsFactory {
+export class PostgreConfigService implements TypeOrmOptionsFactory {
   constructor(private configService: ConfigService) {}
 
   createTypeOrmOptions(): TypeOrmModuleOptions {
     return {
-      driver: mysqlDriver,
-      type: "mysql",
+      type: "postgres",
       username: this.configService.get<string>("DB_USER"),
       password: this.configService.get<string>("DB_PASSWORD"),
       port: +this.configService.get<number>("DB_PORT"),
@@ -20,6 +20,10 @@ export class MySqlConfigService implements TypeOrmOptionsFactory {
       autoLoadEntities: true,
       synchronize: true,
       logging: true,
+      extra: {
+        driver: pg,
+      },
+      namingStrategy: new SnakeNamingStrategy(),
     };
   }
 }

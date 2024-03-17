@@ -4,7 +4,7 @@ import * as dotenv from "dotenv";
 dotenv.config();
 
 const dataSource: DataSource = new DataSource({
-  type: "mysql",
+  type: "postgres",
   username: process.env.DB_USER,
   password: process.env.DB_PASSWORD,
   port: parseInt(process.env.DB_PORT),

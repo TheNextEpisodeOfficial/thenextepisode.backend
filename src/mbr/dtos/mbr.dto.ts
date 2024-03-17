@@ -36,7 +36,7 @@ export class UpsertMbrDto extends UpsertCommonDto {
   acntPltfrm;
 
   @ApiProperty({ type: String, required: true, default: "" })
-  @Column({ type: "datetime", comment: "최근 접속일시" })
+  @Column({ type: "timestamp", comment: "최근 접속일시" })
   lstLgnTm;
 
   @ApiProperty({ type: String, required: true, default: "NRML" })

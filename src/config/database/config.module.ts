@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
-import { MySqlConfigService } from './config.service';
+import { PostgreConfigService } from './config.service';
 
 @Module({
-  providers: [MySqlConfigService],
+  providers: [PostgreConfigService],
 })
-export class MySqlConfigModule {}
+export class PostgreConfigModule {}

@@ -89,7 +89,7 @@ export class PlnService {
       }
       queryBuilder.orderBy(orderColumn, orderValue);
     } else {
-      queryBuilder.orderBy("createStmp", "DESC");
+      queryBuilder.orderBy("create_stmp", "DESC");
     }
 
     try {

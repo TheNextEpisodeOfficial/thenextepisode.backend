@@ -49,7 +49,7 @@ export class MbrEntity extends CommonEntity {
   })
   drkYn;
 
-  @Column({ type: "datetime", comment: "최근 접속일시" })
+  @Column({ type: "timestamp", comment: "최근 접속일시" })
   lstLgnTm;
 
   @Column({ type: "varchar", length: 4, comment: "회원 상태 코드" })
