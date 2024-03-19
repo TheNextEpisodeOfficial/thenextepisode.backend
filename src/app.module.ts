@@ -5,8 +5,9 @@ import { FileModule } from "./s3file/file.module";
 import { SysModule } from "./sys/sys.module";
 import { MODULE_CONFIG } from "./config/constants/constants";
 import { AuthModule } from "./auth/auth.module";
+import { BttlModule } from "./bttl/bttl.module";
 
 @Module({
-  imports: [...MODULE_CONFIG, PlnModule, AuthModule, MbrModule, FileModule, SysModule],
+  imports: [...MODULE_CONFIG, PlnModule, BttlModule, AuthModule, MbrModule, FileModule, SysModule],
 })
 export class AppModule {}
