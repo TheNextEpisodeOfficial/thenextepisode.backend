@@ -43,7 +43,8 @@ export class PlnService {
     });
   }
 
-  upsrtPln(pln: UpsertPlanDto): Promise<InsertResult> {
+  //FIXME: Need Transaction
+  async upsrtPln(pln: UpsertPlanDto): Promise<InsertResult> {
     // form validation
     if(pln.bttlOptns.length && pln.plnTypeCd != 'BTTL') {
       throw new HttpException(
@@ -51,12 +52,12 @@ export class PlnService {
         HttpStatus.BAD_REQUEST
       );
     } else {
-      const query = this.bttlOptRepository.createQueryBuilder()
-      .insert()
-      .into(BttlOptnEntity)
-      .values(pln.bttlOptns.map(opt => ({ ...opt })))
-      .orUpdate(['id']) // id가 중복될 경우 업데이트
-      .execute();
+      this.bttlOptRepository.createQueryBuilder()
+        .insert()
+        .into(BttlOptnEntity)
+        .values(pln.bttlOptns.map(opt => ({ ...opt })))
+        .orUpdate(['id']) // id가 중복될 경우 업데이트
+        .execute();
     }
     return this.plnRepository.upsert(pln, ["id"]);
   }
