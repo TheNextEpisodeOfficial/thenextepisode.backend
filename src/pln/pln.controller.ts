@@ -3,6 +3,8 @@ import {
   Controller,
   DefaultValuePipe,
   Get,
+  HttpException,
+  HttpStatus,
   Param,
   ParseIntPipe,
   Post,
@@ -87,7 +89,6 @@ export class PlnController {
   upsrtPln(@Body() pln: UpsertPlanDto) {
     try {
       let upsrtPlnRslt = this.plnService.upsrtPln(pln);
-      console.log("pln.bttlOptns:", pln.bttlOptns);
       const response: response<Promise<InsertResult>> = {
         message: "플랜을 성공적으로 등록하였습니다.",
         data: upsrtPlnRslt,
