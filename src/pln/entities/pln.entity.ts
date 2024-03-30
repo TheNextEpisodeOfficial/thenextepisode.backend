@@ -18,9 +18,6 @@ export class PlnEntity extends CommonEntity {
   @Column({ type: "time", comment: "플랜종료시간" })
   plnEndTm;
 
-  @Column({ type: "varchar", length: 100, comment: "장소명" })
-  plnLctnNm;
-
   @Column({ type: "varchar", length: 100, comment: "도로명 주소" })
   plnRoadAddr;
 
@@ -30,20 +27,17 @@ export class PlnEntity extends CommonEntity {
   @Column({ type: "varchar", length: 1000, comment: "플랜소개" })
   plnDsc;
 
-  @Column({ type: "varchar", length: 1000, comment: "플랜 룰", nullable: true })
-  plnRule;
-
   @Column({ type: "int", comment: "총 상금" })
   plnRwrd;
 
-  @Column({ type: "int", comment: "최대 관람객 수" })
-  plnMaxCrwd;
+  @Column({ type: "timestamp", comment: "입장구매 마감일시" })
+  plnRsvEndDt;
 
-  @Column({ type: "int", comment: "관람예매금액" })
-  plnEntrFee;
+  @Column({ type: "timestamp", comment: "참가구매 마감일시" })
+  bttlRsvEndDt;
 
-  @Column({ type: "int", comment: "참가신청금액", nullable: true })
-  plnJoinFee;
+  @Column({ type: "varchar", length: 3, comment: "결제 화폐" })
+  crncyCd;
 
   @Column({
     type: "varchar",
@@ -51,6 +45,14 @@ export class PlnEntity extends CommonEntity {
     comment: "청소년 관람 및 참가 불가 여부",
   })
   rRatedYn;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "오픈 여부",
+    default: "N",
+  })
+  opnYn;
 
   @Column({
     type: "varchar",

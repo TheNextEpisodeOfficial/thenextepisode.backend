@@ -5,15 +5,15 @@ import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { InsertResult, LessThan, Like, MoreThan, Repository } from "typeorm";
 import { SrchPlnDto, UpsertPlanDto } from "./dtos/pln.dto";
 import { Pagination, paginate } from "nestjs-typeorm-paginate";
-import { BttlOptnEntity } from "@src/bttl/entities/bttl.entity";
+import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 
 @Injectable()
 export class PlnService {
   constructor(
     @InjectRepository(PlnEntity)
     private readonly plnRepository: Repository<PlnEntity>,
-    @InjectRepository(BttlOptnEntity)
-    private readonly bttlOptRepository: Repository<BttlOptnEntity>
+    @InjectRepository(BttlOptEntity)
+    private readonly bttlOptRepository: Repository<BttlOptEntity>
   ) {}
 
   getAllPln(): Promise<PlnEntity[]> {
@@ -46,17 +46,18 @@ export class PlnService {
   //FIXME: Need Transaction
   async upsrtPln(pln: UpsertPlanDto): Promise<InsertResult> {
     // form validation
-    if(pln.bttlOptns.length && pln.plnTypeCd != 'BTTL') {
+    if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
       throw new HttpException(
         "플랜타입이 배틀인 경우에만 배틀옵션을 설정할 수 있습니다.",
         HttpStatus.BAD_REQUEST
       );
     } else {
-      this.bttlOptRepository.createQueryBuilder()
+      this.bttlOptRepository
+        .createQueryBuilder()
         .insert()
-        .into(BttlOptnEntity)
-        .values(pln.bttlOptns.map(opt => ({ ...opt })))
-        .orUpdate(['id']) // id가 중복될 경우 업데이트
+        .into(BttlOptEntity)
+        .values(pln.bttlOpt.map((opt) => ({ ...opt, plnId: pln.id })))
+        .orUpdate(["id"]) // id가 중복될 경우 업데이트
         .execute();
     }
     return this.plnRepository.upsert(pln, ["id"]);

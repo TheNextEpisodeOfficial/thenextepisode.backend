@@ -154,5 +154,5 @@ export class UpsertPlanDto extends UpsertCommonDto {
   fileGrpId;
 
   @ApiProperty({ type: Array, required: false })
-  bttlOptns;
+  bttlOpt;
 }
