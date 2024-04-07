@@ -88,13 +88,13 @@ export class PlnController {
   })
   upsrtPln(@Body() pln: UpsertPlanDto) {
     try {
-      let upsrtPlnRslt = this.plnService.upsrtPln(pln);
-      const response: response<Promise<InsertResult>> = {
-        message: "플랜을 성공적으로 등록하였습니다.",
-        data: upsrtPlnRslt,
-        status: 200,
-      };
-      return response;
+      // let upsrtPlnRslt = this.plnService.upsrtPln(pln);
+      // const response: response<Promise<InsertResult>> = {
+      //   message: "플랜을 성공적으로 등록하였습니다.",
+      //   data: upsrtPlnRslt,
+      //   status: 200,
+      // };
+      return this.plnService.upsrtPln(pln);
     } catch (e) {
       console.error(e);
     }

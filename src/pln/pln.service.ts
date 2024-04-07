@@ -6,6 +6,7 @@ import { InsertResult, LessThan, Like, MoreThan, Repository } from "typeorm";
 import { SrchPlnDto, UpsertPlanDto } from "./dtos/pln.dto";
 import { Pagination, paginate } from "nestjs-typeorm-paginate";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
+import { AdncOptEntity } from "./entities/adncOpt.entity";
 
 @Injectable()
 export class PlnService {
@@ -13,7 +14,9 @@ export class PlnService {
     @InjectRepository(PlnEntity)
     private readonly plnRepository: Repository<PlnEntity>,
     @InjectRepository(BttlOptEntity)
-    private readonly bttlOptRepository: Repository<BttlOptEntity>
+    private readonly bttlOptRepository: Repository<BttlOptEntity>,
+    @InjectRepository(AdncOptEntity)
+    private readonly adncOptRepository: Repository<AdncOptEntity>
   ) {}
 
   getAllPln(): Promise<PlnEntity[]> {
@@ -45,6 +48,9 @@ export class PlnService {
 
   //FIXME: Need Transaction
   async upsrtPln(pln: UpsertPlanDto): Promise<InsertResult> {
+    let insertedPlnId;
+    const plnInsertResult = await this.plnRepository.upsert(pln, ["id"])
+    insertedPlnId = plnInsertResult.generatedMaps[0].id; // 삽입된 pln의 id를 저장합니다
     // form validation
     if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
       throw new HttpException(
@@ -57,10 +63,25 @@ export class PlnService {
         .insert()
         .into(BttlOptEntity)
         .values(pln.bttlOpt.map((opt) => ({ ...opt, plnId: pln.id })))
-        .orUpdate(["id"]) // id가 중복될 경우 업데이트
+        // .orUpdate(["id"]) // id가 중복될 경우 업데이트
         .execute();
     }
-    return this.plnRepository.upsert(pln, ["id"]);
+
+    if(pln.adncOpt.length) {
+      this.adncOptRepository
+        .createQueryBuilder()
+        .insert()
+        .into(AdncOptEntity)
+        .values(pln.adncOpt.map((opt) => ({ ...opt, plnId: pln.id })))
+        // .orUpdate(["id"]) // id가 중복될 경우 업데이트
+        .execute();
+    } else {
+      throw new HttpException(
+        "입장옵션은 필수입니다. 한개 이상 생성해주세요.",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    return plnInsertResult;
   }
 
   async srchPln(srchPlnDto: SrchPlnDto): Promise<Pagination<PlnEntity>> {

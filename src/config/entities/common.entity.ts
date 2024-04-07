@@ -11,23 +11,23 @@ export class CommonEntity extends BaseEntity {
   id: string;
 
   @Column({ type: "int", comment: "정렬", nullable: true })
-  sort;
+  sort: number;
 
   @Column({ type: "varchar", length: 1, comment: "삭제여부", default: "N" })
-  delYn;
+  delYn: string;
 
   @CreateDateColumn({ type: "timestamp", comment: "데이터 생성 일시" })
-  createStmp;
+  createStmp: string;
 
   @Column({ type: "varchar", length: 100, comment: "데이터 생성자 아이디", default: 'memberid' })
-  createMbrId;
+  createMbrId: string;
 
   @UpdateDateColumn({
     type: "timestamp",
     comment: "데이터 수정 일시",
     nullable: true,
   })
-  updateStmp;
+  updateStmp: string;
 
   @Column({
     type: "varchar",
@@ -35,5 +35,5 @@ export class CommonEntity extends BaseEntity {
     comment: "데이터 수정자 아이디",
     nullable: true,
   })
-  updateMbrId;
+  updateMbrId: string;
 }
