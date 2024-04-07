@@ -6,8 +6,18 @@ import { SysModule } from "./sys/sys.module";
 import { MODULE_CONFIG } from "./config/constants/constants";
 import { AuthModule } from "./auth/auth.module";
 import { BttlModule } from "./bttl/bttl.module";
+import { CelebModule } from "./celeb/celeb.module";
 
 @Module({
-  imports: [...MODULE_CONFIG, PlnModule, BttlModule, AuthModule, MbrModule, FileModule, SysModule],
+  imports: [
+    ...MODULE_CONFIG,
+    PlnModule,
+    BttlModule,
+    AuthModule,
+    MbrModule,
+    CelebModule,
+    FileModule,
+    SysModule,
+  ],
 })
 export class AppModule {}
