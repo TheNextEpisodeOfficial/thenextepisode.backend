@@ -49,7 +49,7 @@ export class PlnController {
     description: "플랜 아이디",
     type: String,
   })
-  async getPlnById(@Query("plnId") plnId) {
+  async getPlnById(@Query("plnId") plnId: string) {
     const pln = await this.plnService.getPlnById(plnId);
     let res: response<PlnEntity>;
     let title: string = "";

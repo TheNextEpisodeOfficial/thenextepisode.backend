@@ -36,6 +36,7 @@
     "@types/axios": "^0.14.0",
     "@types/cookie-parser": "^1.4.6",
     "@types/passport-kakao": "^1.0.3",
+    "aws-sdk": "^2.1594.0",
     "axios": "^1.6.7",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.0",
