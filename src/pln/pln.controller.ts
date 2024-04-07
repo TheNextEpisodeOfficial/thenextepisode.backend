@@ -74,9 +74,9 @@ export class PlnController {
    */
 
   /**
-   * S : upsrtPln
+   * S : insertPln
    */
-  @Post("/upsrtPln")
+  @Post("/insertPln")
   @ApiOperation({
     summary: "플랜 생성/수정",
     description:
@@ -86,21 +86,17 @@ export class PlnController {
     description: "새로운 플랜을 생성 한다.",
     type: null,
   })
-  upsrtPln(@Body() pln: UpsertPlanDto) {
+  async insertPln(@Body() pln: UpsertPlanDto) {
     try {
-      // let upsrtPlnRslt = this.plnService.upsrtPln(pln);
-      // const response: response<Promise<InsertResult>> = {
-      //   message: "플랜을 성공적으로 등록하였습니다.",
-      //   data: upsrtPlnRslt,
-      //   status: 200,
-      // };
-      return this.plnService.upsrtPln(pln);
+      let insertPlanResult = await this.plnService.insertPln(pln);
+      console.log("insertPlanResult:::", insertPlanResult);
+      return insertPlanResult;
     } catch (e) {
       console.error(e);
     }
   }
   /**
-   * E : upsrtPln
+   * E : insertPln
    */
 
   /**

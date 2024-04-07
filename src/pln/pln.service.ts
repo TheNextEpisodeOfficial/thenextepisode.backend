@@ -2,7 +2,14 @@ import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 
-import { InsertResult, LessThan, Like, MoreThan, Repository } from "typeorm";
+import {
+  EntityManager,
+  InsertResult,
+  LessThan,
+  Like,
+  MoreThan,
+  Repository,
+} from "typeorm";
 import { SrchPlnDto, UpsertPlanDto } from "./dtos/pln.dto";
 import { Pagination, paginate } from "nestjs-typeorm-paginate";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
@@ -16,7 +23,8 @@ export class PlnService {
     @InjectRepository(BttlOptEntity)
     private readonly bttlOptRepository: Repository<BttlOptEntity>,
     @InjectRepository(AdncOptEntity)
-    private readonly adncOptRepository: Repository<AdncOptEntity>
+    private readonly adncOptRepository: Repository<AdncOptEntity>,
+    private readonly entityManager: EntityManager
   ) {}
 
   getAllPln(): Promise<PlnEntity[]> {
@@ -46,42 +54,51 @@ export class PlnService {
     });
   }
 
-  //FIXME: Need Transaction
-  async upsrtPln(pln: UpsertPlanDto): Promise<InsertResult> {
-    let insertedPlnId;
-    const plnInsertResult = await this.plnRepository.upsert(pln, ["id"])
-    insertedPlnId = plnInsertResult.generatedMaps[0].id; // 삽입된 pln의 id를 저장합니다
-    // form validation
-    if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
-      throw new HttpException(
-        "플랜타입이 배틀인 경우에만 배틀옵션을 설정할 수 있습니다.",
-        HttpStatus.BAD_REQUEST
-      );
-    } else {
-      this.bttlOptRepository
-        .createQueryBuilder()
-        .insert()
-        .into(BttlOptEntity)
-        .values(pln.bttlOpt.map((opt) => ({ ...opt, plnId: pln.id })))
-        // .orUpdate(["id"]) // id가 중복될 경우 업데이트
-        .execute();
-    }
+  async insertPln(pln: UpsertPlanDto): Promise<InsertResult> {
+    return this.entityManager.transaction(async (entityManager) => {
+      try {
+        let insertedPlnId;
+        // const plnInsertResult = await this.plnRepository.upsert(pln, ["id"]);
+        const plnInsertResult = await entityManager.insert(PlnEntity, pln);
+        insertedPlnId = plnInsertResult.generatedMaps[0].id; // 삽입된 pln의 id를 저장합니다
+        // form validation
+        if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
+          throw new HttpException(
+            "플랜타입이 배틀인 경우에만 배틀옵션을 설정할 수 있습니다.",
+            HttpStatus.BAD_REQUEST
+          );
+        } else {
+          try {
+            await entityManager.insert(
+              BttlOptEntity,
+              pln.bttlOpt.map((opt) => ({ ...opt, plnId: insertedPlnId }))
+            );
+          } catch (error) {
+            throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+        }
 
-    if(pln.adncOpt.length) {
-      this.adncOptRepository
-        .createQueryBuilder()
-        .insert()
-        .into(AdncOptEntity)
-        .values(pln.adncOpt.map((opt) => ({ ...opt, plnId: pln.id })))
-        // .orUpdate(["id"]) // id가 중복될 경우 업데이트
-        .execute();
-    } else {
-      throw new HttpException(
-        "입장옵션은 필수입니다. 한개 이상 생성해주세요.",
-        HttpStatus.BAD_REQUEST
-      );
-    }
-    return plnInsertResult;
+        if (pln.adncOpt.length) {
+          try {
+            await entityManager.insert(
+              AdncOptEntity,
+              pln.adncOpt.map((opt) => ({ ...opt, plnId: insertedPlnId }))
+            );
+          } catch (error) {
+            throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+        } else {
+          throw new HttpException(
+            "입장옵션은 필수입니다. 한개 이상 생성해주세요.",
+            HttpStatus.BAD_REQUEST
+          );
+        }
+        await entityManager.query("COMMIT");
+        return plnInsertResult;
+      } catch (error) {
+        throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    });
   }
 
   async srchPln(srchPlnDto: SrchPlnDto): Promise<Pagination<PlnEntity>> {

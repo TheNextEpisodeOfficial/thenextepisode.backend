@@ -7,7 +7,7 @@ import axios from "axios";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 
 @Controller("api/auth")
-@ApiTags('Auth')
+@ApiTags("Auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -39,8 +39,7 @@ export class AuthController {
   @Get("/getUserInfoByToken")
   @ApiOperation({
     summary: "토큰기반 로그인 유저 정보 조회",
-    description:
-      "access token을 기반으로 mbr 테이블의 유저정보를 가져온다."
+    description: "access token을 기반으로 mbr 테이블의 유저정보를 가져온다.",
   })
   @ApiCreatedResponse({
     description: "access token을 기반으로 mbr 테이블의 유저정보를 가져온다.",
