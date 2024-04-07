@@ -6,7 +6,7 @@ import { Request, Response } from "express";
 import axios from "axios";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 
-@Controller("api/auth")
+@Controller("/auth")
 @ApiTags("Auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
