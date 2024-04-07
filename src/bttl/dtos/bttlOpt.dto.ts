@@ -1,7 +1,9 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { InsertCelebDto } from "@src/celeb/dtos/celeb.dto";
+import { CelebEntity } from "@src/celeb/entities/celeb.entity";
 import { UpsertCommonDto } from "@src/config/dtos/common.dto";
 import { Column } from "typeorm";
-export class BttlOptDto extends UpsertCommonDto {
+export class InsertBttlOptDto extends UpsertCommonDto {
   @Column({ type: "varchar", length: 36, comment: "플랜 아이디" })
   plnId: string;
 
@@ -21,4 +23,7 @@ export class BttlOptDto extends UpsertCommonDto {
 
   @Column({ type: "int", comment: "최대 신청 팀 수" })
   maxTeamCnt: number;
+
+  @ApiProperty({ type: [InsertCelebDto], required: false })
+  celebRoleMap: InsertCelebDto[];
 }

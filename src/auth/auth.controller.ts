@@ -13,6 +13,10 @@ export class AuthController {
 
   private readonly DATA_URL = "https://kapi.kakao.com/v2/user/me";
 
+  @ApiOperation({
+    summary: "카카오 로그인",
+    description: "카카오 서비스로 로그인을 요청한다.",
+  })
   @UseGuards(KakaoAuthGuard)
   @Get("login/kakao")
   async kakaoCallback(

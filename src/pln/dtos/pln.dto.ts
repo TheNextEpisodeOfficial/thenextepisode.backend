@@ -1,7 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
+import { InsertBttlOptDto } from "@src/bttl/dtos/bttlOpt.dto";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { SrchCommonDto, UpsertCommonDto } from "@src/config/dtos/common.dto";
-import { CommonEntity } from "@src/config/entities/common.entity";
 import { Column } from "typeorm";
 import { AdncOptEntity } from "../entities/adncOpt.entity";
 
@@ -156,8 +156,8 @@ export class UpsertPlanDto extends UpsertCommonDto {
   })
   fileGrpId;
 
-  @ApiProperty({ type: [BttlOptEntity], required: false })
-  bttlOpt: BttlOptEntity[];
+  @ApiProperty({ type: [InsertBttlOptDto], required: false })
+  bttlOpt: InsertBttlOptDto[];
 
   @ApiProperty({ type: [AdncOptEntity], required: false })
   adncOpt: AdncOptEntity[];

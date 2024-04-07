@@ -13,13 +13,6 @@ export class CelebService {
   ) {}
 
   async getCelebListByKeyword(keyword: string) {
-    console.log("keyword:::", keyword);
-    // return this.celebRepository.find({
-    //   where: [
-    //     { celebNm: keyword, delYn: "N" },
-    //     { celebNckNm: keyword, delYn: "N" },
-    //   ],
-    // });
     return this.celebRepository
       .createQueryBuilder()
       .where(
