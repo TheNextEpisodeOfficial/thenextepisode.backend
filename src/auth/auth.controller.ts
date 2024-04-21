@@ -6,7 +6,7 @@ import { Request, Response } from "express";
 import axios from "axios";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 
-@Controller("/auth")
+@Controller("api/auth")
 @ApiTags("Auth")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
@@ -18,7 +18,7 @@ export class AuthController {
     description: "카카오 서비스로 로그인을 요청한다.",
   })
   @UseGuards(KakaoAuthGuard)
-  @Get("/login/kakao")
+  @Get("login/kakao")
   async kakaoCallback(
     @SocialUser() socialUser: SocialUserAfterAuth,
     @Res({ passthrough: true }) res: Response
