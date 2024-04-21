@@ -2,6 +2,7 @@ import { ApiProperty } from "@nestjs/swagger";
 import { InsertBttlOptDto } from "@src/bttl/dtos/bttlOpt.dto";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { SrchCommonDto, UpsertCommonDto } from "@src/config/dtos/common.dto";
+import { FileEntity } from "@src/s3file/entities/file.entity";
 import { Column } from "typeorm";
 import { AdncOptEntity } from "../entities/adncOpt.entity";
 
@@ -67,7 +68,7 @@ export class SrchPlnDto extends SrchCommonDto {
   rRatedYn;
 }
 
-export class UpsertPlanDto extends UpsertCommonDto {
+export class InsertPlanDto extends UpsertCommonDto {
   @ApiProperty({ type: String, required: true, default: "플랜명" })
   @Column({ type: "varchar", length: 100, comment: "플랜명" })
   plnNm;
@@ -169,4 +170,7 @@ export class UpsertPlanDto extends UpsertCommonDto {
 
   @ApiProperty({ type: [AdncOptEntity], required: false })
   adncOpt: AdncOptEntity[];
+
+  @ApiProperty({ type: [FileEntity], required: false })
+  plnImgs: FileEntity[];
 }

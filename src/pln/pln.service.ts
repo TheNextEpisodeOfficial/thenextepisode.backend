@@ -10,10 +10,11 @@ import {
   MoreThan,
   Repository,
 } from "typeorm";
-import { SrchPlnDto, UpsertPlanDto } from "./dtos/pln.dto";
+import { SrchPlnDto, InsertPlanDto } from "./dtos/pln.dto";
 import { Pagination, paginate } from "nestjs-typeorm-paginate";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { AdncOptEntity } from "./entities/adncOpt.entity";
+import { FileEntity } from "@src/s3file/entities/file.entity";
 
 @Injectable()
 export class PlnService {
@@ -54,13 +55,14 @@ export class PlnService {
     });
   }
 
-  async insertPln(pln: UpsertPlanDto): Promise<InsertResult> {
+  async insertPln(pln: InsertPlanDto): Promise<InsertResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
-        let insertedPlnId;
+        let insertedPln;
         // const plnInsertResult = await this.plnRepository.upsert(pln, ["id"]);
         const plnInsertResult = await entityManager.insert(PlnEntity, pln);
-        insertedPlnId = plnInsertResult.generatedMaps[0].id; // 삽입된 pln의 id를 저장합니다
+        insertedPln = plnInsertResult.generatedMaps[0]; // 삽입된 pln의 객체를 가져온다
+
         // form validation
         if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
           throw new HttpException(
@@ -71,7 +73,7 @@ export class PlnService {
           try {
             await entityManager.insert(
               BttlOptEntity,
-              pln.bttlOpt.map((opt) => ({ ...opt, plnId: insertedPlnId }))
+              pln.bttlOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
             );
           } catch (error) {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -82,7 +84,7 @@ export class PlnService {
           try {
             await entityManager.insert(
               AdncOptEntity,
-              pln.adncOpt.map((opt) => ({ ...opt, plnId: insertedPlnId }))
+              pln.adncOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
             );
           } catch (error) {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -93,6 +95,21 @@ export class PlnService {
             HttpStatus.BAD_REQUEST
           );
         }
+
+        if (pln.plnImgs.length) {
+          try {
+            await entityManager.insert(
+              FileEntity,
+              pln.plnImgs.map((file) => ({
+                ...file,
+                fileGrpId: insertedPln.fileGrpId,
+              }))
+            );
+          } catch (error) {
+            throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+        }
+
         await entityManager.query("COMMIT");
         return plnInsertResult;
       } catch (error) {

@@ -19,7 +19,7 @@ import {
 import { response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
-import { SrchPlnDto, UpsertPlanDto } from "./dtos/pln.dto";
+import { SrchPlnDto, InsertPlanDto } from "./dtos/pln.dto";
 import { Pagination } from "nestjs-typeorm-paginate";
 import { InsertResult } from "typeorm";
 
@@ -86,7 +86,7 @@ export class PlnController {
     description: "새로운 플랜을 생성 한다.",
     type: null,
   })
-  async insertPln(@Body() pln: UpsertPlanDto) {
+  async insertPln(@Body() pln: InsertPlanDto) {
     try {
       let insertPlanResult = await this.plnService.insertPln(pln);
       console.log("insertPlanResult:::", insertPlanResult);
