@@ -32,9 +32,9 @@ export class PlnController {
   constructor(private readonly plnService: PlnService) {}
 
   /**
-   * S : getPlnById
+   * S : getPlnDtlById
    */
-  @Get("/getPlnById")
+  @Get("/getPlnDtlById")
   @ApiOperation({
     summary: "플랜 ID로 플랜 상세 조회",
     description: "플랜 ID로 플랜 상세를 가져온다.",
@@ -49,8 +49,8 @@ export class PlnController {
     description: "플랜 아이디",
     type: String,
   })
-  async getPlnById(@Query("plnId") plnId: string) {
-    const pln = await this.plnService.getPlnById(plnId);
+  async getPlnDtlById(@Query("plnId") plnId: string) {
+    const pln = await this.plnService.getPlnDtlById(plnId);
     let res: response<PlnEntity>;
     let title: string = "";
     let message: string;
@@ -70,7 +70,7 @@ export class PlnController {
     return res;
   }
   /**
-   * E : getPlnById
+   * E : getPlnDtlById
    */
 
   /**

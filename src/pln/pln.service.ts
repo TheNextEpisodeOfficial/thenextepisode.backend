@@ -35,7 +35,7 @@ export class PlnService {
     });
   }
 
-  getPlnById(plnId: string): Promise<PlnEntity> {
+  getPlnDtlById(plnId: string): Promise<PlnEntity> {
     return this.plnRepository.findOne({
       where: {
         id: plnId,

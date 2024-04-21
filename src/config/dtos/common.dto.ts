@@ -55,6 +55,7 @@ export class SrchCommonDto {
 
 export class UpsertCommonDto {
   @PrimaryGeneratedColumn("uuid", { comment: "id" })
+  @Column({ type: "varchar", length: 36, comment: "아이디", default: "" })
   id?;
 
   @ApiProperty({ type: String, required: false, default: "N" })

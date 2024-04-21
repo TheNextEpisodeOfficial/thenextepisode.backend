@@ -133,6 +133,14 @@ export class UpsertPlanDto extends UpsertCommonDto {
   @Column({
     type: "varchar",
     length: 1,
+    comment: "플랜상세에서의 참가자현황 공개 여부",
+  })
+  showBttlrYn;
+
+  @ApiProperty({ type: String, required: true, default: "N" })
+  @Column({
+    type: "varchar",
+    length: 1,
     comment: "오픈 여부",
     default: "N",
   })
