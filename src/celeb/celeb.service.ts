@@ -14,13 +14,13 @@ export class CelebService {
   async getCelebListByKeyword(keyword: string) {
     return this.celebRepository.query(`
         select
-          c.id as celeb_id
-          ,c.celeb_nm
-          ,c.celeb_nck_nm
-          ,c.celeb_type_cd 
-          ,m.id as role_mbr_id
-          ,m.mbr_nm 
-          ,m.nick_nm 
+          c.id as "celebId",
+          c.celeb_nm as "celebNm",
+          c.celeb_nck_nm as "celebNckNm",
+          c.celeb_type_cd as "celebTypeCd",
+          m.id as "roleMbrId",
+          m.mbr_nm as "mbrNm",
+          m.nick_nm as "nickNm"
         FROM celeb c
         FULL OUTER JOIN mbr m ON c.celeb_mbr_id = m.id::text
         WHERE
