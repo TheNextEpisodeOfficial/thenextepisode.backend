@@ -7,7 +7,7 @@ export class InsertBttlOptDto extends UpsertCommonDto {
   @Column({ type: "varchar", length: 36, comment: "플랜 아이디" })
   plnId: string;
 
-  @ApiProperty({ type: String, required: false, default: "BTTL" })
+  @ApiProperty({ type: String, required: false, default: "BRKN" })
   @Column({ type: "varchar", length: 10, comment: "장르 타입 코드" })
   bttlGnrCd: string;
 

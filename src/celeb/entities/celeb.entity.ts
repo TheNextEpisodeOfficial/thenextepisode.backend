@@ -1,4 +1,5 @@
-import { Column, Entity } from "typeorm";
+import { MbrEntity } from "@src/mbr/entities/mbr.entity";
+import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 
 @Entity("celeb")

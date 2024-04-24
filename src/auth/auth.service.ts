@@ -23,7 +23,7 @@ export class AuthService {
 
     if (isFirstLogin) {
       user = await this.mbrService.createMbr({
-        mbrId: id,
+        chnlMbrId: id,
         mbrNm: mbrNm,
         email: email,
         gender: gender,

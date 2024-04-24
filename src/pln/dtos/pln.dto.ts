@@ -5,6 +5,7 @@ import { SrchCommonDto, UpsertCommonDto } from "@src/config/dtos/common.dto";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { Column } from "typeorm";
 import { AdncOptEntity } from "../entities/adncOpt.entity";
+import { CelebRoleMapEntity } from "../entities/celebRoleMap.entity";
 
 export class SrchPlnDto extends SrchCommonDto {
   @ApiProperty({ type: String, required: false })

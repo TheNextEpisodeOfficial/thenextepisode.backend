@@ -28,7 +28,7 @@ export class MbrService {
   getUserInfo(mbrId: string): Promise<MbrEntity> {
     return this.mbrRepository.findOne({
       where: {
-        mbrId: mbrId,
+        chnlMbrId: mbrId,
       },
     });
   }

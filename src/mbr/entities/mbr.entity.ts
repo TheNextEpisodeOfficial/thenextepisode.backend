@@ -4,7 +4,7 @@ import { CommonEntity } from "../../config/entities/common.entity";
 @Entity("mbr")
 export class MbrEntity extends CommonEntity {
   @Column({ type: "varchar", length: 100, comment: "유저아이디" })
-  mbrId;
+  chnlMbrId;
 
   @Column({ type: "varchar", length: 100, comment: "연락처" })
   mbrPhn;

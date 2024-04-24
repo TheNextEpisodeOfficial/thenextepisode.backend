@@ -15,6 +15,7 @@ import { Pagination, paginate } from "nestjs-typeorm-paginate";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { AdncOptEntity } from "./entities/adncOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
+import { CelebRoleMapEntity } from "./entities/celebRoleMap.entity";
 
 @Injectable()
 export class PlnService {
@@ -63,7 +64,7 @@ export class PlnService {
         const plnInsertResult = await entityManager.insert(PlnEntity, pln);
         insertedPln = plnInsertResult.generatedMaps[0]; // 삽입된 pln의 객체를 가져온다
 
-        // form validation
+        // S : 배틀옵션 INSERT
         if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
           throw new HttpException(
             "플랜타입이 배틀인 경우에만 배틀옵션을 설정할 수 있습니다.",
@@ -71,15 +72,21 @@ export class PlnService {
           );
         } else {
           try {
-            await entityManager.insert(
-              BttlOptEntity,
-              pln.bttlOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
-            );
+            await entityManager
+              .insert(
+                BttlOptEntity,
+                pln.bttlOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
+              )
+              .then((opt) => {
+                console.log("opt:::", opt);
+              });
           } catch (error) {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
           }
         }
+        // E : 배틀옵션 INSERT
 
+        // S : 입장옵션 INSERT
         if (pln.adncOpt.length) {
           try {
             await entityManager.insert(
@@ -95,7 +102,9 @@ export class PlnService {
             HttpStatus.BAD_REQUEST
           );
         }
+        // E : 입장옵션 INSERT
 
+        // S : 플랜 이미지 정보 INSERT
         if (pln.plnImgs.length) {
           try {
             await entityManager.insert(
@@ -109,6 +118,7 @@ export class PlnService {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
           }
         }
+        // E : 플랜 이미지 정보 INSERT
 
         await entityManager.query("COMMIT");
         return plnInsertResult;
