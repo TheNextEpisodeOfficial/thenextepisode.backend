@@ -4,7 +4,7 @@ import { MbrEntity } from "./entities/mbr.entity";
 import { MbrService } from "./mbr.service";
 import { Request, Response } from "express";
 import { SessionData } from "express-session";
-import { InsertResult } from "typeorm";
+import { InsertResult, UpdateResult } from "typeorm";
 
 @Controller("/mbr")
 export class MbrController {
@@ -34,7 +34,7 @@ export class MbrController {
     description: "멤버의 정보를 수정한다.",
     type: null,
   })
-  async updateMbr(@Body() mbr: MbrEntity): Promise<InsertResult> {
+  async updateMbr(@Body() mbr: MbrEntity): Promise<UpdateResult> {
     return this.mbrService.updateMbr(mbr);
   }
   /**
