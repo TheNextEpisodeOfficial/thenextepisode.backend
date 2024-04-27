@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
-import { Repository } from "typeorm";
+import { InsertResult, Repository } from "typeorm";
 import { MbrEntity } from "./entities/mbr.entity";
 import { UpsertMbrDto } from "./dtos/mbr.dto";
 
@@ -31,5 +31,9 @@ export class MbrService {
         chnlMbrId: mbrId,
       },
     });
+  }
+
+  updateMbr(mbr: MbrEntity): Promise<InsertResult> {
+    return this.mbrRepository.upsert(mbr, ["id"]);
   }
 }

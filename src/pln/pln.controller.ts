@@ -1,15 +1,4 @@
-import {
-  Body,
-  Controller,
-  DefaultValuePipe,
-  Get,
-  HttpException,
-  HttpStatus,
-  Param,
-  ParseIntPipe,
-  Post,
-  Query,
-} from "@nestjs/common";
+import { Body, Controller, Get, Post, Query } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiOperation,
@@ -86,10 +75,9 @@ export class PlnController {
     description: "새로운 플랜을 생성 한다.",
     type: null,
   })
-  async insertPln(@Body() pln: InsertPlanDto) {
+  async insertPln(@Body() pln: InsertPlanDto): Promise<InsertResult> {
     try {
       let insertPlanResult = await this.plnService.insertPln(pln);
-      console.log("insertPlanResult:::", insertPlanResult);
       return insertPlanResult;
     } catch (e) {
       console.error(e);

@@ -1,13 +1,8 @@
-export interface JoinUser {
-  id: string;
-  email: string;
-  mbrNm: string;
-  gender: string;
-}
+import { MbrEntity } from "../entities/mbr.entity";
 
 declare module "express-session" {
   export interface SessionData {
     [key: string]: any;
-    user?: JoinUser;
+    user?: MbrEntity;
   }
 }

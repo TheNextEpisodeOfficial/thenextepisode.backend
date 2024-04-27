@@ -1,10 +1,10 @@
-import { Controller, Get, Req, Res } from "@nestjs/common";
+import { Body, Controller, Get, Post, Req, Res } from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiParam } from "@nestjs/swagger";
 import { MbrEntity } from "./entities/mbr.entity";
 import { MbrService } from "./mbr.service";
 import { Request, Response } from "express";
 import { SessionData } from "express-session";
-import { JoinUser } from "./types/mbr.types";
+import { InsertResult } from "typeorm";
 
 @Controller("/mbr")
 export class MbrController {
@@ -14,11 +14,30 @@ export class MbrController {
    * S : getJoinInfo
    */
   @Get("/getJoinInfo")
-  async getJoinInfo(@Req() req: Request): Promise<JoinUser> {
+  async getJoinInfo(@Req() req: Request): Promise<MbrEntity> {
     let session: SessionData = req.session;
     return session.user;
   }
   /**
    * E : getJoinInfo
+   */
+
+  /**
+   * S : updateMbr
+   */
+  @Post("/updateMbr")
+  @ApiOperation({
+    summary: "멤버 정보 수정",
+    description: "멤버의 정보를 수정한다.",
+  })
+  @ApiCreatedResponse({
+    description: "멤버의 정보를 수정한다.",
+    type: null,
+  })
+  async updateMbr(@Body() mbr: MbrEntity): Promise<InsertResult> {
+    return this.mbrService.updateMbr(mbr);
+  }
+  /**
+   * E : updateMbr
    */
 }
