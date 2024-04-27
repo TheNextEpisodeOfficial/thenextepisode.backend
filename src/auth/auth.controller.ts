@@ -30,17 +30,14 @@ export class AuthController {
         socialLoginDto: socialUser,
       });
 
-    console.log("accessToken, refreshToken::", accessToken, refreshToken);
-
-    res.cookie("refreshToken", refreshToken);
-    res.cookie("accessToken", accessToken);
-
     let session: SessionData = req.session;
 
     if (isFirstLogin) {
       session.user = user;
       res.redirect(`http://localhost:4200/join`);
     } else {
+      res.cookie("refreshToken", refreshToken);
+      res.cookie("accessToken", accessToken);
       res.redirect("http://localhost:4200/savememberInfo");
     }
   }
