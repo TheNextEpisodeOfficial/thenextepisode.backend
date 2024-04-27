@@ -52,6 +52,7 @@ export class MbrEntity extends CommonEntity {
   @Column({ type: "timestamp", comment: "최근 접속일시" })
   lstLgnTm;
 
-  @Column({ type: "varchar", length: 4, comment: "회원 상태 코드" })
+  // 0: 가입미완료, 1: 가입완료, 2: 정지, 3: 탈퇴
+  @Column({ type: "int", comment: "회원 상태 코드" })
   mbrSttCd;
 }

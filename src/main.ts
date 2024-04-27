@@ -5,6 +5,7 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 import express from "express";
 import { join } from "path";
+import session from "express-session";
 declare const module: any;
 
 async function bootstrap() {
@@ -12,6 +13,13 @@ async function bootstrap() {
   app.use(cors());
   app.use(cookieParser());
   app.use("/public", express.static(join(process.cwd(), "src", "public")));
+  app.use(
+    session({
+      secret: "session",
+      resave: false,
+      saveUninitialized: true,
+    })
+  );
 
   app.enableCors({
     origin: true,

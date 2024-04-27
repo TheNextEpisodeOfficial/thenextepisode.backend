@@ -5,6 +5,7 @@ import { SocialUser, SocialUserAfterAuth } from "./auth.decorator";
 import { Request, Response } from "express";
 import axios from "axios";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import { SessionData } from "express-session";
 
 @Controller("api/auth")
 @ApiTags("Auth")
@@ -21,6 +22,7 @@ export class AuthController {
   @Get("login/kakao")
   async kakaoCallback(
     @SocialUser() socialUser: SocialUserAfterAuth,
+    @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ): Promise<void> {
     const { accessToken, refreshToken, isFirstLogin, user } =
@@ -33,8 +35,11 @@ export class AuthController {
     res.cookie("refreshToken", refreshToken);
     res.cookie("accessToken", accessToken);
 
+    let session: SessionData = req.session;
+
     if (isFirstLogin) {
-      res.redirect("http://localhost:4200/join");
+      session.user = user;
+      res.redirect(`http://localhost:4200/join`);
     } else {
       res.redirect("http://localhost:4200/savememberInfo");
     }

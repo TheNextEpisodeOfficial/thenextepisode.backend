@@ -19,9 +19,9 @@ export class AuthService {
       socialLoginDto;
 
     let user = await this.mbrService.findByEmail(email);
-    let isFirstLogin = !user || user.nickNm || user.dncrYn ? true : false;
+    let isFirstLogin = !user || user.mbrSttCd === 0;
 
-    if (isFirstLogin) {
+    if (!user) {
       user = await this.mbrService.createMbr({
         chnlMbrId: id,
         mbrNm: mbrNm,
@@ -34,7 +34,7 @@ export class AuthService {
 
         acntPltfrm: flatform,
         lstLgnTm: new Date(),
-        mbrSttCd: "",
+        mbrSttCd: 0,
       });
     }
 

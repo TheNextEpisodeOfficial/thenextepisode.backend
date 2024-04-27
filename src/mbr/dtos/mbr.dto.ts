@@ -39,7 +39,7 @@ export class UpsertMbrDto extends UpsertCommonDto {
   @Column({ type: "timestamp", comment: "최근 접속일시" })
   lstLgnTm;
 
-  @ApiProperty({ type: String, required: true, default: "NRML" })
-  @Column({ type: "varchar", length: 4, comment: "회원 상태 코드" })
+  @ApiProperty({ type: Number, required: true, default: 0 })
+  @Column({ type: "int", comment: "회원 상태 코드" })
   mbrSttCd;
 }
