@@ -33,7 +33,7 @@ export class AuthController {
     let session: SessionData = req.session;
 
     if (isFirstLogin) {
-      session.user = user;
+      session.joinUser = user;
       res.redirect(`http://localhost:4200/join`);
     } else {
       res.cookie("refreshToken", refreshToken);

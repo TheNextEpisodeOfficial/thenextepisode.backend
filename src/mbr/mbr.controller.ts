@@ -16,7 +16,7 @@ export class MbrController {
   @Get("/getJoinInfo")
   async getJoinInfo(@Req() req: Request): Promise<MbrEntity> {
     let session: SessionData = req.session;
-    return session.user;
+    return session.joinUser;
   }
   /**
    * E : getJoinInfo
