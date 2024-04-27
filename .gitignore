@@ -7,3 +7,4 @@ dist
 .env
 
 db/db
+db/data

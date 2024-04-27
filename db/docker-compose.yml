@@ -1,18 +1,22 @@
+# compose 파일 버전
 version: "3"
 services:
-  db:
-    image: mysql:8.0
-    platform: linux/arm64/v8
+  # 서비스 명
+  postgresql:
+    # 사용할 이미지
+    image: postgres
+    # 컨테이너 실행 시 재시작
     restart: always
+    # 컨테이너명 설정
+    container_name: postgres
+    # 접근 포트 설정 (컨테이너 외부:컨테이너 내부)
     ports:
-      - "3306:3306"
+      - "5432:5432"
+    # 환경 변수 설정
     environment:
-      MYSQL_ROOT_PASSWORD: qwer1234
-      MYSQL_DATABASE: bridge
-      MYSQL_USER: admin
-      MYSQL_PASSWORD: qwer1234
-      TZ: Asia/Seoul
+      # PostgreSQL 계정 및 패스워드 설정 옵션
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: qwer1234
+    # 볼륨 설정
     volumes:
-      - ./db/mysql/data:/var/lib/mysql
-      - ./db/mysql/config:/etc/mysql/conf.d
-      - ./db/mysql/init:/docker-entrypoint-initdb.d
+      - ./data/postgres/:/var/lib/postgresql/data

@@ -22,7 +22,7 @@ export class FileService {
   async getPresignedUrl(key: string) {
     const s3 = new AWS.S3();
     const params = {
-      Bucket: "bridge.images",
+      Bucket: "tne.imgs",
       Key: key, // S3 버킷 내에서 객체를 식별하는 키
       Expires: 3600, // Presigned URL의 만료 시간 (초)
     };

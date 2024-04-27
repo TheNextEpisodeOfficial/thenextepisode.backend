@@ -9,8 +9,8 @@ import { SwaggerTheme, SwaggerThemeName } from "swagger-themes";
  */
 export function setupSwagger(app: INestApplication): void {
   const options = new DocumentBuilder()
-    .setTitle("Bridge API Docs")
-    .setDescription("Bridge API Documents with Swagger")
+    .setTitle("The Next Episode API Docs")
+    .setDescription("The Next Episode API Documents with Swagger")
     .setVersion("1.0.0")
     .build();
 
@@ -59,7 +59,7 @@ export function setupSwagger(app: INestApplication): void {
     explorer: true,
     customCss: theme.getBuffer("dark" as SwaggerThemeName) + addCss,
     customfavIcon: "public/favicon.ico",
-    customSiteTitle: "Bridge API Docs",
+    customSiteTitle: "The Next Episode API Docs",
     swaggerOptions: {
       docExpansion: "none",
     },
