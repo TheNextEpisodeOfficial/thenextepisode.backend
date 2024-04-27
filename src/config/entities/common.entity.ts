@@ -19,7 +19,12 @@ export class CommonEntity extends BaseEntity {
   @CreateDateColumn({ type: "timestamp", comment: "데이터 생성 일시" })
   createStmp: string;
 
-  @Column({ type: "varchar", length: 100, comment: "데이터 생성자 아이디", default: 'memberid' })
+  @Column({
+    type: "varchar",
+    length: 100,
+    comment: "데이터 생성자 아이디",
+    default: "memberid",
+  })
   createMbrId: string;
 
   @UpdateDateColumn({

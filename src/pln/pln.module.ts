@@ -8,7 +8,9 @@ import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { AdncOptEntity } from "./entities/adncOpt.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([PlnEntity, BttlOptEntity, AdncOptEntity])],
+  imports: [
+    TypeOrmModule.forFeature([PlnEntity, BttlOptEntity, AdncOptEntity]),
+  ],
   controllers: [PlnController],
   providers: [PlnService],
 })

@@ -47,6 +47,7 @@
     "express-session": "^1.18.0",
     "mysql": "^2.18.1",
     "mysql2": "^3.6.0",
+    "nestjs-i18n": "^10.4.5",
     "nestjs-typeorm-paginate": "^4.0.4",
     "passport": "^0.7.0",
     "passport-kakao": "^1.0.1",
