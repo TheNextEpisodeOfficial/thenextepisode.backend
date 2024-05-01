@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 
-import { ILike, InsertResult, Repository, UpdateResult } from "typeorm";
+import { ILike, InsertResult, IsNull, Repository, UpdateResult } from "typeorm";
 import { MbrEntity } from "./entities/mbr.entity";
 import { UpsertMbrDto } from "./dtos/mbr.dto";
 import { SearchBttlOptRole } from "@src/bttlOptRole/dtos/bttlOptRole.dto";
@@ -44,8 +44,8 @@ export class MbrService {
     let resultList = await this.mbrRepository.find({
       select: ['id', 'mbrNm', 'nickNm'],
       where: [
-        { mbrNm: ILike(`%${keyword}%`), celebId: 'null' },
-        { nickNm: ILike(`%${keyword}%`), celebId: 'null' },
+        { mbrNm: ILike(`%${keyword}%`), celebId: IsNull() },
+        { nickNm: ILike(`%${keyword}%`), celebId: IsNull() },
       ],
     });
 
