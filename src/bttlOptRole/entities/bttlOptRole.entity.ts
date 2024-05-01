@@ -1,11 +1,16 @@
-import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 
-@Entity("celeb")
-export class CelebEntity extends CommonEntity {
+@Entity("bttl_opt_role")
+export class BttlOptRoleEntity extends CommonEntity {
+  @Column({ type: "varchar", length: 36, comment: "셀럽 계정 아이디" })
+  celebId;
+
+  @Column({ type: "varchar", length: 36, comment: "셀럽 계정 아이디" })
+  bttlOptId;
+
   @Column({ type: "varchar", length: 100, comment: "셀럽 본명" })
-  celebNm;
+  roleMbrId;
 
   @Column({ type: "varchar", length: 100, comment: "셀럽 닉네임" })
   celebNckNm;

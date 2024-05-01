@@ -7,12 +7,14 @@ import { MODULE_CONFIG } from "./config/constants/constants";
 import { AuthModule } from "./auth/auth.module";
 import { BttlModule } from "./bttl/bttl.module";
 import { CelebModule } from "./celeb/celeb.module";
+import { BttlOptRolebModule } from "./bttlOptRole/bttlOptRole.module";
 
 @Module({
   imports: [
     ...MODULE_CONFIG,
     PlnModule,
     BttlModule,
+    BttlOptRolebModule,
     AuthModule,
     MbrModule,
     CelebModule,

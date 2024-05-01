@@ -3,9 +3,6 @@ import { CommonEntity } from "../../config/entities/common.entity";
 
 @Entity("celeb")
 export class InsertCelebDto extends CommonEntity {
-  @Column({ type: "varchar", length: 36, comment: "셀럽 계정 아이디" })
-  celebMbrId;
-
   @Column({ type: "varchar", length: 100, comment: "셀럽 본명" })
   celebNm;
 
