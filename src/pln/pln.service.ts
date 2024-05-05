@@ -29,6 +29,8 @@ export class PlnService {
     private readonly bttlOptRoleRepository: Repository<BttlOptRoleEntity>,
     @InjectRepository(AdncOptEntity)
     private readonly adncOptRepository: Repository<AdncOptEntity>,
+    @InjectRepository(FileEntity)
+    private readonly s3FileRepository: Repository<FileEntity>,
     private readonly entityManager: EntityManager
   ) {}
 
@@ -70,7 +72,14 @@ export class PlnService {
     // E : 플랜 기본정보 가져오기
 
     // S : 플랜 이미지 가져오기
-    pln.fileGrpId;
+    let plnImgs = await this.s3FileRepository.find({
+      where: {
+        fileGrpId: pln.fileGrpId,
+      },
+    });
+    if (plnImgs) {
+      pln.plnImgs = plnImgs;
+    }
     // E : 플랜 이미지 가져오기
 
     // S : 배틀 옵션 가져오기
