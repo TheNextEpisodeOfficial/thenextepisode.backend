@@ -218,7 +218,7 @@ export class PlnService {
     if (srchPlnDto.plnStTm) queryBuildOpts.plnStTm = srchPlnDto.plnStTm;
     if (srchPlnDto.plnEndTm) queryBuildOpts.plnEndTm = srchPlnDto.plnEndTm;
     if (srchPlnDto.rRatedYn) queryBuildOpts.rRatedYn = srchPlnDto.rRatedYn;
-    if (srchPlnDto.delYn) queryBuildOpts.delYn = srchPlnDto.delYn;
+    if (srchPlnDto.delYn) queryBuildOpts.delYn = srchPlnDto.delYn || "N";
     if (srchPlnDto.plnLctnNm)
       queryBuildOpts.plnLctnNm = Like(`%${srchPlnDto.plnLctnNm}%`);
 
@@ -257,7 +257,22 @@ export class PlnService {
     }
 
     try {
-      return paginate<PlnEntity>(queryBuilder, srchPlnDto);
+      let plnList = await paginate<PlnEntity>(queryBuilder, srchPlnDto);
+      if (plnList) {
+        await Promise.all(
+          plnList.items.map(async (pln) => {
+            let plnImgs = await this.s3FileRepository.find({
+              where: {
+                fileGrpId: pln.fileGrpId,
+              },
+            });
+            if (plnImgs) {
+              pln.plnImgs = plnImgs;
+            }
+          })
+        );
+      }
+      return plnList;
     } catch (error) {
       throw new HttpException(
         {
