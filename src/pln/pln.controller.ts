@@ -95,7 +95,7 @@ export class PlnController {
         return insertPlanResult;
       }
     } catch (e) {
-      // throw new HttpException(e);
+      console.log(e);
     }
   }
   /**

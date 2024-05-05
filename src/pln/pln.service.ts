@@ -115,87 +115,83 @@ export class PlnService {
    * @returns
    */
   async insertPln(pln: PlnEntity): Promise<InsertResult> {
-    throw new HttpException(
-      "에러메세지 입니다.",
-      HttpStatus.INTERNAL_SERVER_ERROR
-    );
-    // return this.entityManager.transaction(async (entityManager) => {
-    //   try {
-    //     // const plnInsertResult = await this.plnRepository.upsert(pln, ["id"]);
-    //     const plnInsertResult = await entityManager.insert(PlnEntity, pln);
-    //     let insertedPln: ObjectLiteral = plnInsertResult.generatedMaps[0]; // 삽입된 pln의 객체를 가져온다
+    return this.entityManager.transaction(async (entityManager) => {
+      try {
+        // const plnInsertResult = await this.plnRepository.upsert(pln, ["id"]);
+        const plnInsertResult = await entityManager.insert(PlnEntity, pln);
+        let insertedPln: ObjectLiteral = plnInsertResult.generatedMaps[0]; // 삽입된 pln의 객체를 가져온다
 
-    //     // S : 배틀옵션 INSERT
-    //     if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
-    //       throw new HttpException(
-    //         "플랜타입이 배틀인 경우에만 배틀옵션을 설정할 수 있습니다.",
-    //         HttpStatus.BAD_REQUEST
-    //       );
-    //     } else {
-    //       try {
-    //         pln.bttlOpt.map(async (bttlOpt) => {
-    //           // S : 배틀 옵션 INSERT
-    //           let insertedBttlOpt = await entityManager.insert(BttlOptEntity, {
-    //             ...bttlOpt,
-    //             plnId: insertedPln.id,
-    //           });
-    //           // E : 배틀 옵션 INSERT
+        // S : 배틀옵션 INSERT
+        if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
+          throw new HttpException(
+            "플랜타입이 배틀인 경우에만 배틀옵션을 설정할 수 있습니다.",
+            HttpStatus.BAD_REQUEST
+          );
+        } else {
+          try {
+            pln.bttlOpt.map(async (bttlOpt) => {
+              // S : 배틀 옵션 INSERT
+              let insertedBttlOpt = await entityManager.insert(BttlOptEntity, {
+                ...bttlOpt,
+                plnId: insertedPln.id,
+              });
+              // E : 배틀 옵션 INSERT
 
-    //           // S : 배틀 옵션 내의 역할 INSERT
-    //           bttlOpt.bttlOptRole.map(async (role) => {
-    //             await entityManager.insert(BttlOptRoleEntity, {
-    //               ...role,
-    //               bttlOptId: insertedBttlOpt.generatedMaps[0].id,
-    //             });
-    //           });
-    //           // E : 배틀 옵션 내의 역할 INSERT
-    //         });
-    //       } catch (error) {
-    //         throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    //       }
-    //     }
-    //     // E : 배틀옵션 INSERT
+              // S : 배틀 옵션 내의 역할 INSERT
+              bttlOpt.bttlOptRole.map(async (role) => {
+                await entityManager.insert(BttlOptRoleEntity, {
+                  ...role,
+                  bttlOptId: insertedBttlOpt.generatedMaps[0].id,
+                });
+              });
+              // E : 배틀 옵션 내의 역할 INSERT
+            });
+          } catch (error) {
+            throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+        }
+        // E : 배틀옵션 INSERT
 
-    //     // S : 입장옵션 INSERT
-    //     if (pln.adncOpt.length) {
-    //       try {
-    //         await entityManager.insert(
-    //           AdncOptEntity,
-    //           pln.adncOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
-    //         );
-    //       } catch (error) {
-    //         throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    //       }
-    //     } else {
-    //       throw new HttpException(
-    //         "입장옵션은 필수입니다. 한개 이상 생성해주세요.",
-    //         HttpStatus.BAD_REQUEST
-    //       );
-    //     }
-    //     // E : 입장옵션 INSERT
+        // S : 입장옵션 INSERT
+        if (pln.adncOpt.length) {
+          try {
+            await entityManager.insert(
+              AdncOptEntity,
+              pln.adncOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
+            );
+          } catch (error) {
+            throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+        } else {
+          throw new HttpException(
+            "입장옵션은 필수입니다. 한개 이상 생성해주세요.",
+            HttpStatus.BAD_REQUEST
+          );
+        }
+        // E : 입장옵션 INSERT
 
-    //     // S : 플랜 이미지 정보 INSERT
-    //     if (pln.plnImgs.length) {
-    //       try {
-    //         await entityManager.insert(
-    //           FileEntity,
-    //           pln.plnImgs.map((file) => ({
-    //             ...file,
-    //             fileGrpId: insertedPln.fileGrpId,
-    //           }))
-    //         );
-    //       } catch (error) {
-    //         throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    //       }
-    //     }
-    //     // E : 플랜 이미지 정보 INSERT
+        // S : 플랜 이미지 정보 INSERT
+        if (pln.plnImgs.length) {
+          try {
+            await entityManager.insert(
+              FileEntity,
+              pln.plnImgs.map((file) => ({
+                ...file,
+                fileGrpId: insertedPln.fileGrpId,
+              }))
+            );
+          } catch (error) {
+            throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+          }
+        }
+        // E : 플랜 이미지 정보 INSERT
 
-    //     await entityManager.query("COMMIT");
-    //     return plnInsertResult;
-    //   } catch (error) {
-    //     throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
-    //   }
-    // });
+        await entityManager.query("COMMIT");
+        return plnInsertResult;
+      } catch (error) {
+        throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
+    });
   }
 
   /**
