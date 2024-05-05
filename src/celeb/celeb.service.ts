@@ -13,20 +13,20 @@ export class CelebService {
   ) {}
 
   async getCelebListByKeyword(keyword: string): Promise<SearchBttlOptRole[]> {
-      let resultList = await this.celebRepository.find({
-        select: ['id', 'celebNm', 'celebNckNm'],
-        where: [
-          { celebNm: ILike(`%${keyword}%`) },
-          { celebNckNm: ILike(`%${keyword}%`) },
-        ],
-      });
+    let resultList = await this.celebRepository.find({
+      select: ["id", "celebNm", "celebNckNm"],
+      where: [
+        { celebNm: ILike(`%${keyword}%`) },
+        { celebNckNm: ILike(`%${keyword}%`) },
+      ],
+    });
 
-      return resultList.map(celeb => {
-        return {
-            roleCelebId: celeb.id,
-            celebNm: celeb.celebNm,
-            celebNckNm: celeb.celebNckNm,
-        };
-      }); 
+    return resultList.map((celeb) => {
+      return {
+        roleCelebId: celeb.id,
+        celebNm: celeb.celebNm,
+        celebNckNm: celeb.celebNckNm,
+      };
+    });
   }
 }

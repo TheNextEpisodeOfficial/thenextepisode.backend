@@ -5,7 +5,7 @@ import { PlnService } from "@src/pln/pln.service";
 
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
-import { AdncOptEntity } from "./entities/adncOpt.entity";
+import { AdncOptEntity } from "../adncOpt/entities/adncOpt.entity";
 
 @Module({
   imports: [

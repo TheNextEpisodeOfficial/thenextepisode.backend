@@ -8,14 +8,14 @@ import {
   LessThan,
   Like,
   MoreThan,
+  ObjectLiteral,
   Repository,
 } from "typeorm";
 import { SrchPlnDto, InsertPlanDto } from "./dtos/pln.dto";
 import { Pagination, paginate } from "nestjs-typeorm-paginate";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
-import { AdncOptEntity } from "./entities/adncOpt.entity";
+import { AdncOptEntity } from "../adncOpt/entities/adncOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
-import { CelebRoleMapEntity } from "./entities/celebRoleMap.entity";
 
 @Injectable()
 export class PlnService {
@@ -59,10 +59,9 @@ export class PlnService {
   async insertPln(pln: InsertPlanDto): Promise<InsertResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
-        let insertedPln;
         // const plnInsertResult = await this.plnRepository.upsert(pln, ["id"]);
         const plnInsertResult = await entityManager.insert(PlnEntity, pln);
-        insertedPln = plnInsertResult.generatedMaps[0]; // 삽입된 pln의 객체를 가져온다
+        let insertedPln: ObjectLiteral = plnInsertResult.generatedMaps[0]; // 삽입된 pln의 객체를 가져온다
 
         // S : 배틀옵션 INSERT
         if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
@@ -72,14 +71,11 @@ export class PlnService {
           );
         } else {
           try {
-            await entityManager
-              .insert(
-                BttlOptEntity,
-                pln.bttlOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
-              )
-              .then((opt) => {
-                console.log("opt:::", opt);
-              });
+            let insertedBttlOpt = await entityManager.insert(
+              BttlOptEntity,
+              pln.bttlOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
+            );
+            insertedBttlOpt.generatedMaps[0];
           } catch (error) {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
           }

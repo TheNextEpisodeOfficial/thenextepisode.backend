@@ -1,4 +1,4 @@
-import { Column, Entity } from "typeorm";
+import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 
 @Entity("pln")
