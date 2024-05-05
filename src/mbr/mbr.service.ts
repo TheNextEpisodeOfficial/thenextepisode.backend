@@ -13,6 +13,11 @@ export class MbrService {
     private readonly mbrRepository: Repository<MbrEntity>
   ) {}
 
+  /**
+   *
+   * @param email
+   * @returns
+   */
   findByEmail(email: string): Promise<MbrEntity> {
     return this.mbrRepository.findOne({
       where: {
@@ -22,10 +27,20 @@ export class MbrService {
     });
   }
 
+  /**
+   *
+   * @param upsertMbrDto
+   * @returns
+   */
   createMbr(upsertMbrDto: UpsertMbrDto): Promise<UpsertMbrDto & MbrEntity> {
     return this.mbrRepository.save(upsertMbrDto);
   }
 
+  /**
+   *
+   * @param mbrId
+   * @returns
+   */
   getUserInfo(mbrId: string): Promise<MbrEntity> {
     return this.mbrRepository.findOne({
       where: {
@@ -34,28 +49,35 @@ export class MbrService {
     });
   }
 
+  /**
+   *
+   * @param mbr
+   * @returns
+   */
   updateMbr(mbr: MbrEntity): Promise<UpdateResult> {
     return this.mbrRepository.update({ id: mbr.id }, { ...mbr });
   }
 
-
-
-  async getMbrListByKeyword (keyword: string) : Promise<SearchBttlOptRole[]> {
+  /**
+   *
+   * @param keyword
+   * @returns
+   */
+  async getMbrListByKeyword(keyword: string): Promise<SearchBttlOptRole[]> {
     let resultList = await this.mbrRepository.find({
-      select: ['id', 'mbrNm', 'nickNm'],
+      select: ["id", "mbrNm", "nickNm"],
       where: [
         { mbrNm: ILike(`%${keyword}%`), celebId: IsNull() },
         { nickNm: ILike(`%${keyword}%`), celebId: IsNull() },
       ],
     });
 
-    return resultList.map(mbr => {
+    return resultList.map((mbr) => {
       return {
-          roleMbrId: mbr.id,
-          mbrNm: mbr.mbrNm,
-          nickNm: mbr.nickNm,
+        roleMbrId: mbr.id,
+        mbrNm: mbr.mbrNm,
+        nickNm: mbr.nickNm,
       };
-    }); 
+    });
   }
 }
-

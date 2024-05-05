@@ -1,4 +1,12 @@
-import { Body, Controller, Get, Post, Query } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+  Query,
+} from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiOperation,
@@ -8,7 +16,7 @@ import {
 import { response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
-import { SrchPlnDto, InsertPlanDto } from "./dtos/pln.dto";
+import { SrchPlnDto } from "./dtos/pln.dto";
 import { Pagination } from "nestjs-typeorm-paginate";
 import { InsertResult } from "typeorm";
 import { I18n, I18nContext, I18nService } from "nestjs-i18n";
@@ -80,12 +88,14 @@ export class PlnController {
     description: "새로운 플랜을 생성 한다.",
     type: null,
   })
-  async insertPln(@Body() pln: InsertPlanDto): Promise<InsertResult> {
+  async insertPln(@Body() pln: PlnEntity): Promise<InsertResult> {
     try {
       let insertPlanResult = await this.plnService.insertPln(pln);
-      return insertPlanResult;
+      if (insertPlanResult) {
+        return insertPlanResult;
+      }
     } catch (e) {
-      console.error(e);
+      // throw new HttpException(e);
     }
   }
   /**

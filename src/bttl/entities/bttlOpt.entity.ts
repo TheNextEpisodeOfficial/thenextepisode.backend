@@ -28,8 +28,6 @@ export class BttlOptEntity extends CommonEntity {
   @Column({ type: "int", comment: "최대 신청 팀 수" })
   maxTeamCnt: number;
 
-  @OneToMany(() => BttlOptRoleEntity, (role) => role.bttlOpt, {
-    cascade: ["insert"],
-  })
+  @OneToMany(() => BttlOptRoleEntity, (role) => role.bttlOpt)
   bttlOptRole: BttlOptRoleEntity[];
 }

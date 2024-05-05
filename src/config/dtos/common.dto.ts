@@ -8,7 +8,6 @@ import {
 import { ApiProperty } from "@nestjs/swagger";
 
 export class SrchCommonDto {
-  @PrimaryGeneratedColumn("uuid", { comment: "id" })
   @ApiProperty({ type: String, required: false })
   id;
 
