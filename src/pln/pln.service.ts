@@ -182,13 +182,7 @@ export class PlnService {
         // S : 플랜 이미지 정보 INSERT
         if (pln.plnImgs.length) {
           try {
-            await entityManager.insert(
-              FileEntity,
-              pln.plnImgs.map((file) => ({
-                ...file,
-                fileGrpId: insertedPln.fileGrpId,
-              }))
-            );
+            await entityManager.insert(FileEntity, pln.plnImgs);
           } catch (error) {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
           }
@@ -264,6 +258,8 @@ export class PlnService {
             let plnImgs = await this.s3FileRepository.find({
               where: {
                 fileGrpId: pln.fileGrpId,
+                fileTypeCd: "THMB_MN",
+                delYn: "N",
               },
             });
             if (plnImgs) {
