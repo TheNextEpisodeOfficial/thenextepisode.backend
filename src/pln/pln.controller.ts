@@ -52,24 +52,7 @@ export class PlnController {
     @I18n() i18n: I18nContext
   ) {
     const pln = await this.plnService.getPlnDtlById(plnId);
-    let res: response<PlnEntity>;
-    let title: string = "";
-    let message: string;
-    if (pln) {
-      message = "검색 성공";
-    } else {
-      // title = "해당 플랜이 없습니다.";
-      title = await i18n.t("test.HELLO");
-      message = "새로운 플랜을 등록해보시는건 어떨까요?";
-    }
-    res = {
-      title: title,
-      message: message,
-      data: pln,
-      status: 200,
-    };
-
-    return res;
+    return pln;
   }
   /**
    * E : getPlnDtlById
