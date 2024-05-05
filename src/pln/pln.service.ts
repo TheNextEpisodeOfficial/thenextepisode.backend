@@ -16,6 +16,7 @@ import { Pagination, paginate } from "nestjs-typeorm-paginate";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { AdncOptEntity } from "../adncOpt/entities/adncOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
+import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
 
 @Injectable()
 export class PlnService {
@@ -71,11 +72,24 @@ export class PlnService {
           );
         } else {
           try {
-            let insertedBttlOpt = await entityManager.insert(
-              BttlOptEntity,
-              pln.bttlOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
-            );
-            insertedBttlOpt.generatedMaps[0];
+            pln.bttlOpt.map(async (bttlOpt) => {
+              // S : 배틀 옵션 INSERT
+              let insertedBttlOpt = await entityManager.insert(BttlOptEntity, {
+                ...bttlOpt,
+                plnId: insertedPln.id,
+              });
+              // E : 배틀 옵션 INSERT
+
+              console.log("bttlOpt:", bttlOpt);
+              // S : 배틀 옵션 내의 역할 INSERT
+              bttlOpt.bttlOptRole.map(async (role) => {
+                await entityManager.insert(BttlOptRoleEntity, {
+                  ...role,
+                  bttlOptId: insertedBttlOpt.generatedMaps[0].id,
+                });
+              });
+              // E : 배틀 옵션 내의 역할 INSERT
+            });
           } catch (error) {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
           }
