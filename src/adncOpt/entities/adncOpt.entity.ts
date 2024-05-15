@@ -17,4 +17,12 @@ export class AdncOptEntity extends CommonEntity {
 
   @Column({ type: "int", comment: "최대 신청 인원 (티켓 수량)" })
   optMaxRsvCnt: number;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "입장비 무료 여부",
+    default: "N",
+  })
+  freeYn: string;
 }

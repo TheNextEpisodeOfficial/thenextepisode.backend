@@ -17,28 +17,28 @@ export class CommonEntity extends BaseEntity {
   delYn: string;
 
   @CreateDateColumn({ type: "timestamp", comment: "데이터 생성 일시" })
-  createStmp: string;
+  createdAt: string;
 
   @Column({
     type: "varchar",
-    length: 100,
+    length: 36,
     comment: "데이터 생성자 아이디",
     default: "memberid",
   })
-  createMbrId: string;
+  createdBy: string;
 
   @UpdateDateColumn({
     type: "timestamp",
     comment: "데이터 수정 일시",
     nullable: true,
   })
-  updateStmp: string;
+  updatedAt: string;
 
   @Column({
     type: "varchar",
-    length: 100,
+    length: 36,
     comment: "데이터 수정자 아이디",
     nullable: true,
   })
-  updateMbrId: string;
+  updatedBy: string;
 }

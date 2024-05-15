@@ -54,10 +54,10 @@ export class PlnService {
   getPlndPln(mbrId: string): Promise<PlnEntity[]> {
     return this.plnRepository.find({
       where: {
-        createMbrId: mbrId,
+        createdBy: mbrId,
         delYn: "N",
       },
-      order: { createStmp: "DESC" },
+      order: { createdAt: "DESC" },
     });
   }
 

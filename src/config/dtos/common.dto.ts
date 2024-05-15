@@ -25,15 +25,15 @@ export class SrchCommonDto {
 
   @ApiProperty({ type: String, required: false, format: "date" })
   @CreateDateColumn({ type: "timestamp", comment: "데이터 생성 일시" })
-  createStmp;
+  createdAt;
 
   @ApiProperty({ type: String, required: false })
   @Column({ type: "varchar", length: 100, comment: "데이터 생성자 아이디" })
-  createMbrId;
+  createdBy;
 
   @ApiProperty({ type: String, required: false })
   @UpdateDateColumn({ type: "timestamp", comment: "데이터 수정 일시" })
-  updateStmp;
+  updatedAt;
 
   @ApiProperty({ type: String, required: false })
   @Column({ type: "varchar", length: 100, comment: "데이터 수정자 아이디" })
@@ -63,17 +63,17 @@ export class UpsertCommonDto {
 
   @ApiProperty({ type: String, required: false, default: "2024-01-01" })
   @CreateDateColumn({ type: "timestamp", comment: "데이터 생성 일시" })
-  createStmp?;
+  createdAt?;
 
   @ApiProperty({ type: String, required: false, default: "userid" })
   @Column({ type: "varchar", length: 100, comment: "데이터 생성자 아이디" })
-  createMbrId?;
+  createdBy?;
 
   @ApiProperty({ type: String, required: false, default: "2024-01-01" })
   @UpdateDateColumn({ type: "timestamp", comment: "데이터 수정 일시" })
-  updateStmp?;
+  updatedAt?;
 
   @ApiProperty({ type: String, required: false, default: "userid" })
   @Column({ type: "varchar", length: 100, comment: "데이터 수정자 아이디" })
-  updateMbrId?;
+  updatedBy?;
 }

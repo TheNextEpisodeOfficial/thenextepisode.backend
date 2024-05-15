@@ -15,6 +15,15 @@ export class BttlOptEntity extends CommonEntity {
   @Column({ type: "varchar", length: 10, comment: "장르 타입 코드" })
   bttlGnrCd: string;
 
+  @ApiProperty({ type: String, required: false })
+  @Column({
+    type: "varchar",
+    length: 20,
+    comment: "배틀 룰 (7 to smoke, Non locker 등)",
+    nullable: true,
+  })
+  bttlRule: string;
+
   @ApiProperty({ type: String, required: false, default: "N" })
   @Column({ type: "int", comment: "팀 최대정원" })
   bttlMbrCnt: number;
@@ -27,6 +36,14 @@ export class BttlOptEntity extends CommonEntity {
 
   @Column({ type: "int", comment: "최대 신청 팀 수" })
   maxTeamCnt: number;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "참가비 무료 여부",
+    default: "N",
+  })
+  freeYn: string;
 
   @OneToMany(() => BttlOptRoleEntity, (role) => role.bttlOpt)
   bttlOptRole: BttlOptRoleEntity[];
