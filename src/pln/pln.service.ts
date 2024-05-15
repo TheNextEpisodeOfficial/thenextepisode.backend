@@ -247,7 +247,7 @@ export class PlnService {
       }
       queryBuilder.orderBy(orderColumn, orderValue);
     } else {
-      queryBuilder.orderBy("create_stmp", "DESC");
+      queryBuilder.orderBy("created_at", "DESC");
     }
 
     try {
