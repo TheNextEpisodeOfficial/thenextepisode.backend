@@ -13,7 +13,7 @@ export class AdncOptEntity extends CommonEntity {
   optNm: string;
 
   @Column({ type: "int", comment: "옵션가격" })
-  optPrc: number;
+  optFee: number;
 
   @Column({ type: "int", comment: "최대 신청 인원 (티켓 수량)" })
   optMaxRsvCnt: number;

@@ -36,6 +36,7 @@ export class AuthController {
       session.joinUser = user;
       res.redirect(`http://localhost:4200/join`);
     } else {
+      session.loginUser = user;
       res.cookie("refreshToken", refreshToken);
       res.cookie("accessToken", accessToken);
       res.redirect("http://localhost:4200/savememberInfo");
