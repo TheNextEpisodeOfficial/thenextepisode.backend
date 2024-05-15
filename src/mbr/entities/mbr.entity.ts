@@ -1,9 +1,15 @@
-import { Column, Entity } from "typeorm";
+import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
+import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 
 @Entity("mbr")
 export class MbrEntity extends CommonEntity {
-  @Column({ type: "varchar", length: 36, comment: "셀럽아이디", nullable: true })
+  @Column({
+    type: "varchar",
+    length: 36,
+    comment: "셀럽아이디",
+    nullable: true,
+  })
   celebId;
 
   @Column({ type: "varchar", length: 100, comment: "유저아이디" })
@@ -58,4 +64,7 @@ export class MbrEntity extends CommonEntity {
   // 0: 가입미완료, 1: 가입완료, 2: 정지, 3: 탈퇴
   @Column({ type: "int", comment: "회원 상태 코드" })
   mbrSttCd;
+
+  @OneToMany(() => BttlOptRoleEntity, (bttlOptRole) => bttlOptRole.mbr)
+  bttlOptRole: BttlOptRoleEntity;
 }

@@ -17,6 +17,7 @@ import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { AdncOptEntity } from "../adncOpt/entities/adncOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
+import { CelebEntity } from "@src/celeb/entities/celeb.entity";
 
 @Injectable()
 export class PlnService {
@@ -92,11 +93,22 @@ export class PlnService {
     if (bttlOpt) {
       await Promise.all(
         bttlOpt.map(async (opt) => {
-          let bttlOptRole = await this.bttlOptRoleRepository.find({
-            where: {
-              bttlOptId: opt.id,
-            },
-          });
+          let bttlOptRole = await this.bttlOptRoleRepository
+            .createQueryBuilder("bor")
+            .leftJoinAndSelect("bor.celeb", "c", "bor.role_celeb_id = c.id")
+            .leftJoinAndSelect("bor.mbr", "m", "bor.role_mbr_id = m.id")
+            .where("bor.bttlOptId = :bttlOptId", { bttlOptId: opt.id })
+            .select([
+              "bor.roleInPln",
+              "c.id",
+              "c.celebNm",
+              "c.celebNckNm",
+              "m.id",
+              "m.mbrNm",
+              "m.nickNm",
+            ])
+            .getMany();
+
           if (bttlOptRole) {
             opt.bttlOptRole = bttlOptRole;
           }

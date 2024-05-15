@@ -1,5 +1,12 @@
 import { MbrEntity } from "@src/mbr/entities/mbr.entity";
-import { Column, Entity, Index, JoinColumn, OneToOne } from "typeorm";
+import {
+  Column,
+  Entity,
+  Index,
+  JoinColumn,
+  OneToMany,
+  OneToOne,
+} from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
 
@@ -18,4 +25,7 @@ export class CelebEntity extends CommonEntity {
 
   @Column({ type: "varchar", length: 4, comment: "주요 장르 코드" })
   celebMnJnr;
+
+  @OneToMany(() => BttlOptRoleEntity, (bttlOptRole) => bttlOptRole.celeb)
+  bttlOptRole: BttlOptRoleEntity;
 }

@@ -1,17 +1,16 @@
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { CelebEntity } from "@src/celeb/entities/celeb.entity";
+import { MbrEntity } from "@src/mbr/entities/mbr.entity";
+import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 
 @Entity("bttl_opt_role")
 export class BttlOptRoleEntity extends CommonEntity {
   @Column({ type: "varchar", comment: "배틀 옵션 아이디" })
-  @ManyToOne(() => BttlOptEntity, (bttlOpt) => bttlOpt.id)
-  @JoinColumn({ name: "bttl_opt_id" })
   bttlOptId: string;
 
   @Column({
     type: "varchar",
-    length: 36,
     comment: "역할이 멤버일 경우의 celeb.id",
     nullable: true,
   })
@@ -19,7 +18,6 @@ export class BttlOptRoleEntity extends CommonEntity {
 
   @Column({
     type: "varchar",
-    length: 36,
     comment: "역할이 멤버일 경우의 mbr.id",
     nullable: true,
   })
@@ -29,5 +27,14 @@ export class BttlOptRoleEntity extends CommonEntity {
   roleInPln;
 
   @ManyToOne(() => BttlOptEntity, (bttlOpt) => bttlOpt.bttlOptRole)
+  @JoinColumn({ name: "bttl_opt_id" })
   bttlOpt: BttlOptEntity;
+
+  @ManyToOne(() => CelebEntity, (celeb) => celeb.bttlOptRole)
+  @JoinColumn({ name: "role_celeb_id" })
+  celeb: CelebEntity;
+
+  @ManyToOne(() => MbrEntity, (mbr) => mbr.bttlOptRole)
+  @JoinColumn({ name: "role_mbr_id" })
+  mbr: MbrEntity;
 }
