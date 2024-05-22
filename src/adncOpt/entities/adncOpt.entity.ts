@@ -18,7 +18,7 @@ export class AdncOptEntity extends CommonEntity {
   @Column({ type: "int", comment: "최대 신청 인원 (티켓 수량)" })
   maxRsvCnt: number;
 
-  @Column({ type: "int", comment: "현재 신청 인원" })
+  @Column({ type: "int", comment: "현재 신청 인원", default: 0 })
   crntRsvCnt: number;
 
   @Column({

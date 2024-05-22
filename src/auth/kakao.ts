@@ -11,19 +11,23 @@ export class KakaoStrategy extends PassportStrategy(Strategy, "kakao") {
     });
   }
 
-  async validate(accessToken: string, refreshToken: string, profile: Profile) {
-    console.log("accessToken: ", accessToken);
-    console.log("refreshToken: ", refreshToken);
-    console.log(profile);
-
-    return {
-      email: profile._json.kakao_account.email,
-      id: String(profile.id),
-      mbrNm: profile.username,
-      gender: profile._json.kakao_account.gender,
-      flatform: profile.provider,
-      accessToken: accessToken,
-      refreshToken: refreshToken,
-    };
+  async validate(
+    accessToken: string, 
+    refreshToken: string, 
+    profile: Profile
+  ) {
+    try {
+      return {
+        email: profile._json.kakao_account.email,
+        id: String(profile.id),
+        mbrNm: profile.username,
+        gender: profile._json.kakao_account.gender,
+        flatform: profile.provider,
+        accessToken: accessToken,
+        refreshToken: refreshToken,
+      };
+    } catch(error) {
+      console.log(error)
+    }
   }
 }

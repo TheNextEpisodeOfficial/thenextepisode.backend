@@ -43,6 +43,26 @@ export class AuthController {
     }
   }
 
+  @ApiOperation({
+    summary: "카카오 로그아웃",
+    description: "카카오 서비스의 로그아웃을 요청한다.",
+  })
+  @Get("logout/kakao")
+  async kakaoLogout(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response
+  ): Promise<void> {
+    let session: SessionData = req.session;
+    console.log("req.user::", req.user)
+
+    console.log("accessToken::", req.cookies.accessToken)
+
+    res.clearCookie("refreshToken");
+    res.clearCookie("accessToken");
+  }
+
+  
+
   @Get("/getUserInfoByToken")
   @ApiOperation({
     summary: "토큰기반 로그인 유저 정보 조회",

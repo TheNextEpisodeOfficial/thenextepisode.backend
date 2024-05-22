@@ -37,7 +37,7 @@ export class BttlOptEntity extends CommonEntity {
   @Column({ type: "int", comment: "최대 신청 팀 수" })
   maxTeamCnt: number;
 
-  @Column({ type: "int", comment: "현재 신청 팀수" })
+  @Column({ type: "int", comment: "현재 신청 팀수", default: 0 })
   crntTeamCnt: number;
 
   @Column({
