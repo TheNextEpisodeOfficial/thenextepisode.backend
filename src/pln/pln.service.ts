@@ -18,6 +18,7 @@ import { AdncOptEntity } from "../adncOpt/entities/adncOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
 import { CelebEntity } from "@src/celeb/entities/celeb.entity";
+import { randomUUID } from "crypto";
 
 @Injectable()
 export class PlnService {
@@ -138,12 +139,16 @@ export class PlnService {
   async insertPln(pln: PlnEntity): Promise<InsertResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
+        let fileGrpId = randomUUID();
         // const plnInsertResult = await this.plnRepository.upsert(pln, ["id"]);
-        const plnInsertResult = await entityManager.insert(PlnEntity, pln);
+        const plnInsertResult = await entityManager.insert(PlnEntity, {
+          ...pln,
+          fileGrpId: fileGrpId
+        });
         let insertedPln: ObjectLiteral = plnInsertResult.generatedMaps[0]; // 삽입된 pln의 객체를 가져온다
 
         // S : 배틀옵션 INSERT
-        if (pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
+        if (!pln.bttlOpt.length && pln.plnTypeCd != "BTTL") {
           throw new HttpException(
             "플랜타입이 배틀인 경우에만 배틀옵션을 설정할 수 있습니다.",
             HttpStatus.BAD_REQUEST
@@ -194,7 +199,12 @@ export class PlnService {
         // S : 플랜 이미지 정보 INSERT
         if (pln.plnImgs.length) {
           try {
-            await entityManager.insert(FileEntity, pln.plnImgs);
+            await entityManager.insert(FileEntity, pln.plnImgs.map((imgs) => {
+              return {
+                ...imgs,
+                fileGrpId: fileGrpId
+              }
+            }));
           } catch (error) {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
           }

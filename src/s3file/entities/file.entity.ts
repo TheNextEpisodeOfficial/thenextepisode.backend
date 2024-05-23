@@ -12,7 +12,7 @@ export class FileEntity extends CommonEntity {
     comment: "파일그룹아이디",
     nullable: true,
   })
-  fileGrpId;
+  fileGrpId:string;
 
   @Column({ type: "varchar", length: 8, comment: "파일 종류 코드" })
   fileTypeCd;

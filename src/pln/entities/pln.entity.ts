@@ -101,7 +101,7 @@ export class PlnEntity extends CommonEntity {
     comment: "파일그룹 아이디",
     nullable: true,
   })
-  fileGrpId;
+  fileGrpId: string;
 
   @ApiProperty({ type: [BttlOptEntity], required: false })
   bttlOpt: BttlOptEntity[];
