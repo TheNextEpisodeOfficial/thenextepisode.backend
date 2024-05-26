@@ -48,13 +48,13 @@ export class PlnEntity extends CommonEntity {
   @Column({ type: "int", comment: "총 상금" })
   plnRwrd;
 
-  @ApiProperty({ type: String, required: true, default: "2024-01-01" })
-  @Column({ type: "timestamp", comment: "입장구매 마감일시" })
-  plnRsvEndDt;
+  // @ApiProperty({ type: String, required: true, default: "2024-01-01" })
+  // @Column({ type: "timestamp", comment: "입장구매 마감일시" })
+  // plnRsvEndDt;
 
-  @ApiProperty({ type: String, required: true, default: "2024-01-01" })
-  @Column({ type: "timestamp", comment: "참가구매 마감일시" })
-  bttlRsvEndDt;
+  // @ApiProperty({ type: String, required: true, default: "2024-01-01" })
+  // @Column({ type: "timestamp", comment: "참가구매 마감일시" })
+  // bttlRsvEndDt;
 
   @ApiProperty({ type: String, required: true, default: "KRW" })
   @Column({ type: "varchar", length: 3, comment: "결제 화폐" })

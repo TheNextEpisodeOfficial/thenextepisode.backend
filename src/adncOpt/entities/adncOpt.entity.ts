@@ -12,14 +12,8 @@ export class AdncOptEntity extends CommonEntity {
   @Column({ type: "varchar", length: 100, comment: "옵션명" })
   optNm: string;
 
-  @Column({ type: "int", comment: "옵션가격" })
+  @Column({ type: "decimal", comment: "옵션가격" })
   optFee: number;
-
-  @Column({ type: "int", comment: "최대 신청 인원 (티켓 수량)" })
-  maxRsvCnt: number;
-
-  @Column({ type: "int", comment: "현재 신청 인원", default: 0 })
-  crntRsvCnt: number;
 
   @Column({
     type: "varchar",
@@ -28,4 +22,16 @@ export class AdncOptEntity extends CommonEntity {
     default: "N",
   })
   freeYn: string;
+
+  @Column({ type: "int", comment: "최대 신청 인원 (티켓 수량)" })
+  maxRsvCnt: number;
+
+  @Column({ type: "int", comment: "현재 신청 인원", default: 0 })
+  crntRsvCnt: number;
+
+  @Column({ type: "timestamp", comment: "예매 시작 일시" })
+  rsvStDt;
+
+  @Column({ type: "timestamp", comment: "예매 마감 일시" })
+  rsvEndDt;
 }

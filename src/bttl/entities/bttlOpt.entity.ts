@@ -34,12 +34,6 @@ export class BttlOptEntity extends CommonEntity {
   @Column({ type: "varchar", length: 1, comment: "믹시드 여부" })
   mxdYn: string;
 
-  @Column({ type: "int", comment: "최대 신청 팀 수" })
-  maxTeamCnt: number;
-
-  @Column({ type: "int", comment: "현재 신청 팀수", default: 0 })
-  crntTeamCnt: number;
-
   @Column({
     type: "varchar",
     length: 1,
@@ -47,6 +41,18 @@ export class BttlOptEntity extends CommonEntity {
     default: "N",
   })
   freeYn: string;
+
+  @Column({ type: "int", comment: "최대 신청 팀 수" })
+  maxTeamCnt: number;
+
+  @Column({ type: "int", comment: "현재 신청 팀수", default: 0 })
+  crntTeamCnt: number;
+
+  @Column({ type: "timestamp", comment: "예매 시작 일시" })
+  rsvStDt;
+
+  @Column({ type: "timestamp", comment: "예매 마감 일시" })
+  rsvEndDt;
 
   @OneToMany(() => BttlOptRoleEntity, (role) => role.bttlOpt)
   bttlOptRole: BttlOptRoleEntity[];
