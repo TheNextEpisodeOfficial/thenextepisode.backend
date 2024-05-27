@@ -6,6 +6,9 @@ import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { InsertResult, UpdateResult } from "typeorm";
 
+/**
+ * MbrController : 회원 API를 관리한다
+ */
 @Controller("/mbr")
 export class MbrController {
   constructor(private readonly mbrService: MbrService) {}

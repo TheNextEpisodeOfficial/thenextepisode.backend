@@ -6,7 +6,7 @@ import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity"
 
 @Entity("bttl_opt")
 export class BttlOptEntity extends CommonEntity {
-  @Column({ type: "varchar", comment: "플랜 아이디" })
+  @Column({ type: "uuid", comment: "플랜 아이디" })
   @ManyToOne(() => PlnEntity, (pln) => pln.id)
   @JoinColumn({ name: "pln_id" })
   plnId: string;

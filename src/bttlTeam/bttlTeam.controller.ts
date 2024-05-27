@@ -1,17 +1,11 @@
 import { Controller, Get, Param, Query } from "@nestjs/common";
-import {
-  ApiTags,
-} from "@nestjs/swagger";
+import { ApiTags } from "@nestjs/swagger";
 
 /**
- * PlnController : 플랜 테이블을 관리한다
+ * BttlTeamController : 배틀 참가팀의 API를 관리한다
  */
 @Controller("/bttlTeam")
 @ApiTags("bttlTeam")
 export class BttlTeamController {
-  constructor(
-    
-  ) {}
-
-
+  constructor() {}
 }

@@ -143,7 +143,7 @@ export class PlnService {
         // const plnInsertResult = await this.plnRepository.upsert(pln, ["id"]);
         const plnInsertResult = await entityManager.insert(PlnEntity, {
           ...pln,
-          fileGrpId: fileGrpId
+          fileGrpId: fileGrpId,
         });
         let insertedPln: ObjectLiteral = plnInsertResult.generatedMaps[0]; // 삽입된 pln의 객체를 가져온다
 
@@ -199,12 +199,15 @@ export class PlnService {
         // S : 플랜 이미지 정보 INSERT
         if (pln.plnImgs.length) {
           try {
-            await entityManager.insert(FileEntity, pln.plnImgs.map((imgs) => {
-              return {
-                ...imgs,
-                fileGrpId: fileGrpId
-              }
-            }));
+            await entityManager.insert(
+              FileEntity,
+              pln.plnImgs.map((imgs) => {
+                return {
+                  ...imgs,
+                  fileGrpId: fileGrpId,
+                };
+              })
+            );
           } catch (error) {
             throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
           }

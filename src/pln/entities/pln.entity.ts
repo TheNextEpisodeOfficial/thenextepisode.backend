@@ -4,7 +4,6 @@ import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
-
 @Entity("pln")
 export class PlnEntity extends CommonEntity {
   @ApiProperty({ type: String, required: true, default: "플랜명" })
@@ -47,14 +46,6 @@ export class PlnEntity extends CommonEntity {
   @ApiProperty({ type: Number, required: true, default: 0 })
   @Column({ type: "int", comment: "총 상금" })
   plnRwrd;
-
-  // @ApiProperty({ type: String, required: true, default: "2024-01-01" })
-  // @Column({ type: "timestamp", comment: "입장구매 마감일시" })
-  // plnRsvEndDt;
-
-  // @ApiProperty({ type: String, required: true, default: "2024-01-01" })
-  // @Column({ type: "timestamp", comment: "참가구매 마감일시" })
-  // bttlRsvEndDt;
 
   @ApiProperty({ type: String, required: true, default: "KRW" })
   @Column({ type: "varchar", length: 3, comment: "결제 화폐" })

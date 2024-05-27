@@ -22,7 +22,7 @@ import { InsertResult } from "typeorm";
 import { I18n, I18nContext, I18nService } from "nestjs-i18n";
 
 /**
- * PlnController : 플랜 테이블을 관리한다
+ * PlnController : 플랜 API를 관리한다
  */
 @Controller("/pln")
 @ApiTags("Plan")

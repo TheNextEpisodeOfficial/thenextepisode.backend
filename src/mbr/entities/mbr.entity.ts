@@ -1,4 +1,5 @@
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
+import { TcktEntity } from "@src/tckt/entities/tckt.entity";
 import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 
@@ -67,4 +68,7 @@ export class MbrEntity extends CommonEntity {
 
   @OneToMany(() => BttlOptRoleEntity, (bttlOptRole) => bttlOptRole.mbr)
   bttlOptRole: BttlOptRoleEntity;
+
+  @OneToMany(() => TcktEntity, (tckt) => tckt.mbr)
+  tckt: TcktEntity[];
 }

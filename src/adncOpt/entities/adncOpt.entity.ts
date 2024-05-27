@@ -2,9 +2,18 @@ import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { PlnEntity } from "../../pln/entities/pln.entity";
 
+export class ColumnNumericTransformer {
+  to(data: number): number {
+    return data;
+  }
+  from(data: string): number {
+    return parseFloat(data);
+  }
+}
+
 @Entity("adnc_opt")
 export class AdncOptEntity extends CommonEntity {
-  @Column({ type: "varchar", comment: "플랜 아이디" })
+  @Column({ type: "uuid", comment: "플랜 아이디" })
   @ManyToOne(() => PlnEntity, (pln) => pln.id)
   @JoinColumn({ name: "pln_id" })
   plnId: string;
@@ -12,7 +21,11 @@ export class AdncOptEntity extends CommonEntity {
   @Column({ type: "varchar", length: 100, comment: "옵션명" })
   optNm: string;
 
-  @Column({ type: "decimal", comment: "옵션가격" })
+  @Column({
+    type: "decimal",
+    comment: "옵션가격",
+    transformer: new ColumnNumericTransformer(),
+  })
   optFee: number;
 
   @Column({
