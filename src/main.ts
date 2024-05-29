@@ -1,6 +1,6 @@
 import { NestFactory } from "@nestjs/core";
 import { AppModule } from "./app.module";
-import { setupSwagger } from "./util/swagger";
+import { setupSwagger } from "./util/swagger/index";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import express from "express";

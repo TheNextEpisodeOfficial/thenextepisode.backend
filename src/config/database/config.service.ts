@@ -1,9 +1,9 @@
 import { Injectable } from "@nestjs/common";
 import { ConfigService } from "@nestjs/config";
 import { TypeOrmModuleOptions, TypeOrmOptionsFactory } from "@nestjs/typeorm";
+import { CustomLogger, logger } from "@src/util/logger";
 import * as pg from "pg";
 import { SnakeNamingStrategy } from "typeorm-naming-strategies";
-
 @Injectable()
 export class PostgreConfigService implements TypeOrmOptionsFactory {
   constructor(private configService: ConfigService) {}
@@ -19,7 +19,8 @@ export class PostgreConfigService implements TypeOrmOptionsFactory {
       entities: ["/src/entities/*.entity.ts"],
       autoLoadEntities: true,
       synchronize: true,
-      logging: true,
+      logging: ["query", "schema", "error", "warn", "info", "log", "migration"],
+      logger: logger,
       extra: {
         driver: pg,
       },
