@@ -1,15 +1,7 @@
+import { ColumnNumericTransformer } from "@src/util/number";
 import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { PlnEntity } from "../../pln/entities/pln.entity";
-
-export class ColumnNumericTransformer {
-  to(data: number): number {
-    return data;
-  }
-  from(data: string): number {
-    return parseFloat(data);
-  }
-}
 
 @Entity("adnc_opt")
 export class AdncOptEntity extends CommonEntity {

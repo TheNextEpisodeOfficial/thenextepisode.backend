@@ -3,6 +3,7 @@ import { CommonEntity } from "@src/config/entities/common.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
+import { ColumnNumericTransformer } from "@src/util/number";
 
 @Entity("bttl_opt")
 export class BttlOptEntity extends CommonEntity {
@@ -28,7 +29,11 @@ export class BttlOptEntity extends CommonEntity {
   @Column({ type: "int", comment: "팀 최대정원" })
   bttlMbrCnt: number;
 
-  @Column({ type: "decimal", comment: "참가 금액" })
+  @Column({
+    type: "decimal",
+    comment: "참가 금액",
+    transformer: new ColumnNumericTransformer(),
+  })
   bttlRsvFee: number;
 
   @Column({ type: "varchar", length: 1, comment: "믹시드 여부" })
