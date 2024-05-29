@@ -33,10 +33,12 @@ export class PlnService {
    * @param pln
    */
   private async addPlnImgs(pln: PlnEntity): Promise<void> {
+    // S : 플랜 이미지 가져오기
     const plnImgs = await this.s3FileRepository.find({
       where: { fileGrpId: pln.fileGrpId },
     });
     if (plnImgs) pln.plnImgs = plnImgs;
+    // E : 플랜 이미지 가져오기
   }
 
   /**
@@ -44,7 +46,10 @@ export class PlnService {
    * @param pln
    */
   private async addBttlOpt(pln: PlnEntity): Promise<void> {
+    // S : 배틀 옵션 가져오기
     const bttlOpt = await this.bttlOptRepository.findBy({ plnId: pln.id });
+
+    // S : 배틀 옵션 내 역할 가져오기
     if (bttlOpt) {
       await Promise.all(
         bttlOpt.map(async (opt) => {
@@ -66,7 +71,10 @@ export class PlnService {
           if (bttlOptRole) opt.bttlOptRole = bttlOptRole;
         })
       );
+      // E : 배틀 옵션 내 역할 가져오기
+
       pln.bttlOpt = bttlOpt;
+      // E : 배틀 옵션 가져오기
     }
   }
 
@@ -75,8 +83,10 @@ export class PlnService {
    * @param pln
    */
   private async addAdncOpt(pln: PlnEntity): Promise<void> {
+    // S : 입장 옵션 가져오기
     const adncOpt = await this.adncOptRepository.findBy({ plnId: pln.id });
     if (adncOpt) pln.adncOpt = adncOpt;
+    // E : 입장 옵션 가져오기
   }
 
   async getAllPln(): Promise<PlnEntity[]> {
@@ -102,10 +112,11 @@ export class PlnService {
    */
   async getPlnDtlById(plnId: string): Promise<PlnEntity> {
     logger.log("start", "getPlnDtlById :: 플랜 상세 가져오기");
+    // S : 플랜 기본정보 가져오기
     const pln = await this.plnRepository.findOneBy({ id: plnId });
     if (!pln)
       throw new HttpException("플랜을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
-
+    // E : 플랜 기본정보 가져오기
     await Promise.all([
       this.addPlnImgs(pln),
       this.addBttlOpt(pln),
@@ -120,6 +131,7 @@ export class PlnService {
    * @returns
    */
   async insertPln(pln: PlnEntity): Promise<InsertResult> {
+    logger.log("start", "insertPln :: 플랜 등록");
     return this.entityManager.transaction(async (entityManager) => {
       try {
         const fileGrpId = randomUUID();
@@ -177,6 +189,8 @@ export class PlnService {
           HttpStatus.INTERNAL_SERVER_ERROR,
           { cause: error }
         );
+      } finally {
+        logger.log("end", "insertPln :: 플랜 등록");
       }
     });
   }
