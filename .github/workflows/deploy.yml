@@ -1,28 +1,40 @@
-# dev.yml
 name: The Next Episode Backend Auto CI Process Script
 
-on: # 아래 job을 실행시킬 상황
+on:
   push:
     branches: [dev]
 
 jobs:
   deploy:
     name: deploy
-    runs-on: ubuntu-latest # 실행될 인스턴스 OS와 버전
+    runs-on: ubuntu-latest
 
     steps:
-      - name: excuting remote ssh commands
-        uses: appleboy/ssh-action@v0.1.6 # ssh 접속하는 오픈소스
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Setup SSH
+        uses: webfactory/ssh-agent@v0.5.3
         with:
-          host: ${{ secrets.REMOTE_IP }} # 인스턴스 IP
-          username: ${{ secrets.REMOTE_USER }} # 우분투 아이디
-          key: ${{ secrets.REMOTE_PRIVATE_KEY }} # ec2 instance pem key
-          port: ${{ secrets.REMOTE_SSH_PORT }} # 접속포트
-          passphrase: ${{ secrets.PASSPHRASE }} # ssh 비밀번호
-          script: | # 실행할 스크립트
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Adding known hosts
+        run: |
+          mkdir -p ~/.ssh
+          ssh-keyscan -H your-ec2-public-ip >> ~/.ssh/known_hosts
+
+      - name: Executing remote ssh commands
+        uses: appleboy/ssh-action@v0.1.6
+        with:
+          host: ${{ secrets.REMOTE_IP }}
+          username: ${{ secrets.REMOTE_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: ${{ secrets.REMOTE_SSH_PORT }}
+          passphrase: ${{ secrets.PASSPHRASE }}
+          script: |
             cd /home/ubuntu/thenextepisode.backend
             git pull origin dev
-            pm2 kill
+            pm2 kill || true
             yarn install --force
             export NODE_OPTIONS="--max-old-space-size=4096"
             yarn build
