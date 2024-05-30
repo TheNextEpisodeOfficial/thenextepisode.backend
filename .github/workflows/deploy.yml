@@ -13,24 +13,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Setup SSH
-        uses: webfactory/ssh-agent@v0.5.3
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+      - name: Setup SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
 
       - name: Disable host key checking
         run: |
-          mkdir -p ~/.ssh
           echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null" > ~/.ssh/config
 
-      - name: Executing remote ssh commands
-        uses: appleboy/ssh-action@v0.1.6
-        with:
-          host: ${{ secrets.REMOTE_IP }}
-          username: ${{ secrets.REMOTE_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.REMOTE_SSH_PORT }}
-          script: |
+      - name: Execute remote SSH commands
+        env:
+          REMOTE_USER: ${{ secrets.REMOTE_USER }}
+          REMOTE_IP: ${{ secrets.REMOTE_IP }}
+        run: |
+          ssh -i ~/.ssh/id_ed25519 $REMOTE_USER@$REMOTE_IP << 'EOF'
             cd /home/ubuntu/thenextepisode.backend
             git pull origin dev
             pm2 kill || true
@@ -38,3 +36,4 @@ jobs:
             export NODE_OPTIONS="--max-old-space-size=4096"
             yarn build
             pm2 start dist/main.js
+          EOF
