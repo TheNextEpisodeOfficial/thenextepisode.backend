@@ -18,13 +18,8 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
-      - name: Adding known hosts
-        run: |
-          mkdir -p ~/.ssh
-          ssh-keyscan -H your-ec2-public-ip >> ~/.ssh/known_hosts
-
       - name: Executing remote ssh commands
-        uses: appleboy/ssh-action@v0.1.6
+        uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.REMOTE_IP }}
           username: ${{ secrets.REMOTE_USER }}
