@@ -18,14 +18,18 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
 
+      - name: Disable host key checking
+        run: |
+          mkdir -p ~/.ssh
+          echo -e "Host *\n  StrictHostKeyChecking no\n  UserKnownHostsFile=/dev/null" > ~/.ssh/config
+
       - name: Executing remote ssh commands
-        uses: appleboy/ssh-action@master
+        uses: appleboy/ssh-action@v0.1.6
         with:
           host: ${{ secrets.REMOTE_IP }}
           username: ${{ secrets.REMOTE_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           port: ${{ secrets.REMOTE_SSH_PORT }}
-          passphrase: ${{ secrets.PASSPHRASE }}
           script: |
             cd /home/ubuntu/thenextepisode.backend
             git pull origin dev
