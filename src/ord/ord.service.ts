@@ -12,13 +12,15 @@ import {
 } from "typeorm";
 import { OrdEntity } from "./entities/ord.entity";
 import { Response } from "@src/types/response";
+import { TcktService } from "@src/tckt/tckt.service";
 
 @Injectable()
 export class OrdService {
   constructor(
     @InjectRepository(OrdEntity)
     private readonly ordEntity: Repository<OrdEntity>,
-    private readonly entityManager: EntityManager
+    private readonly entityManager: EntityManager,
+    private readonly tcktService: TcktService
   ) {}
 
   /**
@@ -78,11 +80,9 @@ export class OrdService {
       ord.ordItem.map(async (item: OrdItemEntity) => {
         this.validateOrderItem(item);
 
-        const insertedOrdItem = await this.insertOrderItem(
-          entityManager,
-          item,
-          ordId
-        );
+        // S : 주문상품 데이터 생성
+        await this.insertOrderItem(entityManager, item, ordId);
+        // E : 주문상품 데이터 생성
 
         if (item.adncOptId) {
           await this.insertAdncEntity(entityManager, item);
@@ -124,10 +124,12 @@ export class OrdService {
     item: OrdItemEntity,
     ordId: string
   ): Promise<InsertResult> {
-    return entityManager.insert(OrdItemEntity, {
+    const insertedOrdItem = entityManager.insert(OrdItemEntity, {
       ...item,
       ordId,
     });
+
+    return insertedOrdItem;
   }
 
   /**
@@ -139,9 +141,15 @@ export class OrdService {
     entityManager: EntityManager,
     item: OrdItemEntity
   ): Promise<void> {
-    await entityManager.insert(AdncEntity, {
+    // S : 관람객 Insert
+    const adncInsertResult = await entityManager.insert(AdncEntity, {
       ...item.adnc[0],
       adncOptId: item.adncOptId,
+    });
+    // E : 관람객 Insert
+    await this.tcktService.createTckt(entityManager, {
+      ordItemId: item.id,
+      adncId: adncInsertResult.generatedMaps[0].id,
     });
   }
 
@@ -166,12 +174,23 @@ export class OrdService {
       );
     }
 
-    await entityManager.insert(
-      BttlrEntity,
-      item.bttlTeam.bttlr.map((bttlr) => ({
-        ...bttlr,
-        bttlTeamId: bttlTeamInsertResult.generatedMaps[0].id,
-      }))
-    );
+    item.bttlTeam.bttlr.map(async (bttlr) => {
+      // S : 배틀러 Insert
+      const bttlrInsertResult = await entityManager.insert(BttlrEntity, bttlr);
+      if (!bttlrInsertResult) {
+        throw new HttpException(
+          "배틀러 등록에 실패하였습니다.",
+          HttpStatus.BAD_REQUEST
+        );
+      }
+      // E : 배틀러 Insert
+
+      // S : 배틀러 티켓 생성
+      await this.tcktService.createTckt(entityManager, {
+        ordItemId: item.id,
+        bttlrId: bttlrInsertResult.generatedMaps[0].id,
+      });
+      // E : 배틀러 티켓 생성
+    });
   }
 }

@@ -3,6 +3,7 @@ import { AdncOptEntity } from "@src/adncOpt/entities/adncOpt.entity";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
 import { OrdEntity } from "@src/ord/entities/ord.entity";
+import { TcktEntity } from "@src/tckt/entities/tckt.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 
@@ -57,4 +58,7 @@ export class OrdItemEntity extends CommonEntity {
 
   @OneToOne(() => AdncEntity, (adnc) => adnc.ordItem)
   adnc: AdncEntity;
+
+  @OneToOne(() => TcktEntity, (tckt) => tckt.ordItem)
+  tckt: TcktEntity;
 }
