@@ -10,7 +10,7 @@ import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { InsertResult } from "typeorm";
 import { OrdService } from "./ord.service";
 import { OrdEntity } from "./entities/ord.entity";
-import { InsertResultId, Response } from "@src/types/response";
+import { Response } from "@src/types/response";
 
 /**
  * OrdController : 주문 API를 관리한다
