@@ -27,7 +27,7 @@ export class OrdPaymentService {
         // S : 결제 INSERT
         const ordPaymentInsertResult = await entityManager.insert(
           OrdPaymentEntity,
-          ordPayment
+          { ...ordPayment, orderNum: "00001" }
         );
         // E : 결제 INSERT
 

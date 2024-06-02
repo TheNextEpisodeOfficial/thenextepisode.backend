@@ -17,7 +17,7 @@ export class OrdPaymentEntity extends CommonEntity {
 
   @ApiProperty({ type: String, required: true, default: "결제 KEY" })
   @Column({ type: "varchar", length: 200, comment: "토스페이 주문아이디" })
-  orderNum;
+  orderNum: string;
 
   @ApiProperty({ type: String, required: true, default: "결제 구분코드" })
   @Column({ type: "varchar", length: 10, comment: "결제 구분코드" })
