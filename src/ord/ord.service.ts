@@ -81,13 +81,26 @@ export class OrdService {
         this.validateOrderItem(item);
 
         // S : 주문상품 데이터 생성
-        await this.insertOrderItem(entityManager, item, ordId);
+        const insertedOrdItem = await this.insertOrderItem(
+          entityManager,
+          item,
+          ordId
+        );
         // E : 주문상품 데이터 생성
 
+        const ordItemId = insertedOrdItem.generatedMaps[0].id;
+
+        if (!ordItemId) {
+          throw new HttpException(
+            "주문상품 등록에 실패하였습니다.",
+            HttpStatus.BAD_REQUEST
+          );
+        }
+
         if (item.adncOptId) {
-          await this.insertAdncEntity(entityManager, item);
+          await this.insertAdncEntity(entityManager, item, ordItemId);
         } else if (item.bttlOptId) {
-          await this.insertBttlTeamAndBttlr(entityManager, item);
+          await this.insertBttlTeamAndBttlr(entityManager, item, ordItemId);
         }
       })
     );
@@ -139,7 +152,8 @@ export class OrdService {
    */
   private async insertAdncEntity(
     entityManager: EntityManager,
-    item: OrdItemEntity
+    item: OrdItemEntity,
+    ordItemId: string
   ): Promise<void> {
     // S : 관람객 Insert
     const adncInsertResult = await entityManager.insert(AdncEntity, {
@@ -148,7 +162,7 @@ export class OrdService {
     });
     // E : 관람객 Insert
     await this.tcktService.createTckt(entityManager, {
-      ordItemId: item.id,
+      ordItemId: ordItemId,
       adncId: adncInsertResult.generatedMaps[0].id,
     });
   }
@@ -160,7 +174,8 @@ export class OrdService {
    */
   private async insertBttlTeamAndBttlr(
     entityManager: EntityManager,
-    item: OrdItemEntity
+    item: OrdItemEntity,
+    ordItemId: string
   ): Promise<void> {
     const bttlTeamInsertResult = await entityManager.insert(BttlTeamEntity, {
       ...item.bttlTeam,
@@ -190,7 +205,7 @@ export class OrdService {
 
       // S : 배틀러 티켓 생성
       await this.tcktService.createTckt(entityManager, {
-        ordItemId: item.id,
+        ordItemId: ordItemId,
         bttlrId: bttlrInsertResult.generatedMaps[0].id,
       });
       // E : 배틀러 티켓 생성
