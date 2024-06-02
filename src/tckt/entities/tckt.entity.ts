@@ -11,10 +11,10 @@ export class TcktEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "주문상품 아이디" })
   ordItemId: string;
 
-  @Column({ type: "uuid", comment: "배틀러 아이디" })
+  @Column({ type: "uuid", comment: "배틀러 아이디", nullable: true })
   bttlrId: string;
 
-  @Column({ type: "uuid", comment: "관람객 아이디" })
+  @Column({ type: "uuid", comment: "관람객 아이디", nullable: true })
   adncId: string;
 
   @Column({ type: "uuid", comment: "티켓 소지 계정 아이디" })
