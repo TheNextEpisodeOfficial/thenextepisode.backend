@@ -65,9 +65,9 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({ type: "boolean", comment: "에스크로 여부" })
   useEscrow;
 
-  @ApiProperty({ type: String, required: true, default: "TID(결제승인번호)" })
-  @Column({ type: "varchar", length: 100, comment: "TID(결제승인번호)" })
-  tId;
+  // @ApiProperty({ type: String, required: true, default: "TID(결제승인번호)" })
+  // @Column({ type: "varchar", length: 100, comment: "TID(결제승인번호)" })
+  // tId;
 
   /**
    * S : Spread Card Object
