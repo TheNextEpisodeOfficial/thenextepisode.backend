@@ -36,13 +36,13 @@ export class OrdPaymentService {
           // S : 주문 상태 PAID로 변경
           await entityManager.update(
             OrdEntity,
-            { id: ordPayment.ordId },
+            { id: ordPayment.orderId },
             { ordStt: "PAID" }
           );
           // E : 주문 상태 PAID로 변경
 
           // S : 주문 번호를 기준으로 주문 아이템들의 티켓 생성
-          await this.tcktService.createTcktsByOrdId(ordPayment.ordId);
+          await this.tcktService.createTcktsByOrdId(ordPayment.orderId);
           // E : 주문 번호를 기준으로 주문 아이템들의 티켓 생성
         }
 

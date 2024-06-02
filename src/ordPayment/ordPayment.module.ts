@@ -6,10 +6,16 @@ import { OrdPaymentController } from "./ordPayment.controller";
 import { OrdPaymentService } from "./ordPayment.service";
 import { TcktEntity } from "@src/tckt/entities/tckt.entity";
 import { TcktService } from "@src/tckt/tckt.service";
+import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([OrdPaymentEntity, OrdEntity, TcktEntity]),
+    TypeOrmModule.forFeature([
+      OrdPaymentEntity,
+      OrdEntity,
+      TcktEntity,
+      OrdItemEntity,
+    ]),
   ],
   controllers: [OrdPaymentController],
   providers: [OrdPaymentService, TcktService],

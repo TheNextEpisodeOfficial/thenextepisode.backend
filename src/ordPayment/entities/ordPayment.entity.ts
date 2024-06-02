@@ -9,7 +9,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "주문 아이디" })
   @OneToOne(() => OrdEntity, (ord) => ord.id)
   @JoinColumn({ name: "ord_id" })
-  ordId: string;
+  orderId: string;
 
   @ApiProperty({ type: String, required: true, default: "주문명" })
   @Column({ type: "varchar", length: 500, comment: "주문명" })
