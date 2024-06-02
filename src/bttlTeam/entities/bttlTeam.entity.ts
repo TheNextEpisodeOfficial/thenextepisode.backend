@@ -23,7 +23,12 @@ export class BttlTeamEntity extends CommonEntity {
   bttlTeamNm: string;
 
   @ApiProperty({ type: String })
-  @Column({ type: "varchar", length: 4, comment: "결과 타입 코드" })
+  @Column({
+    type: "varchar",
+    length: 4,
+    comment: "결과 타입 코드",
+    nullable: true,
+  })
   rsltTypeCd: string;
 
   @OneToMany(() => BttlrEntity, (bttlr) => bttlr.bttlTeam, {

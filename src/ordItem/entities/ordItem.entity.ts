@@ -11,12 +11,12 @@ export class OrdItemEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "플랜 아이디" })
   ordId: string;
 
-  @Column({ type: "uuid", comment: "배틀옵션 아이디" })
+  @Column({ type: "uuid", comment: "배틀옵션 아이디", nullable: true })
   @ManyToOne(() => BttlOptEntity, (bttlOpt) => bttlOpt.id)
   @JoinColumn({ name: "bttl_opt_id" })
   bttlOptId: string;
 
-  @Column({ type: "uuid", comment: "입장옵션 아이디" })
+  @Column({ type: "uuid", comment: "입장옵션 아이디", nullable: true })
   @ManyToOne(() => AdncOptEntity, (adncOpt) => adncOpt.id)
   @JoinColumn({ name: "adnc_opt_id" })
   adncOptId: string;

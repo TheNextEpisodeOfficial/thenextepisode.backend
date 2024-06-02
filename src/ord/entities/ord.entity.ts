@@ -15,8 +15,8 @@ export class OrdEntity extends CommonEntity {
   @Column({ type: "varchar", length: 36, comment: "주문번호" })
   ordNum;
 
-  @ApiProperty({ type: String, required: true, default: "DONE" })
-  @Column({ type: "varchar", length: 10, comment: "상태" })
+  @ApiProperty({ type: String, required: true, default: "PENDING" })
+  @Column({ type: "varchar", length: 10, comment: "상태", default: "PENDING" })
   ordStt;
 
   @ApiProperty({ type: Number, required: true, default: 10000 })
