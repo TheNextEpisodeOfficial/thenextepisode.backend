@@ -11,6 +11,7 @@ import {
   Repository,
 } from "typeorm";
 import { OrdEntity } from "./entities/ord.entity";
+import { Response } from "@src/types/response";
 
 @Injectable()
 export class OrdService {
@@ -25,7 +26,7 @@ export class OrdService {
    * @param ord - 주문 엔티티
    * @returns Promise<InsertResult>
    */
-  async createOrd(ord: OrdEntity): Promise<InsertResult> {
+  async createOrd(ord: OrdEntity): Promise<Response<InsertResult>> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
         const ordInsertResult = await this.insertOrder(entityManager, ord);
@@ -35,7 +36,9 @@ export class OrdService {
 
         await entityManager.query("COMMIT");
         if (ordInsertResult) {
-          return ordInsertResult;
+          return {
+            data: ordInsertResult,
+          };
         }
       } catch (error) {
         throw new HttpException(

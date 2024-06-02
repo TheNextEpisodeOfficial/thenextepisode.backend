@@ -13,7 +13,7 @@ import {
   ApiParam,
   ApiTags,
 } from "@nestjs/swagger";
-import { response } from "@src/types/response";
+import { Response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
 import { SrchPlnDto } from "./dtos/pln.dto";

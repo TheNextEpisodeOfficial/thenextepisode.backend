@@ -10,6 +10,7 @@ import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { InsertResult } from "typeorm";
 import { OrdService } from "./ord.service";
 import { OrdEntity } from "./entities/ord.entity";
+import { Response } from "@src/types/response";
 
 /**
  * OrdController : 주문 API를 관리한다
@@ -33,7 +34,7 @@ export class OrdController {
       "주문을 생성한다. <주문, 주문상품, 배틀러|관람객> 테이블을 생성한다.",
     type: OrdEntity,
   })
-  async createOrd(@Body() ord: OrdEntity): Promise<InsertResult> {
+  async createOrd(@Body() ord: OrdEntity): Promise<Response<InsertResult>> {
     try {
       const ordInsertResult = await this.ordService.createOrd(ord);
       if (ordInsertResult) {
