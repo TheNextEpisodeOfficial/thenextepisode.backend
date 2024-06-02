@@ -176,7 +176,10 @@ export class OrdService {
 
     item.bttlTeam.bttlr.map(async (bttlr) => {
       // S : 배틀러 Insert
-      const bttlrInsertResult = await entityManager.insert(BttlrEntity, bttlr);
+      const bttlrInsertResult = await entityManager.insert(BttlrEntity, {
+        ...bttlr,
+        bttlTeamId: bttlTeamInsertResult.generatedMaps[0].id,
+      });
       if (!bttlrInsertResult) {
         throw new HttpException(
           "배틀러 등록에 실패하였습니다.",
