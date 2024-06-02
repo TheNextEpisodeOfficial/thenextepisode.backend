@@ -1,4 +1,10 @@
-import { Controller, Get, HttpException, HttpStatus } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+} from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { InsertResult } from "typeorm";
 import { OrdService } from "./ord.service";
@@ -15,7 +21,7 @@ export class OrdController {
   /**
    * S : createOrd
    */
-  @Get("/createOrd")
+  @Post("/createOrd")
   @ApiOperation({
     summary:
       "주문을 생성한다. <주문, 주문상품, 배틀러|관람객> 테이블을 생성한다.",
