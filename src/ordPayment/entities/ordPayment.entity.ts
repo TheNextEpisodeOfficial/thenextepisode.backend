@@ -262,7 +262,7 @@ export class OrdPaymentEntity extends CommonEntity {
   })
   @Column({
     type: "varchar",
-    length: 2,
+    length: 3,
     comment: "결제 통화",
   })
   currency: string;
