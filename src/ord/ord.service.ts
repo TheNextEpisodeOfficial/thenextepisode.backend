@@ -97,7 +97,7 @@ export class OrdService {
    * 주문 상품 유효성 검사
    * @param item - 주문 상품
    */
-  private validateOrderItem(item: any): void {
+  private validateOrderItem(item: OrdItemEntity): void {
     if (!item.adncOptId && !item.bttlOptId) {
       throw new HttpException(
         "주문상품의 옵션 id는 필수입니다.",
