@@ -1,4 +1,5 @@
 import {
+  Body,
   Controller,
   Get,
   HttpException,
@@ -32,10 +33,12 @@ export class OrdController {
       "주문을 생성한다. <주문, 주문상품, 배틀러|관람객> 테이블을 생성한다.",
     type: OrdEntity,
   })
-  async createOrd(ord: OrdEntity): Promise<InsertResult> {
+  async createOrd(@Body() ord: OrdEntity): Promise<InsertResult> {
     try {
       const ordInsertResult = await this.ordService.createOrd(ord);
-      return ordInsertResult;
+      if (ordInsertResult) {
+        return ordInsertResult;
+      }
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }
