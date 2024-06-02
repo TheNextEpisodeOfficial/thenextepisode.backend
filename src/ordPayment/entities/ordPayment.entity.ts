@@ -239,6 +239,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "varchar",
     length: 100,
     comment: "오류 타입",
+    nullable: true,
   })
   failureCode: string;
 
@@ -250,6 +251,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "varchar",
     length: 510,
     comment: "에러 메세지",
+    nullable: true,
   })
   failureMessage: string;
   /**
@@ -346,6 +348,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "varchar",
     length: 1,
     comment: "부분취소여부",
+    default: "N",
   })
   partialCancelableYn: string;
 
@@ -356,6 +359,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({
     type: "timestamp",
     comment: "취소일시",
+    nullable: true,
   })
   cancelledAt: string;
 
@@ -366,6 +370,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({
     type: "decimal",
     comment: "취소금액",
+    nullable: true,
   })
   cancelAmount: number;
 }
