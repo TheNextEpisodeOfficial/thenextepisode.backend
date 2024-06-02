@@ -316,6 +316,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({
     type: "decimal",
     comment: "할인금액",
+    nullable: true,
   })
   discountAmount: number;
 
