@@ -1,4 +1,4 @@
-export interface Response<T> {
+export class Response<T> {
   title?: string;
   message?: string;
   data?: T;
