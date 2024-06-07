@@ -1,6 +1,12 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { EntityManager, InsertResult, Like, Repository } from "typeorm";
+import {
+  EntityManager,
+  InsertResult,
+  Like,
+  Repository,
+  SelectQueryBuilder,
+} from "typeorm";
 import { Pagination, paginate } from "nestjs-typeorm-paginate";
 import { randomUUID } from "crypto";
 
@@ -33,12 +39,10 @@ export class PlnService {
    * @param pln
    */
   private async addPlnImgs(pln: PlnEntity): Promise<void> {
-    // S : 플랜 이미지 가져오기
     const plnImgs = await this.s3FileRepository.find({
       where: { fileGrpId: pln.fileGrpId },
     });
     if (plnImgs) pln.plnImgs = plnImgs;
-    // E : 플랜 이미지 가져오기
   }
 
   /**
@@ -46,14 +50,11 @@ export class PlnService {
    * @param pln
    */
   private async addBttlOpt(pln: PlnEntity): Promise<void> {
-    // S : 배틀 옵션 가져오기
     const bttlOpt = await this.bttlOptRepository.findBy({ plnId: pln.id });
-
-    // S : 배틀 옵션 내 역할 가져오기
     if (bttlOpt) {
       await Promise.all(
         bttlOpt.map(async (opt) => {
-          const bttlOptRole = await this.bttlOptRoleRepository
+          opt.bttlOptRole = await this.bttlOptRoleRepository
             .createQueryBuilder("bor")
             .leftJoinAndSelect("bor.celeb", "c", "bor.role_celeb_id = c.id")
             .leftJoinAndSelect("bor.mbr", "m", "bor.role_mbr_id = m.id")
@@ -68,36 +69,25 @@ export class PlnService {
               "m.nickNm",
             ])
             .getMany();
-          if (bttlOptRole) opt.bttlOptRole = bttlOptRole;
         })
       );
-      // E : 배틀 옵션 내 역할 가져오기
-
       pln.bttlOpt = bttlOpt;
-      // E : 배틀 옵션 가져오기
     }
   }
 
   /**
-   *
+   * 플랜 id로 입장 옵션을 조회한다.
    * @param pln
    */
   private async addAdncOpt(pln: PlnEntity): Promise<void> {
-    // S : 입장 옵션 가져오기
     const adncOpt = await this.adncOptRepository.findBy({ plnId: pln.id });
     if (adncOpt) pln.adncOpt = adncOpt;
-    // E : 입장 옵션 가져오기
   }
 
   async getAllPln(): Promise<PlnEntity[]> {
     return this.plnRepository.find({ where: { delYn: "N" } });
   }
 
-  /**
-   *
-   * @param mbrId
-   * @returns
-   */
   async getPlndPln(mbrId: string): Promise<PlnEntity[]> {
     return this.plnRepository.find({
       where: { createdBy: mbrId, delYn: "N" },
@@ -106,17 +96,16 @@ export class PlnService {
   }
 
   /**
-   *
+   * 플랜 ID로 플랜의 상세정보를 조회한다.
    * @param plnId
    * @returns
    */
   async getPlnDtlById(plnId: string): Promise<PlnEntity> {
     logger.log("start", "getPlnDtlById :: 플랜 상세 가져오기");
-    // S : 플랜 기본정보 가져오기
     const pln = await this.plnRepository.findOneBy({ id: plnId });
-    if (!pln)
+    if (!pln) {
       throw new HttpException("플랜을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
-    // E : 플랜 기본정보 가져오기
+    }
     await Promise.all([
       this.addPlnImgs(pln),
       this.addBttlOpt(pln),
@@ -126,7 +115,7 @@ export class PlnService {
   }
 
   /**
-   *
+   * 플랜 INSERT SERVICE
    * @param pln
    * @returns
    */
@@ -147,22 +136,7 @@ export class PlnService {
             HttpStatus.BAD_REQUEST
           );
         }
-        await Promise.all(
-          pln.bttlOpt.map(async (bttlOpt) => {
-            const insertedBttlOpt = await entityManager.insert(BttlOptEntity, {
-              ...bttlOpt,
-              plnId: insertedPln.id,
-            });
-            await Promise.all(
-              bttlOpt.bttlOptRole.map(async (role) => {
-                await entityManager.insert(BttlOptRoleEntity, {
-                  ...role,
-                  bttlOptId: insertedBttlOpt.generatedMaps[0].id,
-                });
-              })
-            );
-          })
-        );
+        await this.insertBttlOpts(pln.bttlOpt, insertedPln.id, entityManager);
 
         if (!pln.adncOpt.length) {
           throw new HttpException(
@@ -196,23 +170,44 @@ export class PlnService {
   }
 
   /**
-   *
+   * 배틀옵션 데이터를 INSERT 한다.
+   * @param bttlOpts
+   * @param plnId
+   * @param entityManager
+   */
+  private async insertBttlOpts(
+    bttlOpts: BttlOptEntity[],
+    plnId: string,
+    entityManager: EntityManager
+  ): Promise<void> {
+    await Promise.all(
+      bttlOpts.map(async (bttlOpt) => {
+        const insertedBttlOpt = await entityManager.insert(BttlOptEntity, {
+          ...bttlOpt,
+          plnId,
+        });
+        await Promise.all(
+          bttlOpt.bttlOptRole.map(async (role) => {
+            await entityManager.insert(BttlOptRoleEntity, {
+              ...role,
+              bttlOptId: insertedBttlOpt.generatedMaps[0].id,
+            });
+          })
+        );
+      })
+    );
+  }
+
+  /**
+   * 플랜 검색 SERVICE
    * @param srchPlnDto
    * @returns
    */
   async srchPln(srchPlnDto: SrchPlnDto): Promise<Pagination<PlnEntity>> {
     const queryBuilder = this.plnRepository.createQueryBuilder("pln");
-    const queryBuildOpts: Partial<SrchPlnDto> = {};
 
-    if (srchPlnDto.plnNm) queryBuildOpts.plnNm = Like(`%${srchPlnDto.plnNm}%`);
-    if (srchPlnDto.id) queryBuildOpts.id = srchPlnDto.id;
-    if (srchPlnDto.plnTypeCd) queryBuildOpts.plnTypeCd = srchPlnDto.plnTypeCd;
-    if (srchPlnDto.plnStTm) queryBuildOpts.plnStTm = srchPlnDto.plnStTm;
-    if (srchPlnDto.plnEndTm) queryBuildOpts.plnEndTm = srchPlnDto.plnEndTm;
-    if (srchPlnDto.rRatedYn) queryBuildOpts.rRatedYn = srchPlnDto.rRatedYn;
-    if (srchPlnDto.delYn) queryBuildOpts.delYn = srchPlnDto.delYn || "N";
-    if (srchPlnDto.plnLctnNm)
-      queryBuildOpts.plnLctnNm = Like(`%${srchPlnDto.plnLctnNm}%`);
+    const searchConditions = this.buildSearchConditions(srchPlnDto);
+    queryBuilder.andWhere(searchConditions);
 
     if (srchPlnDto.plnSrchStDt)
       queryBuilder.andWhere("pln.plnDt > :plnSrchStDt", {
@@ -223,23 +218,7 @@ export class PlnService {
         plnSrchEndDt: srchPlnDto.plnSrchEndDt,
       });
 
-    queryBuilder.andWhere(queryBuildOpts);
-
-    if (srchPlnDto.orderBy) {
-      const [orderColumn, orderValue] = srchPlnDto.orderBy.split(",") as [
-        string,
-        "DESC" | "ASC"
-      ];
-      if (!orderColumn || (orderValue !== "DESC" && orderValue !== "ASC")) {
-        throw new HttpException(
-          "orderBy의 파라미터는 <컬럼명,정렬방향>의 양식으로 입력해주세요",
-          HttpStatus.BAD_REQUEST
-        );
-      }
-      queryBuilder.orderBy(orderColumn, orderValue);
-    } else {
-      queryBuilder.orderBy("pln.createdAt", "DESC");
-    }
+    this.addOrderBy(queryBuilder, srchPlnDto.orderBy);
 
     try {
       const plnList = await paginate<PlnEntity>(queryBuilder, srchPlnDto);
@@ -264,6 +243,52 @@ export class PlnService {
         HttpStatus.FORBIDDEN,
         { cause: error }
       );
+    }
+  }
+
+  /**
+   * 플랜 검색 쿼리 조건 필터링
+   * @param srchPlnDto
+   * @returns
+   */
+  private buildSearchConditions(srchPlnDto: SrchPlnDto): Partial<SrchPlnDto> {
+    const searchConditions: Partial<SrchPlnDto> = {};
+    if (srchPlnDto.plnNm)
+      searchConditions.plnNm = Like(`%${srchPlnDto.plnNm}%`);
+    if (srchPlnDto.id) searchConditions.id = srchPlnDto.id;
+    if (srchPlnDto.plnTypeCd) searchConditions.plnTypeCd = srchPlnDto.plnTypeCd;
+    if (srchPlnDto.plnStTm) searchConditions.plnStTm = srchPlnDto.plnStTm;
+    if (srchPlnDto.plnEndTm) searchConditions.plnEndTm = srchPlnDto.plnEndTm;
+    if (srchPlnDto.rRatedYn) searchConditions.rRatedYn = srchPlnDto.rRatedYn;
+    if (srchPlnDto.delYn) searchConditions.delYn = srchPlnDto.delYn || "N";
+    if (srchPlnDto.plnLctnNm)
+      searchConditions.plnLctnNm = Like(`%${srchPlnDto.plnLctnNm}%`);
+    return searchConditions;
+  }
+
+  /**
+   * 플랜 검색 정렬 조건 세팅
+   * @param queryBuilder
+   * @param orderBy
+   */
+  private addOrderBy(
+    queryBuilder: SelectQueryBuilder<PlnEntity>,
+    orderBy?: string
+  ): void {
+    if (orderBy) {
+      const [orderColumn, orderValue] = orderBy.split(",") as [
+        string,
+        "DESC" | "ASC"
+      ];
+      if (!orderColumn || (orderValue !== "DESC" && orderValue !== "ASC")) {
+        throw new HttpException(
+          "orderBy의 파라미터는 <컬럼명,정렬방향>의 양식으로 입력해주세요",
+          HttpStatus.BAD_REQUEST
+        );
+      }
+      queryBuilder.orderBy(orderColumn, orderValue);
+    } else {
+      queryBuilder.orderBy("pln.createdAt", "DESC");
     }
   }
 }
