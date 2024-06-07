@@ -11,7 +11,6 @@ import {
   Repository,
 } from "typeorm";
 import { OrdEntity } from "./entities/ord.entity";
-import { Response } from "@src/types/response";
 import { TcktService } from "@src/tckt/tckt.service";
 
 @Injectable()
@@ -36,11 +35,9 @@ export class OrdService {
 
         await this.insertOrderItems(entityManager, ord, insertedOrd.id);
 
-        await entityManager.query("COMMIT");
-        if (ordInsertResult) {
-          return ordInsertResult;
-        }
+        return ordInsertResult;
       } catch (error) {
+        await entityManager.query("ROLLBACK");
         throw new HttpException(
           error.message,
           HttpStatus.INTERNAL_SERVER_ERROR
@@ -80,14 +77,11 @@ export class OrdService {
       ord.ordItem.map(async (item: OrdItemEntity) => {
         this.validateOrderItem(item);
 
-        // S : 주문상품 데이터 생성
         const insertedOrdItem = await this.insertOrderItem(
           entityManager,
           item,
           ordId
         );
-        // E : 주문상품 데이터 생성
-
         const ordItemId = insertedOrdItem.generatedMaps[0].id;
 
         if (!ordItemId) {
@@ -137,30 +131,28 @@ export class OrdService {
     item: OrdItemEntity,
     ordId: string
   ): Promise<InsertResult> {
-    const insertedOrdItem = entityManager.insert(OrdItemEntity, {
+    return entityManager.insert(OrdItemEntity, {
       ...item,
       ordId,
     });
-
-    return insertedOrdItem;
   }
 
   /**
    * 관람객 엔티티를 데이터베이스에 삽입
    * @param entityManager - 엔티티 매니저
    * @param item - 주문 상품
+   * @param ordItemId - 주문상품 ID
    */
   private async insertAdncEntity(
     entityManager: EntityManager,
     item: OrdItemEntity,
     ordItemId: string
   ): Promise<void> {
-    // S : 관람객 Insert
     const adncInsertResult = await entityManager.insert(AdncEntity, {
       ...item.adnc[0],
       adncOptId: item.adncOptId,
     });
-    // E : 관람객 Insert
+
     await this.tcktService.createTckt(entityManager, {
       ordItemId: ordItemId,
       adncId: adncInsertResult.generatedMaps[0].id,
@@ -171,6 +163,7 @@ export class OrdService {
    * 배틀 팀 및 배틀러 엔티티를 데이터베이스에 삽입
    * @param entityManager - 엔티티 매니저
    * @param item - 주문 상품
+   * @param ordItemId - 주문상품 ID
    */
   private async insertBttlTeamAndBttlr(
     entityManager: EntityManager,
@@ -189,26 +182,25 @@ export class OrdService {
       );
     }
 
-    item.bttlTeam.bttlr.map(async (bttlr) => {
-      // S : 배틀러 Insert
-      const bttlrInsertResult = await entityManager.insert(BttlrEntity, {
-        ...bttlr,
-        bttlTeamId: bttlTeamInsertResult.generatedMaps[0].id,
-      });
-      if (!bttlrInsertResult) {
-        throw new HttpException(
-          "배틀러 등록에 실패하였습니다.",
-          HttpStatus.BAD_REQUEST
-        );
-      }
-      // E : 배틀러 Insert
+    await Promise.all(
+      item.bttlTeam.bttlr.map(async (bttlr) => {
+        const bttlrInsertResult = await entityManager.insert(BttlrEntity, {
+          ...bttlr,
+          bttlTeamId: bttlTeamInsertResult.generatedMaps[0].id,
+        });
 
-      // S : 배틀러 티켓 생성
-      await this.tcktService.createTckt(entityManager, {
-        ordItemId: ordItemId,
-        bttlrId: bttlrInsertResult.generatedMaps[0].id,
-      });
-      // E : 배틀러 티켓 생성
-    });
+        if (!bttlrInsertResult) {
+          throw new HttpException(
+            "배틀러 등록에 실패하였습니다.",
+            HttpStatus.BAD_REQUEST
+          );
+        }
+
+        await this.tcktService.createTckt(entityManager, {
+          ordItemId: ordItemId,
+          bttlrId: bttlrInsertResult.generatedMaps[0].id,
+        });
+      })
+    );
   }
 }

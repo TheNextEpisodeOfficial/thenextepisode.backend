@@ -26,12 +26,12 @@ export class OrdController {
   @Post("/createOrd")
   @ApiOperation({
     summary:
-      "주문을 생성한다. <주문, 주문상품, 배틀러|관람객> 테이블을 생성한다.",
+      "주문을 생성한다. <주문, 주문상품, 배틀러|관람객> 데이터를 생성한다.",
     description: "플랜 ID로 플랜 상세를 가져온다.",
   })
   @ApiCreatedResponse({
     description:
-      "주문을 생성한다. <주문, 주문상품, 배틀러|관람객> 테이블을 생성한다.",
+      "주문을 생성한다. <주문, 주문상품, 배틀러|관람객> 데이터를 생성한다.",
     type: OrdEntity,
   })
   async createOrd(

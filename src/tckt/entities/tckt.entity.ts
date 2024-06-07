@@ -75,7 +75,7 @@ export class TcktEntity extends CommonEntity {
   @JoinColumn({ name: "tckt_hld_mbr_id" })
   mbr: MbrEntity;
 
-  @OneToOne(() => OrdItemEntity, (ordItem) => ordItem.tckt)
+  @ManyToOne(() => OrdItemEntity, (ordItem) => ordItem.tckt)
   @JoinColumn({ name: "ord_item_id" })
   ordItem;
 }

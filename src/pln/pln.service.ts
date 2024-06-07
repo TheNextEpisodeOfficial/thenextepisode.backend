@@ -29,7 +29,7 @@ export class PlnService {
   ) {}
 
   /**
-   *
+   * 플랜의 fileGrpId로 이미지 리스트를 조회한다.
    * @param pln
    */
   private async addPlnImgs(pln: PlnEntity): Promise<void> {
@@ -42,7 +42,7 @@ export class PlnService {
   }
 
   /**
-   *
+   * 플랜 id를 기준으로 배틀옵션을 조회 후, 각 옵션별 역할(JUDGE, MC, DJ)을 조회한다.
    * @param pln
    */
   private async addBttlOpt(pln: PlnEntity): Promise<void> {
