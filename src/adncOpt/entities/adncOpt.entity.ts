@@ -3,6 +3,7 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { PlnEntity } from "../../pln/entities/pln.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
+import { AdncEntity } from "@src/adnc/entities/adnc.entity";
 
 @Entity("adnc_opt")
 export class AdncOptEntity extends CommonEntity {
@@ -43,4 +44,7 @@ export class AdncOptEntity extends CommonEntity {
 
   @OneToMany(() => OrdItemEntity, (ordItem) => ordItem.adncOpt)
   ordItem: OrdItemEntity[];
+
+  @OneToMany(() => OrdItemEntity, (ordItem) => ordItem.adncOpt)
+  adnc: AdncEntity[];
 }

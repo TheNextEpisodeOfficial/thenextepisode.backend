@@ -216,6 +216,11 @@ export class PlnService {
    */
   async srchPln(srchPlnDto: SrchPlnDto): Promise<Pagination<PlnEntity>> {
     const queryBuilder = this.plnRepository.createQueryBuilder("pln");
+    queryBuilder
+      .leftJoinAndSelect("pln.file", "file")
+      .where("pln.fileGrpId = file.fileGrpId")
+      .andWhere("file.fileTypeCd = 'THMB_MN'")
+      .andWhere("file.delYn = 'N'");
 
     const searchConditions = this.buildSearchConditions(srchPlnDto);
     queryBuilder.andWhere(searchConditions);
@@ -236,14 +241,9 @@ export class PlnService {
       if (plnList.items.length) {
         await Promise.all(
           plnList.items.map(async (pln) => {
-            const plnImgs = await this.s3FileRepository.find({
-              where: {
-                fileGrpId: pln.fileGrpId,
-                fileTypeCd: "THMB_MN",
-                delYn: "N",
-              },
-            });
-            if (plnImgs) pln.plnImgs = plnImgs;
+            if (pln.file.length && pln.file[0].fileTypeCd == "THMB_MN") {
+              pln.thumb = pln.file[0].fileNm;
+            }
           })
         );
       }

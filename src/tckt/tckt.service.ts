@@ -11,6 +11,7 @@ import { TicketListDto } from "./dtos/tckt.dto";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { getBttlOptTit } from "@src/util/system";
 import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
+import { plainToInstance } from "class-transformer";
 @Injectable()
 export class TcktService {
   constructor(
@@ -94,33 +95,33 @@ export class TcktService {
       );
 
     queryBuilder.select([
-      "tckt.id",
-      "tckt.teamAsgnYn AS team_asgn_yn",
-      "tckt.hndOvrYn AS hnd_ovr_yn",
-      "tckt.usedYn AS used_yn",
-      "ordItem.id",
-      "ordItem.bttlOptId AS bttl_opt_id",
-      "ordItem.adncOptId AS adnc_opt_id",
+      'tckt.id AS "tcktId"',
+      'tckt.teamAsgnYn AS "teamAsgnYn"',
+      'tckt.hndOvrYn AS "hndOvrYn"',
+      'tckt.usedYn AS "usedYn"',
+      'ordItem.id AS "ordItemId"',
+      'ordItem.bttlOptId AS "bttlOptId"',
+      'ordItem.adncOptId AS "adncOptId"',
 
-      "bttlOpt.bttlGnrCd AS bttl_gnr_cd",
-      "bttlOpt.bttlRule AS bttl_rule",
-      "bttlOpt.bttlMbrCnt AS bttl_mbr_cnt",
+      'bttlOpt.bttlGnrCd AS "bttlGnrCd"',
+      'bttlOpt.bttlRule AS "bttlRule"',
+      'bttlOpt.bttlMbrCnt AS "bttlMbrCnt"',
 
-      "bttlTeam.bttlTeamNm AS bttl_team_nm",
+      'bttlTeam.bttlTeamNm AS "bttlTeamNm"',
 
-      "adncOpt.optNm AS adnc_opt_nm",
+      'adncOpt.optNm AS "adncOptNm"',
 
-      "bttlr.id",
-      "bttlr.bttlrNm AS bttlr_nm",
-      "bttlr.bttlrDncrNm AS bttlr_dncr_nm",
-      "bttlr.bttlrBirth AS bttlr_birth",
-      "bttlr.bttlrPhn AS bttlr_phn",
-      "adnc.adncNm AS adnc_nm",
-      "pln.plnNm as pln_nm",
-      "pln.plnRoadAddr as pln_road_addr",
-      "pln.plnAddrDtl as pln_addr_dtl",
-      "pln.plnDt as pln_dt",
-      "file.fileNm as tckt_thumb",
+      'bttlr.id AS "bttlrId"',
+      'bttlr.bttlrNm AS "bttlrNm"',
+      'bttlr.bttlrDncrNm AS "bttlrDncrNm"',
+      'bttlr.bttlrBirth AS "bttlrBirth"',
+      'bttlr.bttlrPhn AS "bttlrPhn"',
+      'adnc.adncNm AS "adncNm"',
+      'pln.plnNm AS "plnNm"',
+      'pln.plnRoadAddr AS "plnRoadAddr"',
+      'pln.plnAddrDtl AS "plnAddrDtl"',
+      'pln.plnDt AS "plnDt"',
+      'file.fileNm AS "tcktThumb"',
     ]);
 
     // queryBuilder.where("tckt.tcktHldMbrId = :mbrId", { mbrId });
@@ -132,37 +133,19 @@ export class TcktService {
 
     const rawResults = await queryBuilder.getRawMany();
 
-    const ticketList: TicketListDto[] = rawResults.map((result) => ({
-      tcktId: result.tckt_id,
-      teamAsgnYn: result.team_asgn_yn,
-      hndOvrYn: result.hnd_ovr_yn,
-      usedYn: result.used_yn,
-      ordItemId: result.ordItem_id,
-      bttlOptId: result.bttl_opt_id,
-      adncOptId: result.adnc_opt_id,
-
-      bttlTeamNm: result.bttl_team_nm,
-
-      optTit: result.adnc_opt_nm
-        ? result.adnc_opt_nm
-        : getBttlOptTit({
-            bttlGnrCd: result.bttl_gnr_cd,
-            bttlRule: result.bttl_rule,
-            bttlMbrCnt: result.bttl_mbr_cnt,
-          }),
-
-      bttlrId: result.bttlr_id,
-      bttlrNm: result.bttlr_nm,
-      bttlrDncrNm: result.bttlr_dncr_nm,
-      bttlrBirth: result.bttlr_birth,
-      bttlrPhn: result.bttlr_phn,
-      adncNm: result.adnc_nm,
-      plnNm: result.pln_nm,
-      plnRoadAddr: result.pln_road_addr,
-      plnAddrDtl: result.pln_addr_dtl,
-      plnDt: result.pln_dt,
-      tcktThumb: result.tckt_thumb,
-    }));
+    const ticketList = plainToInstance(
+      TicketListDto,
+      rawResults.map((result) => ({
+        ...result,
+        optTit: result.adncOptNm
+          ? result.adncOptNm
+          : getBttlOptTit({
+              bttlGnrCd: result.bttlGnrCd,
+              bttlRule: result.bttlRule,
+              bttlMbrCnt: result.bttlMbrCnt,
+            }),
+      }))
+    );
 
     return ticketList;
   }
@@ -198,33 +181,33 @@ export class TcktService {
       );
 
     queryBuilder.select([
-      "tckt.id",
-      "tckt.teamAsgnYn AS team_asgn_yn",
-      "tckt.hndOvrYn AS hnd_ovr_yn",
-      "tckt.usedYn AS used_yn",
-      "ordItem.id",
-      "ordItem.bttlOptId AS bttl_opt_id",
-      "ordItem.adncOptId AS adnc_opt_id",
+      'tckt.id AS "tcktId"',
+      'tckt.teamAsgnYn AS "teamAsgnYn"',
+      'tckt.hndOvrYn AS "hndOvrYn"',
+      'tckt.usedYn AS "usedYn"',
+      'ordItem.id AS "ordItemId"',
+      'ordItem.bttlOptId AS "bttlOptId"',
+      'ordItem.adncOptId AS "adncOptId"',
 
-      "bttlOpt.bttlGnrCd AS bttl_gnr_cd",
-      "bttlOpt.bttlRule AS bttl_rule",
-      "bttlOpt.bttlMbrCnt AS bttl_mbr_cnt",
+      'bttlOpt.bttlGnrCd AS "bttlGnrCd"',
+      'bttlOpt.bttlRule AS "bttlRule"',
+      'bttlOpt.bttlMbrCnt AS "bttlMbrCnt"',
 
-      "bttlTeam.bttlTeamNm AS bttl_team_nm",
+      'bttlTeam.bttlTeamNm AS "bttlTeamNm"',
 
-      "adncOpt.optNm AS adnc_opt_nm",
+      'adncOpt.optNm AS "adncOptNm"',
 
-      "bttlr.id",
-      "bttlr.bttlrNm AS bttlr_nm",
-      "bttlr.bttlrDncrNm AS bttlr_dncr_nm",
-      "bttlr.bttlrBirth AS bttlr_birth",
-      "bttlr.bttlrPhn AS bttlr_phn",
-      "adnc.adncNm AS adnc_nm",
-      "pln.plnNm as pln_nm",
-      "pln.plnRoadAddr as pln_road_addr",
-      "pln.plnAddrDtl as pln_addr_dtl",
-      "pln.plnDt as pln_dt",
-      "file.fileNm as tckt_thumb",
+      'bttlr.id AS "bttlrId"',
+      'bttlr.bttlrNm AS "bttlrNm"',
+      'bttlr.bttlrDncrNm AS "bttlrDncrNm"',
+      'bttlr.bttlrBirth AS "bttlrBirth"',
+      'bttlr.bttlrPhn AS "bttlrPhn"',
+      'adnc.adncNm AS "adncNm"',
+      'pln.plnNm AS "plnNm"',
+      'pln.plnRoadAddr AS "plnRoadAddr"',
+      'pln.plnAddrDtl AS "plnAddrDtl"',
+      'pln.plnDt AS "plnDt"',
+      'file.fileNm AS "tcktThumb"',
     ]);
 
     queryBuilder.where("tckt.id = :tcktId", {
@@ -233,41 +216,18 @@ export class TcktService {
     queryBuilder.andWhere("tckt.tcktStt = :tcktStt", { tcktStt: "PAID" });
     queryBuilder.andWhere("file.fileTypeCd = 'THMB_MN'");
 
-    const result = await queryBuilder.getRawOne();
+    const rawResult = await queryBuilder.getRawOne();
 
-    if (result) {
-      const tcktDtl = {
-        tcktId: result.tckt_id,
-        teamAsgnYn: result.team_asgn_yn,
-        hndOvrYn: result.hnd_ovr_yn,
-        usedYn: result.used_yn,
-        ordItemId: result.ordItem_id,
-        bttlOptId: result.bttl_opt_id,
-        adncOptId: result.adnc_opt_id,
-
-        bttlTeamNm: result.bttl_team_nm,
-
-        optTit: result.adnc_opt_nm
-          ? result.adnc_opt_nm
-          : getBttlOptTit({
-              bttlGnrCd: result.bttl_gnr_cd,
-              bttlRule: result.bttl_rule,
-              bttlMbrCnt: result.bttl_mbr_cnt,
-            }),
-
-        bttlrId: result.bttlr_id,
-        bttlrNm: result.bttlr_nm,
-        bttlrDncrNm: result.bttlr_dncr_nm,
-        bttlrBirth: result.bttlr_birth,
-        bttlrPhn: result.bttlr_phn,
-        adncNm: result.adnc_nm,
-        plnNm: result.pln_nm,
-        plnRoadAddr: result.pln_road_addr,
-        plnAddrDtl: result.pln_addr_dtl,
-        plnDt: result.pln_dt,
-        tcktThumb: result.tckt_thumb,
-      };
-      return tcktDtl;
+    if (rawResult) {
+      rawResult.optTit = rawResult.adncOptNm
+        ? rawResult.adncOptNm
+        : getBttlOptTit({
+            bttlGnrCd: rawResult.bttlGnrCd,
+            bttlRule: rawResult.bttlRule,
+            bttlMbrCnt: rawResult.bttlMbrCnt,
+          });
+      const ticketList = plainToInstance(TicketListDto, rawResult);
+      return ticketList;
     } else {
       throw new HttpException(
         "존재하지 않는 티켓입니다.",
