@@ -7,7 +7,7 @@ export function getBttlOptTit({ bttlGnrCd, bttlRule, bttlMbrCnt }) {
 export function getFullGnrNmByCd(bttlGnrCd) {
   switch (bttlGnrCd) {
     case "ALL":
-      return "ALL Ganre";
+      return "ALL Genre";
     case "BRK":
       return "Breaking";
     case "PP":
