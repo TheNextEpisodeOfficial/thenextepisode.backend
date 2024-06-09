@@ -14,4 +14,8 @@ export class TicketListDto {
   bttlrPhn: string | null;
   adncNm: string | null;
   plnNm: string | null;
+  plnRoadAddr: string | null;
+  plnAddrDtl: string | null;
+  plnDt: string | null;
+  tcktThumb: string | null;
 }
