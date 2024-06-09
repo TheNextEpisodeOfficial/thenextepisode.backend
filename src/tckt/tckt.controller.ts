@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req } from "@nestjs/common";
+import { Controller, Get, Query, Req, Res } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiOperation,
@@ -104,12 +104,23 @@ export class TcktController {
     type: String,
   })
   async useTcktById(
+    @Res({ passthrough: true }) res: Response,
     @Query("tcktId") tcktId: string,
     @I18n() i18n: I18nContext
   ) {
     try {
       const tcktDtl = await this.tcktService.useTcktById(tcktId);
-      return tcktDtl;
+      if (tcktDtl.affected === 1) {
+        return {
+          status: 200,
+          message: "성공",
+        };
+      } else {
+        return {
+          status: 500,
+          message: "실패",
+        };
+      }
     } catch (err) {
       return err;
     }

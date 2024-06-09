@@ -277,6 +277,13 @@ export class TcktService {
   }
 
   async useTcktById(tcktId: string) {
-    this.tcktRepository.update({ id: tcktId }, { usedYn: "Y" });
+    try {
+      return this.tcktRepository.update({ id: tcktId }, { usedYn: "Y" });
+    } catch (err) {
+      throw new HttpException(
+        "티켓 사용처리에 실패하였습니다.",
+        HttpStatus.BAD_REQUEST
+      );
+    }
   }
 }
