@@ -20,13 +20,9 @@ export class OrdItemEntity extends CommonEntity {
   ordId: string;
 
   @Column({ type: "uuid", comment: "배틀옵션 아이디", nullable: true })
-  @ManyToOne(() => BttlOptEntity, (bttlOpt) => bttlOpt.id)
-  @JoinColumn({ name: "bttl_opt_id" })
   bttlOptId: string;
 
   @Column({ type: "uuid", comment: "입장옵션 아이디", nullable: true })
-  @ManyToOne(() => AdncOptEntity, (adncOpt) => adncOpt.id)
-  @JoinColumn({ name: "adnc_opt_id" })
   adncOptId: string;
 
   @Column({ type: "decimal", comment: "판매금액" })
@@ -68,4 +64,12 @@ export class OrdItemEntity extends CommonEntity {
 
   @OneToMany(() => TcktEntity, (tckt) => tckt.ordItem)
   tckt: TcktEntity;
+
+  @ManyToOne(() => BttlOptEntity, (bttlOpt) => bttlOpt.ordItem)
+  @JoinColumn({ name: "bttl_opt_id" })
+  bttlOpt: BttlOptEntity;
+
+  @ManyToOne(() => AdncOptEntity, (adncOpt) => adncOpt.ordItem)
+  @JoinColumn({ name: "adnc_opt_id" })
+  adncOpt: AdncOptEntity;
 }

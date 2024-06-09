@@ -1,7 +1,8 @@
 import { ColumnNumericTransformer } from "@src/util/number";
-import { Column, Entity, JoinColumn, ManyToOne } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { PlnEntity } from "../../pln/entities/pln.entity";
+import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
 
 @Entity("adnc_opt")
 export class AdncOptEntity extends CommonEntity {
@@ -39,4 +40,7 @@ export class AdncOptEntity extends CommonEntity {
 
   @Column({ type: "timestamp", comment: "예매 마감 일시" })
   rsvEndDt;
+
+  @OneToMany(() => OrdItemEntity, (ordItem) => ordItem.adncOpt)
+  ordItem: OrdItemEntity[];
 }

@@ -4,12 +4,11 @@ import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
 import { ColumnNumericTransformer } from "@src/util/number";
+import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
 
 @Entity("bttl_opt")
 export class BttlOptEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "플랜 아이디" })
-  @ManyToOne(() => PlnEntity, (pln) => pln.id)
-  @JoinColumn({ name: "pln_id" })
   plnId: string;
 
   @ApiProperty({ type: String, required: false, default: "BRKN" })
@@ -61,4 +60,11 @@ export class BttlOptEntity extends CommonEntity {
 
   @OneToMany(() => BttlOptRoleEntity, (role) => role.bttlOpt)
   bttlOptRole: BttlOptRoleEntity[];
+
+  @OneToMany(() => OrdItemEntity, (ordItem) => ordItem.bttlOpt)
+  ordItem: OrdItemEntity[];
+
+  @ManyToOne(() => PlnEntity, (pln) => pln.bttlOpt)
+  @JoinColumn({ name: "pln_id" })
+  pln: PlnEntity;
 }

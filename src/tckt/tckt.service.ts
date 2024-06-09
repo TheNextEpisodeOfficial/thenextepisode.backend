@@ -5,6 +5,9 @@ import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
 import { randomUUID } from "crypto";
 import { EntityManager, Repository } from "typeorm";
 import { TcktEntity } from "./entities/tckt.entity";
+import { MbrEntity } from "@src/mbr/entities/mbr.entity";
+import { PlnEntity } from "@src/pln/entities/pln.entity";
+import { TicketListDto } from "./dtos/tckt.dto";
 @Injectable()
 export class TcktService {
   constructor(
@@ -60,12 +63,64 @@ export class TcktService {
   /**
    * 멤버 아이디를 기준으로 보유중인 티켓을 가져온다.
    */
-  async getMyTckts(mbrId: string) {
-    this.tcktRepository.find({
-      where: {
-        tcktHldMbrId: mbrId,
-        tcktStt: "PAID",
-      },
-    });
+  async getMyTckts(mbrId: string): Promise<TicketListDto[]> {
+    const queryBuilder = this.tcktRepository
+      .createQueryBuilder("tckt")
+      .leftJoinAndSelect("tckt.ordItem", "ordItem")
+      .leftJoinAndSelect("tckt.bttlr", "bttlr")
+      .leftJoinAndSelect("tckt.adnc", "adnc")
+      .leftJoinAndSelect("ordItem.bttlOpt", "bttlOpt")
+      .leftJoinAndSelect("ordItem.adncOpt", "adncOpt")
+      .leftJoinAndMapOne(
+        "ordItem.pln",
+        PlnEntity,
+        "pln",
+        "pln.id = COALESCE(bttlOpt.plnId, adncOpt.plnId)"
+      );
+
+    queryBuilder.select([
+      "tckt.id",
+      "tckt.teamAsgnYn",
+      "tckt.hndOvrYn",
+      "tckt.usedYn",
+      "ordItem.id",
+      "ordItem.bttlOptId",
+      "ordItem.adncOptId",
+      "CONCAT(bttlOpt.bttlRule, bttlOpt.bttlMbrCnt, 'ON', bttlOpt.bttlMbrCnt) AS bttl_opt_tit",
+      "bttlr.id",
+      "bttlr.bttlrNm",
+      "bttlr.bttlrDncrNm",
+      "bttlr.bttlrBirth",
+      "bttlr.bttlrPhn",
+      "adnc.adncNm",
+      "pln.plnNm as pln_nm",
+    ]);
+
+    queryBuilder.where("tckt.tcktHldMbrId = :mbrId", { mbrId });
+    queryBuilder.andWhere("tckt.tcktStt = :tcktStt", { tcktStt: "PAID" });
+
+    const rawResults = await queryBuilder.getRawMany();
+
+    const ticketList: TicketListDto[] = rawResults.map((result) => ({
+      tcktId: result.tckt_id,
+      teamAsgnYn: result.tckt_team_asgn_yn,
+      hndOvrYn: result.tckt_hnd_ovr_yn,
+      usedYn: result.tckt_used_yn,
+      ordItemId: result.ordItem_id,
+      bttlOptId: result.ordItem_bttl_opt_id,
+      adncOptId: result.ordItem_adnc_opt_id,
+      bttlOptTit: result.bttl_opt_tit,
+      bttlrId: result.bttlr_id,
+      bttlrNm: result.bttlr_bttlr_nm,
+      bttlrDncrNm: result.bttlr_bttlr_dncr_nm,
+      bttlrBirth: result.bttlr_bttlr_birth,
+      bttlrPhn: result.bttlr_bttlr_phn,
+      adncNm: result.adnc_adnc_nm,
+      plnNm: result.pln_nm,
+    }));
+
+    console.log(ticketList);
+
+    return ticketList;
   }
 }

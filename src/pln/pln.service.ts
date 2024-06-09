@@ -88,6 +88,11 @@ export class PlnService {
     return this.plnRepository.find({ where: { delYn: "N" } });
   }
 
+  /**
+   * 멤버 아이디로 기획한 플랜 리스트를 조회한다.
+   * @param mbrId
+   * @returns
+   */
   async getPlndPln(mbrId: string): Promise<PlnEntity[]> {
     return this.plnRepository.find({
       where: { createdBy: mbrId, delYn: "N" },

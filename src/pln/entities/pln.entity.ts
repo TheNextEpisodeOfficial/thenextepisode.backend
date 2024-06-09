@@ -95,6 +95,7 @@ export class PlnEntity extends CommonEntity {
   fileGrpId: string;
 
   @ApiProperty({ type: [BttlOptEntity], required: false })
+  @OneToMany(() => BttlOptEntity, (bttlOpt) => bttlOpt.pln)
   bttlOpt: BttlOptEntity[];
 
   @ApiProperty({ type: [AdncOptEntity], required: false })
