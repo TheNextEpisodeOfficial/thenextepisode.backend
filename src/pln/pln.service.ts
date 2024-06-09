@@ -17,6 +17,7 @@ import { AdncOptEntity } from "../adncOpt/entities/adncOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
 import { logger } from "@src/util/logger";
+import { getBttlOptTit } from "@src/util/system";
 
 @Injectable()
 export class PlnService {
@@ -54,6 +55,11 @@ export class PlnService {
     if (bttlOpt) {
       await Promise.all(
         bttlOpt.map(async (opt) => {
+          opt.optTit = getBttlOptTit({
+            bttlGnrCd: opt.bttlGnrCd,
+            bttlRule: opt.bttlRule,
+            bttlMbrCnt: opt.bttlMbrCnt,
+          });
           opt.bttlOptRole = await this.bttlOptRoleRepository
             .createQueryBuilder("bor")
             .leftJoinAndSelect("bor.celeb", "c", "bor.role_celeb_id = c.id")

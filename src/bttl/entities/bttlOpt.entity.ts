@@ -67,4 +67,6 @@ export class BttlOptEntity extends CommonEntity {
   @ManyToOne(() => PlnEntity, (pln) => pln.bttlOpt)
   @JoinColumn({ name: "pln_id" })
   pln: PlnEntity;
+
+  optTit: string;
 }

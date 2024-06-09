@@ -9,6 +9,7 @@ import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { TicketListDto } from "./dtos/tckt.dto";
 import { FileEntity } from "@src/s3file/entities/file.entity";
+import { getBttlOptTit } from "@src/util/system";
 @Injectable()
 export class TcktService {
   constructor(
@@ -93,7 +94,13 @@ export class TcktService {
       "ordItem.id",
       "ordItem.bttlOptId",
       "ordItem.adncOptId",
-      "CONCAT(bttlOpt.bttlRule, bttlOpt.bttlMbrCnt, 'ON', bttlOpt.bttlMbrCnt) AS bttl_opt_tit",
+
+      "bttlOpt.bttlGnrCd AS bttl_gnr_cd",
+      "bttlOpt.bttlRule AS bttl_rule",
+      "bttlOpt.bttlMbrCnt AS bttl_mbr_cnt",
+
+      "adncOpt.optNm AS adnc_opt_nm",
+
       "bttlr.id",
       "bttlr.bttlrNm",
       "bttlr.bttlrDncrNm",
@@ -124,7 +131,15 @@ export class TcktService {
       ordItemId: result.ordItem_id,
       bttlOptId: result.ordItem_bttl_opt_id,
       adncOptId: result.ordItem_adnc_opt_id,
-      bttlOptTit: result.bttl_opt_tit,
+
+      optTit: result.adnc_opt_nm
+        ? result.adnc_opt_nm
+        : getBttlOptTit({
+            bttlGnrCd: result.bttl_gnr_cd,
+            bttlRule: result.bttl_rule,
+            bttlMbrCnt: result.bttl_mbr_cnt,
+          }),
+
       bttlrId: result.bttlr_id,
       bttlrNm: result.bttlr_bttlr_nm,
       bttlrDncrNm: result.bttlr_bttlr_dncr_nm,
@@ -137,8 +152,6 @@ export class TcktService {
       plnDt: result.pln_dt,
       tcktThumb: result.tckt_thumb,
     }));
-
-    console.log(ticketList);
 
     return ticketList;
   }

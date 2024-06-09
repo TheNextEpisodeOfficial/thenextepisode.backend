@@ -6,8 +6,10 @@ export class TicketListDto {
   ordItemId: string;
   bttlOptId: string | null;
   adncOptId: string | null;
-  bttlOptTit: string | null;
+
+  optTit: string | null;
   bttlrId: string | null;
+
   bttlrNm: string | null;
   bttlrDncrNm: string | null;
   bttlrBirth: string | null;
