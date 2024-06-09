@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { BttlrEntity } from "@src/bttlr/entities/bttlr.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
@@ -10,6 +10,7 @@ import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { TicketListDto } from "./dtos/tckt.dto";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { getBttlOptTit } from "@src/util/system";
+import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
 @Injectable()
 export class TcktService {
   constructor(
@@ -63,7 +64,7 @@ export class TcktService {
   }
 
   /**
-   * 멤버 아이디를 기준으로 보유중인 티켓을 가져온다.
+   * 멤버 아이디를 기준으로 보유중인 티켓 리스트를 가져온다.
    */
   async getMyTckts(mbrId: string): Promise<TicketListDto[]> {
     const queryBuilder = this.tcktRepository
@@ -73,6 +74,12 @@ export class TcktService {
       .leftJoinAndSelect("tckt.adnc", "adnc")
       .leftJoinAndSelect("ordItem.bttlOpt", "bttlOpt")
       .leftJoinAndSelect("ordItem.adncOpt", "adncOpt")
+      .leftJoinAndMapOne(
+        "bttl_team",
+        BttlTeamEntity,
+        "bttlTeam",
+        "bttlTeam.id = bttlr.bttlTeamId"
+      )
       .leftJoinAndMapOne(
         "ordItem.pln",
         PlnEntity,
@@ -88,25 +95,27 @@ export class TcktService {
 
     queryBuilder.select([
       "tckt.id",
-      "tckt.teamAsgnYn",
-      "tckt.hndOvrYn",
-      "tckt.usedYn",
+      "tckt.teamAsgnYn AS team_asgn_yn",
+      "tckt.hndOvrYn AS hnd_ovr_yn",
+      "tckt.usedYn AS used_yn",
       "ordItem.id",
-      "ordItem.bttlOptId",
-      "ordItem.adncOptId",
+      "ordItem.bttlOptId AS bttl_opt_id",
+      "ordItem.adncOptId AS adnc_opt_id",
 
       "bttlOpt.bttlGnrCd AS bttl_gnr_cd",
       "bttlOpt.bttlRule AS bttl_rule",
       "bttlOpt.bttlMbrCnt AS bttl_mbr_cnt",
 
+      "bttlTeam.bttlTeamNm AS bttl_team_nm",
+
       "adncOpt.optNm AS adnc_opt_nm",
 
       "bttlr.id",
-      "bttlr.bttlrNm",
-      "bttlr.bttlrDncrNm",
-      "bttlr.bttlrBirth",
-      "bttlr.bttlrPhn",
-      "adnc.adncNm",
+      "bttlr.bttlrNm AS bttlr_nm",
+      "bttlr.bttlrDncrNm AS bttlr_dncr_nm",
+      "bttlr.bttlrBirth AS bttlr_birth",
+      "bttlr.bttlrPhn AS bttlr_phn",
+      "adnc.adncNm AS adnc_nm",
       "pln.plnNm as pln_nm",
       "pln.plnRoadAddr as pln_road_addr",
       "pln.plnAddrDtl as pln_addr_dtl",
@@ -114,10 +123,10 @@ export class TcktService {
       "file.fileNm as tckt_thumb",
     ]);
 
-    queryBuilder.where("tckt.tcktHldMbrId = :mbrId", { mbrId });
-    // queryBuilder.where("tckt.tcktHldMbrId = :mbrId", {
-    //   mbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
-    // });
+    // queryBuilder.where("tckt.tcktHldMbrId = :mbrId", { mbrId });
+    queryBuilder.where("tckt.tcktHldMbrId = :mbrId", {
+      mbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
+    });
     queryBuilder.andWhere("tckt.tcktStt = :tcktStt", { tcktStt: "PAID" });
     queryBuilder.andWhere("file.fileTypeCd = 'THMB_MN'");
 
@@ -125,12 +134,14 @@ export class TcktService {
 
     const ticketList: TicketListDto[] = rawResults.map((result) => ({
       tcktId: result.tckt_id,
-      teamAsgnYn: result.tckt_team_asgn_yn,
-      hndOvrYn: result.tckt_hnd_ovr_yn,
-      usedYn: result.tckt_used_yn,
+      teamAsgnYn: result.team_asgn_yn,
+      hndOvrYn: result.hnd_ovr_yn,
+      usedYn: result.used_yn,
       ordItemId: result.ordItem_id,
-      bttlOptId: result.ordItem_bttl_opt_id,
-      adncOptId: result.ordItem_adnc_opt_id,
+      bttlOptId: result.bttl_opt_id,
+      adncOptId: result.adnc_opt_id,
+
+      bttlTeamNm: result.bttl_team_nm,
 
       optTit: result.adnc_opt_nm
         ? result.adnc_opt_nm
@@ -141,11 +152,11 @@ export class TcktService {
           }),
 
       bttlrId: result.bttlr_id,
-      bttlrNm: result.bttlr_bttlr_nm,
-      bttlrDncrNm: result.bttlr_bttlr_dncr_nm,
-      bttlrBirth: result.bttlr_bttlr_birth,
-      bttlrPhn: result.bttlr_bttlr_phn,
-      adncNm: result.adnc_adnc_nm,
+      bttlrNm: result.bttlr_nm,
+      bttlrDncrNm: result.bttlr_dncr_nm,
+      bttlrBirth: result.bttlr_birth,
+      bttlrPhn: result.bttlr_phn,
+      adncNm: result.adnc_nm,
       plnNm: result.pln_nm,
       plnRoadAddr: result.pln_road_addr,
       plnAddrDtl: result.pln_addr_dtl,
@@ -154,5 +165,114 @@ export class TcktService {
     }));
 
     return ticketList;
+  }
+
+  /**
+   * 티켓 아이디를 기준으로 티켓 상세정보를 가져온다.
+   */
+  async getTcktDtlById(tcktId: string): Promise<TicketListDto> {
+    const queryBuilder = this.tcktRepository
+      .createQueryBuilder("tckt")
+      .leftJoinAndSelect("tckt.ordItem", "ordItem")
+      .leftJoinAndSelect("tckt.bttlr", "bttlr")
+      .leftJoinAndSelect("tckt.adnc", "adnc")
+      .leftJoinAndSelect("ordItem.bttlOpt", "bttlOpt")
+      .leftJoinAndSelect("ordItem.adncOpt", "adncOpt")
+      .leftJoinAndMapOne(
+        "bttl_team",
+        BttlTeamEntity,
+        "bttlTeam",
+        "bttlTeam.id = bttlr.bttlTeamId"
+      )
+      .leftJoinAndMapOne(
+        "ordItem.pln",
+        PlnEntity,
+        "pln",
+        "pln.id = COALESCE(bttlOpt.plnId, adncOpt.plnId)"
+      )
+      .leftJoinAndMapOne(
+        "s3_file",
+        FileEntity,
+        "file",
+        "file.fileGrpId = pln.fileGrpId"
+      );
+
+    queryBuilder.select([
+      "tckt.id",
+      "tckt.teamAsgnYn AS team_asgn_yn",
+      "tckt.hndOvrYn AS hnd_ovr_yn",
+      "tckt.usedYn AS used_yn",
+      "ordItem.id",
+      "ordItem.bttlOptId AS bttl_opt_id",
+      "ordItem.adncOptId AS adnc_opt_id",
+
+      "bttlOpt.bttlGnrCd AS bttl_gnr_cd",
+      "bttlOpt.bttlRule AS bttl_rule",
+      "bttlOpt.bttlMbrCnt AS bttl_mbr_cnt",
+
+      "bttlTeam.bttlTeamNm AS bttl_team_nm",
+
+      "adncOpt.optNm AS adnc_opt_nm",
+
+      "bttlr.id",
+      "bttlr.bttlrNm AS bttlr_nm",
+      "bttlr.bttlrDncrNm AS bttlr_dncr_nm",
+      "bttlr.bttlrBirth AS bttlr_birth",
+      "bttlr.bttlrPhn AS bttlr_phn",
+      "adnc.adncNm AS adnc_nm",
+      "pln.plnNm as pln_nm",
+      "pln.plnRoadAddr as pln_road_addr",
+      "pln.plnAddrDtl as pln_addr_dtl",
+      "pln.plnDt as pln_dt",
+      "file.fileNm as tckt_thumb",
+    ]);
+
+    queryBuilder.where("tckt.id = :tcktId", {
+      tcktId: tcktId,
+    });
+    queryBuilder.andWhere("tckt.tcktStt = :tcktStt", { tcktStt: "PAID" });
+    queryBuilder.andWhere("file.fileTypeCd = 'THMB_MN'");
+
+    const result = await queryBuilder.getRawOne();
+
+    if (result) {
+      const tcktDtl = {
+        tcktId: result.tckt_id,
+        teamAsgnYn: result.team_asgn_yn,
+        hndOvrYn: result.hnd_ovr_yn,
+        usedYn: result.used_yn,
+        ordItemId: result.ordItem_id,
+        bttlOptId: result.bttl_opt_id,
+        adncOptId: result.adnc_opt_id,
+
+        bttlTeamNm: result.bttl_team_nm,
+
+        optTit: result.adnc_opt_nm
+          ? result.adnc_opt_nm
+          : getBttlOptTit({
+              bttlGnrCd: result.bttl_gnr_cd,
+              bttlRule: result.bttl_rule,
+              bttlMbrCnt: result.bttl_mbr_cnt,
+            }),
+
+        bttlrId: result.bttlr_id,
+        bttlrNm: result.bttlr_nm,
+        bttlrDncrNm: result.bttlr_dncr_nm,
+        bttlrBirth: result.bttlr_birth,
+        bttlrPhn: result.bttlr_phn,
+        adncNm: result.adnc_nm,
+        plnNm: result.pln_nm,
+        plnRoadAddr: result.pln_road_addr,
+        plnAddrDtl: result.pln_addr_dtl,
+        plnDt: result.pln_dt,
+        tcktThumb: result.tckt_thumb,
+      };
+      return tcktDtl;
+    } else {
+      throw new HttpException(
+        "존재하지 않는 티켓입니다.",
+        HttpStatus.NOT_FOUND
+      );
+    }
   }
 }

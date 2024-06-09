@@ -1,11 +1,15 @@
-import { Controller, Get, Query } from "@nestjs/common";
+import { Controller, Get, Query, Req } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from "@nestjs/swagger";
+import { Request, Response } from "express";
+import { SessionData } from "express-session";
 import { I18n, I18nContext } from "nestjs-i18n";
+import { TicketListDto } from "./dtos/tckt.dto";
 import { TcktEntity } from "./entities/tckt.entity";
 import { TcktService } from "./tckt.service";
 
@@ -22,10 +26,10 @@ export class TcktController {
   @Get("/getMyTckts")
   @ApiOperation({
     summary: "보유 티켓 조회",
-    description: "멤버 아이디를 기준으로 보유중인 티켓을 가져온다.",
+    description: "멤버 아이디를 기준으로 보유중인 티켓 리스트를 가져온다.",
   })
   @ApiCreatedResponse({
-    description: "멤버 아이디를 기준으로 보유중인 티켓을 가져온다.",
+    description: "멤버 아이디를 기준으로 보유중인 티켓 리스트를 가져온다.",
     type: TcktEntity,
   })
   @ApiParam({
@@ -34,11 +38,50 @@ export class TcktController {
     description: "멤버 아이디",
     type: String,
   })
-  async getMyTckts(@Query("mbrId") mbrId: string, @I18n() i18n: I18nContext) {
+  async getMyTckts(
+    @Req() req: Request,
+    @Query("mbrId") mbrId: string,
+    @I18n() i18n: I18nContext
+  ) {
+    // let session: SessionData = req.session;
+    // console.log("session:::", session);
     const tckts = await this.tcktService.getMyTckts(mbrId);
     return tckts;
   }
   /**
    * E : getMyTckts
+   */
+
+  /**
+   * S : getTcktDtlById
+   */
+  @Get("/getTcktDtlById")
+  @ApiOperation({
+    summary: "티켓 아이디로 티켓 상세 조회",
+    description: "티켓 아이디를 기준으로 티켓 상세정보를 가져온다.",
+  })
+  @ApiCreatedResponse({
+    description: "티켓 아이디를 기준으로 티켓 상세정보를 가져온다.",
+    type: TicketListDto,
+  })
+  @ApiQuery({
+    name: "tcktId",
+    required: true,
+    description: "티켓 아이디",
+    type: String,
+  })
+  async getTcktDtlById(
+    @Query("tcktId") tcktId: string,
+    @I18n() i18n: I18nContext
+  ) {
+    try {
+      const tcktDtl = await this.tcktService.getTcktDtlById(tcktId);
+      return tcktDtl;
+    } catch (err) {
+      return err;
+    }
+  }
+  /**
+   * E : getTcktDtlById
    */
 }

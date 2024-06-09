@@ -11,6 +11,7 @@ import {
   ApiCreatedResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from "@nestjs/swagger";
 import { Response } from "@src/types/response";
@@ -41,7 +42,7 @@ export class PlnController {
     description: "플랜 ID로 플랜 상세를 가져온다.",
     type: PlnEntity,
   })
-  @ApiParam({
+  @ApiQuery({
     name: "plnId",
     required: true,
     description: "플랜 아이디",
