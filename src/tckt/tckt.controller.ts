@@ -84,4 +84,37 @@ export class TcktController {
   /**
    * E : getTcktDtlById
    */
+
+  /**
+   * S : useTcktById
+   */
+  @Get("/useTcktById")
+  @ApiOperation({
+    summary: "티켓 아이디로 티켓을 사용처리",
+    description: "티켓 아이디로 티켓을 사용처리 한다.",
+  })
+  @ApiCreatedResponse({
+    description: "티켓 아이디로 티켓을 사용처리 한다.",
+    type: TicketListDto,
+  })
+  @ApiQuery({
+    name: "tcktId",
+    required: true,
+    description: "티켓 아이디",
+    type: String,
+  })
+  async useTcktById(
+    @Query("tcktId") tcktId: string,
+    @I18n() i18n: I18nContext
+  ) {
+    try {
+      const tcktDtl = await this.tcktService.useTcktById(tcktId);
+      return tcktDtl;
+    } catch (err) {
+      return err;
+    }
+  }
+  /**
+   * E : useTcktById
+   */
 }

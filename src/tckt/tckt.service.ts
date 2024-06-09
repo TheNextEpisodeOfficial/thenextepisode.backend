@@ -275,4 +275,8 @@ export class TcktService {
       );
     }
   }
+
+  async useTcktById(tcktId: string) {
+    this.tcktRepository.update({ id: tcktId }, { usedYn: "Y" });
+  }
 }
