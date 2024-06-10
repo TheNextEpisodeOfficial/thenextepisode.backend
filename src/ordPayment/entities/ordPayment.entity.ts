@@ -7,8 +7,6 @@ import { CommonEntity } from "../../config/entities/common.entity";
 @Entity("ord_payment")
 export class OrdPaymentEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "주문 아이디" })
-  @OneToOne(() => OrdEntity, (ord) => ord.id)
-  @JoinColumn({ name: "ord_id" })
   orderId: string;
 
   @ApiProperty({ type: String, required: true, default: "주문명" })
@@ -64,10 +62,6 @@ export class OrdPaymentEntity extends CommonEntity {
   @ApiProperty({ type: Boolean, required: true, default: "에스크로 여부" })
   @Column({ type: "boolean", comment: "에스크로 여부" })
   useEscrow;
-
-  // @ApiProperty({ type: String, required: true, default: "TID(결제승인번호)" })
-  // @Column({ type: "varchar", length: 100, comment: "TID(결제승인번호)" })
-  // tId;
 
   /**
    * S : Spread Card Object
@@ -374,4 +368,8 @@ export class OrdPaymentEntity extends CommonEntity {
     nullable: true,
   })
   cancelAmount: number;
+
+  @OneToOne(() => OrdEntity, (ord) => ord.ordPayment)
+  @JoinColumn({ name: "ord_id" })
+  ord: OrdEntity;
 }

@@ -1,8 +1,16 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
+import { OrdPaymentEntity } from "@src/ordPayment/entities/ordPayment.entity";
 
 @Entity("ord")
 export class OrdEntity extends CommonEntity {
@@ -33,4 +41,8 @@ export class OrdEntity extends CommonEntity {
 
   @OneToMany(() => OrdItemEntity, (ordItem) => ordItem.ord)
   ordItem: OrdItemEntity[];
+
+  @OneToOne(() => OrdPaymentEntity, (ordPayment) => ordPayment.ord)
+  @JoinColumn({ name: "ord_id" })
+  ordPayment: OrdPaymentEntity;
 }
