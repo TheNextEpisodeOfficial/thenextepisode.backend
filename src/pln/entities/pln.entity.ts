@@ -2,9 +2,17 @@ import { ApiProperty } from "@nestjs/swagger";
 import { AdncOptEntity } from "@src/adncOpt/entities/adncOpt.entity";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  OneToMany,
+  PrimaryGeneratedColumn,
+  Unique,
+} from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 @Entity("pln")
+@Unique(["fileGrpId"])
 export class PlnEntity extends CommonEntity {
   @ApiProperty({ type: String, required: true, default: "플랜명" })
   @Column({ type: "varchar", length: 100, comment: "플랜명" })
@@ -40,7 +48,11 @@ export class PlnEntity extends CommonEntity {
   plnAddrDtl;
 
   @ApiProperty({ type: String, required: true, default: "플랜소개" })
-  @Column({ type: "varchar", length: 1000, comment: "플랜소개" })
+  @Column({
+    type: "varchar",
+    length: 5000,
+    comment: "플랜소개",
+  })
   plnDsc;
 
   @ApiProperty({ type: Number, required: true, default: 0 })
@@ -88,13 +100,15 @@ export class PlnEntity extends CommonEntity {
   @ApiProperty({ type: String, required: true, default: "파일그룹 아이디" })
   @Column({
     type: "varchar",
-    length: 100,
     comment: "파일그룹 아이디",
-    nullable: true,
   })
   fileGrpId: string;
 
+  @OneToMany(() => FileEntity, (file) => file.pln)
+  file: FileEntity[];
+
   @ApiProperty({ type: [BttlOptEntity], required: false })
+  @OneToMany(() => BttlOptEntity, (bttlOpt) => bttlOpt.pln)
   bttlOpt: BttlOptEntity[];
 
   @ApiProperty({ type: [AdncOptEntity], required: false })
@@ -102,4 +116,6 @@ export class PlnEntity extends CommonEntity {
 
   @ApiProperty({ type: [FileEntity], required: false })
   plnImgs: FileEntity[];
+
+  thumb: string;
 }

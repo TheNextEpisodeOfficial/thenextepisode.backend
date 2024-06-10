@@ -9,7 +9,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "주문 아이디" })
   @OneToOne(() => OrdEntity, (ord) => ord.id)
   @JoinColumn({ name: "ord_id" })
-  ordId: string;
+  orderId: string;
 
   @ApiProperty({ type: String, required: true, default: "주문명" })
   @Column({ type: "varchar", length: 500, comment: "주문명" })
@@ -17,7 +17,7 @@ export class OrdPaymentEntity extends CommonEntity {
 
   @ApiProperty({ type: String, required: true, default: "결제 KEY" })
   @Column({ type: "varchar", length: 200, comment: "토스페이 주문아이디" })
-  orderNum;
+  orderNum: string;
 
   @ApiProperty({ type: String, required: true, default: "결제 구분코드" })
   @Column({ type: "varchar", length: 10, comment: "결제 구분코드" })
@@ -65,9 +65,9 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({ type: "boolean", comment: "에스크로 여부" })
   useEscrow;
 
-  @ApiProperty({ type: String, required: true, default: "TID(결제승인번호)" })
-  @Column({ type: "varchar", length: 100, comment: "TID(결제승인번호)" })
-  tId;
+  // @ApiProperty({ type: String, required: true, default: "TID(결제승인번호)" })
+  // @Column({ type: "varchar", length: 100, comment: "TID(결제승인번호)" })
+  // tId;
 
   /**
    * S : Spread Card Object
@@ -239,6 +239,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "varchar",
     length: 100,
     comment: "오류 타입",
+    nullable: true,
   })
   failureCode: string;
 
@@ -250,6 +251,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "varchar",
     length: 510,
     comment: "에러 메세지",
+    nullable: true,
   })
   failureMessage: string;
   /**
@@ -262,7 +264,7 @@ export class OrdPaymentEntity extends CommonEntity {
   })
   @Column({
     type: "varchar",
-    length: 2,
+    length: 3,
     comment: "결제 통화",
   })
   currency: string;
@@ -314,6 +316,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({
     type: "decimal",
     comment: "할인금액",
+    nullable: true,
   })
   discountAmount: number;
 
@@ -346,6 +349,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "varchar",
     length: 1,
     comment: "부분취소여부",
+    default: "N",
   })
   partialCancelableYn: string;
 
@@ -356,6 +360,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({
     type: "timestamp",
     comment: "취소일시",
+    nullable: true,
   })
   cancelledAt: string;
 
@@ -366,6 +371,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({
     type: "decimal",
     comment: "취소금액",
+    nullable: true,
   })
   cancelAmount: number;
 }

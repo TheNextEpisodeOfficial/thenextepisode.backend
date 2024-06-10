@@ -1,4 +1,11 @@
-import { Controller, Get, HttpException, HttpStatus } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+} from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { InsertResult } from "typeorm";
 import { OrdPaymentEntity } from "./entities/ordPayment.entity";
@@ -15,7 +22,7 @@ export class OrdPaymentController {
   /**
    * S : createOrdPayment
    */
-  @Get("/createOrdPayment")
+  @Post("/createOrdPayment")
   @ApiOperation({
     summary: "결제 데이터를 생성",
     description:
@@ -26,12 +33,14 @@ export class OrdPaymentController {
       "결제 데이터를 생성한다. <결제, 티켓> 테이블에 데이터를 생성한다.",
     type: OrdPaymentEntity,
   })
-  async createOrd(ordPayment: OrdPaymentEntity): Promise<InsertResult> {
+  async createOrd(@Body() ordPayment: OrdPaymentEntity): Promise<InsertResult> {
     try {
-      const ordInsertResult = await this.ordPaymentService.createPayment(
+      const ordInsertResult = await this.ordPaymentService.createOrdPayment(
         ordPayment
       );
-      return ordInsertResult;
+      if (ordInsertResult) {
+        return ordInsertResult;
+      }
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
     }

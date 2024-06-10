@@ -11,9 +11,10 @@ import {
   ApiCreatedResponse,
   ApiOperation,
   ApiParam,
+  ApiQuery,
   ApiTags,
 } from "@nestjs/swagger";
-import { response } from "@src/types/response";
+import { Response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
 import { SrchPlnDto } from "./dtos/pln.dto";
@@ -41,7 +42,7 @@ export class PlnController {
     description: "플랜 ID로 플랜 상세를 가져온다.",
     type: PlnEntity,
   })
-  @ApiParam({
+  @ApiQuery({
     name: "plnId",
     required: true,
     description: "플랜 아이디",

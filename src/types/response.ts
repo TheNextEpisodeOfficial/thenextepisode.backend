@@ -1,6 +1,6 @@
-export interface response<T> {
+export class Response<T> {
   title?: string;
-  message: string;
-  data: T;
-  status: number;
+  message?: string;
+  data?: T;
+  status?: number;
 }

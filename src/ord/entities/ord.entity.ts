@@ -13,23 +13,23 @@ export class OrdEntity extends CommonEntity {
 
   @ApiProperty({ type: String, required: true, default: "주문번호" })
   @Column({ type: "varchar", length: 36, comment: "주문번호" })
-  ordNum;
+  ordNum: string;
 
-  @ApiProperty({ type: String, required: true, default: "DONE" })
-  @Column({ type: "varchar", length: 10, comment: "상태" })
-  ordStt;
+  @ApiProperty({ type: String, required: true, default: "PENDING" })
+  @Column({ type: "varchar", length: 10, comment: "상태", default: "PENDING" })
+  ordStt: string;
 
   @ApiProperty({ type: Number, required: true, default: 10000 })
   @Column({ type: "decimal", comment: "총 주문금액" })
-  totalOrdAmt;
+  totalOrdAmt: number;
 
   @ApiProperty({ type: Number, required: true, default: 8000 })
   @Column({ type: "decimal", comment: "총 주문금액" })
-  totalPayAmt;
+  totalPayAmt: number;
 
   @ApiProperty({ type: Number, required: true, default: 2000 })
   @Column({ type: "decimal", comment: "총 할인금액" })
-  totalDscntAmt;
+  totalDscntAmt: number;
 
   @OneToMany(() => OrdItemEntity, (ordItem) => ordItem.ord)
   ordItem: OrdItemEntity[];

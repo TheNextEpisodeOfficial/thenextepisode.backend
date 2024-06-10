@@ -15,8 +15,6 @@ import { TcktEntity } from "@src/tckt/entities/tckt.entity";
 @Entity("adnc")
 export class AdncEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "입장 옵션 아이디" })
-  @ManyToOne(() => AdncOptEntity, (adncOpt) => adncOpt.id)
-  @JoinColumn({ name: "adnc_opt_id" })
   adncOptId: string;
 
   @ApiProperty({ type: String })
@@ -36,4 +34,8 @@ export class AdncEntity extends CommonEntity {
 
   @OneToMany(() => TcktEntity, (tckt) => tckt.adnc)
   tckt: TcktEntity[];
+
+  @ManyToOne(() => AdncOptEntity, (adncOpt) => adncOpt.adnc)
+  @JoinColumn({ name: "adnc_opt_id" })
+  adncOpt: AdncEntity;
 }

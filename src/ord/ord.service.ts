@@ -1,9 +1,9 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AdncEntity } from "@src/adnc/entities/adnc.entity";
+import { BttlrEntity } from "@src/bttlr/entities/bttlr.entity";
 import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
-
 import {
   EntityManager,
   InsertResult,
@@ -11,71 +11,196 @@ import {
   Repository,
 } from "typeorm";
 import { OrdEntity } from "./entities/ord.entity";
+import { TcktService } from "@src/tckt/tckt.service";
 
 @Injectable()
 export class OrdService {
   constructor(
     @InjectRepository(OrdEntity)
-    private readonly entityManager: EntityManager
+    private readonly ordEntity: Repository<OrdEntity>,
+    private readonly entityManager: EntityManager,
+    private readonly tcktService: TcktService
   ) {}
 
   /**
-   *
+   * 주문 생성
+   * @param ord - 주문 엔티티
    * @returns Promise<InsertResult>
    */
-  createOrd(ord: OrdEntity): Promise<InsertResult> {
+  async createOrd(ord: OrdEntity): Promise<InsertResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
-        // S : 주문 INSERT
-        const ordInsertResult = await entityManager.insert(OrdEntity, ord);
+        const ordInsertResult = await this.insertOrder(entityManager, ord);
+        const insertedOrd: ObjectLiteral = ordInsertResult.generatedMaps[0];
 
-        let insertedOrd: ObjectLiteral = ordInsertResult.generatedMaps[0]; // 삽입된 ord의 객체를 가져온다
-        // E : 주문 INSERT
+        await this.insertOrderItems(entityManager, ord, insertedOrd.id);
 
-        // S : 주문 상품 및 관람객, 참가자 INSERT && 티켓 생성
-        ord.ordItem.map(async (item) => {
-          // S : 주문 상품 INSERT
-          let insertedOrdItem = await entityManager.insert(OrdItemEntity, {
-            ...item,
-            ordId: insertedOrd.id,
-          });
-          // S : 주문 상품 INSERT
-
-          if (!item.adncOptId && !item.bttlOptId) {
-            throw new HttpException(
-              "주문상품의 옵션 id는 필수입니다.",
-              HttpStatus.BAD_REQUEST
-            );
-          } else if (item.adncOptId && item.bttlOptId) {
-            throw new HttpException(
-              "주문상품의 옵션 id는 한가지 타입만 존재할 수 있습니다.",
-              HttpStatus.BAD_REQUEST
-            );
-          } else if (item.adncOptId) {
-            // S : 관람객 INSERT
-            await entityManager.insert(AdncEntity, item.adnc);
-            // E : 관람객 INSERT
-          } else if (item.bttlOptId) {
-            // S : 배틀 팀 및 배틀러 INSERT
-            await entityManager.save(
-              BttlTeamEntity
-              // ,item.adnc.map((adnc) => ({ ...adnc, adncOptId: item.adncOptId }))
-            );
-            // E : 배틀 팀 및 배틀러 INSERT
-          } else {
-            throw new HttpException(
-              "주문상품의 정보가 올바르지 않습니다.",
-              HttpStatus.BAD_REQUEST
-            );
-          }
-        });
-        // E : 주문 상품 및 관람객, 참가자 INSERT && 티켓 생성
-
-        await entityManager.query("COMMIT");
         return ordInsertResult;
       } catch (error) {
-        throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+        await entityManager.query("ROLLBACK");
+        throw new HttpException(
+          error.message,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
       }
     });
+  }
+
+  /**
+   * 주문을 데이터베이스에 삽입
+   * @param entityManager - 엔티티 매니저
+   * @param ord - 주문 엔티티
+   * @returns Promise<InsertResult>
+   */
+  private async insertOrder(
+    entityManager: EntityManager,
+    ord: OrdEntity
+  ): Promise<InsertResult> {
+    return entityManager.insert(OrdEntity, {
+      ...ord,
+      ordMbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
+    });
+  }
+
+  /**
+   * 주문 상품을 데이터베이스에 삽입
+   * @param entityManager - 엔티티 매니저
+   * @param ord - 주문 엔티티
+   * @param ordId - 주문 ID
+   */
+  private async insertOrderItems(
+    entityManager: EntityManager,
+    ord: OrdEntity,
+    ordId: string
+  ): Promise<void> {
+    await Promise.all(
+      ord.ordItem.map(async (item: OrdItemEntity) => {
+        this.validateOrderItem(item);
+
+        const insertedOrdItem = await this.insertOrderItem(
+          entityManager,
+          item,
+          ordId
+        );
+        const ordItemId = insertedOrdItem.generatedMaps[0].id;
+
+        if (!ordItemId) {
+          throw new HttpException(
+            "주문상품 등록에 실패하였습니다.",
+            HttpStatus.BAD_REQUEST
+          );
+        }
+
+        if (item.adncOptId) {
+          await this.insertAdncEntity(entityManager, item, ordItemId);
+        } else if (item.bttlOptId) {
+          await this.insertBttlTeamAndBttlr(entityManager, item, ordItemId);
+        }
+      })
+    );
+  }
+
+  /**
+   * 주문 상품 유효성 검사
+   * @param item - 주문 상품
+   */
+  private validateOrderItem(item: OrdItemEntity): void {
+    if (!item.adncOptId && !item.bttlOptId) {
+      throw new HttpException(
+        "주문상품의 옵션 id는 필수입니다.",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+    if (item.adncOptId && item.bttlOptId) {
+      throw new HttpException(
+        "주문상품의 옵션 id는 한가지 타입만 존재할 수 있습니다.",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+  }
+
+  /**
+   * 단일 주문 상품을 데이터베이스에 삽입
+   * @param entityManager - 엔티티 매니저
+   * @param item - 주문 상품
+   * @param ordId - 주문 ID
+   * @returns Promise<InsertResult>
+   */
+  private async insertOrderItem(
+    entityManager: EntityManager,
+    item: OrdItemEntity,
+    ordId: string
+  ): Promise<InsertResult> {
+    return entityManager.insert(OrdItemEntity, {
+      ...item,
+      ordId,
+    });
+  }
+
+  /**
+   * 관람객 엔티티를 데이터베이스에 삽입
+   * @param entityManager - 엔티티 매니저
+   * @param item - 주문 상품
+   * @param ordItemId - 주문상품 ID
+   */
+  private async insertAdncEntity(
+    entityManager: EntityManager,
+    item: OrdItemEntity,
+    ordItemId: string
+  ): Promise<void> {
+    const adncInsertResult = await entityManager.insert(AdncEntity, {
+      ...item.adnc[0],
+      adncOptId: item.adncOptId,
+    });
+
+    await this.tcktService.createTckt(entityManager, {
+      ordItemId: ordItemId,
+      adncId: adncInsertResult.generatedMaps[0].id,
+    });
+  }
+
+  /**
+   * 배틀 팀 및 배틀러 엔티티를 데이터베이스에 삽입
+   * @param entityManager - 엔티티 매니저
+   * @param item - 주문 상품
+   * @param ordItemId - 주문상품 ID
+   */
+  private async insertBttlTeamAndBttlr(
+    entityManager: EntityManager,
+    item: OrdItemEntity,
+    ordItemId: string
+  ): Promise<void> {
+    const bttlTeamInsertResult = await entityManager.insert(BttlTeamEntity, {
+      ...item.bttlTeam,
+      bttlOptId: item.bttlOptId,
+    });
+
+    if (!bttlTeamInsertResult) {
+      throw new HttpException(
+        "배틀 팀 등록에 실패하였습니다.",
+        HttpStatus.BAD_REQUEST
+      );
+    }
+
+    await Promise.all(
+      item.bttlTeam.bttlr.map(async (bttlr) => {
+        const bttlrInsertResult = await entityManager.insert(BttlrEntity, {
+          ...bttlr,
+          bttlTeamId: bttlTeamInsertResult.generatedMaps[0].id,
+        });
+
+        if (!bttlrInsertResult) {
+          throw new HttpException(
+            "배틀러 등록에 실패하였습니다.",
+            HttpStatus.BAD_REQUEST
+          );
+        }
+
+        await this.tcktService.createTckt(entityManager, {
+          ordItemId: ordItemId,
+          bttlrId: bttlrInsertResult.generatedMaps[0].id,
+        });
+      })
+    );
   }
 }

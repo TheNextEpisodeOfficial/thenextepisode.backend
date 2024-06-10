@@ -3,7 +3,15 @@ import { AdncOptEntity } from "@src/adncOpt/entities/adncOpt.entity";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
 import { OrdEntity } from "@src/ord/entities/ord.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import { TcktEntity } from "@src/tckt/entities/tckt.entity";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 
 @Entity("ord_item")
@@ -11,14 +19,10 @@ export class OrdItemEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "플랜 아이디" })
   ordId: string;
 
-  @Column({ type: "uuid", comment: "배틀옵션 아이디" })
-  @ManyToOne(() => BttlOptEntity, (bttlOpt) => bttlOpt.id)
-  @JoinColumn({ name: "bttl_opt_id" })
+  @Column({ type: "uuid", comment: "배틀옵션 아이디", nullable: true })
   bttlOptId: string;
 
-  @Column({ type: "uuid", comment: "입장옵션 아이디" })
-  @ManyToOne(() => AdncOptEntity, (adncOpt) => adncOpt.id)
-  @JoinColumn({ name: "adnc_opt_id" })
+  @Column({ type: "uuid", comment: "입장옵션 아이디", nullable: true })
   adncOptId: string;
 
   @Column({ type: "decimal", comment: "판매금액" })
@@ -57,4 +61,15 @@ export class OrdItemEntity extends CommonEntity {
 
   @OneToOne(() => AdncEntity, (adnc) => adnc.ordItem)
   adnc: AdncEntity;
+
+  @OneToMany(() => TcktEntity, (tckt) => tckt.ordItem)
+  tckt: TcktEntity;
+
+  @ManyToOne(() => BttlOptEntity, (bttlOpt) => bttlOpt.ordItem)
+  @JoinColumn({ name: "bttl_opt_id" })
+  bttlOpt: BttlOptEntity;
+
+  @ManyToOne(() => AdncOptEntity, (adncOpt) => adncOpt.ordItem)
+  @JoinColumn({ name: "adnc_opt_id" })
+  adncOpt: AdncOptEntity;
 }
