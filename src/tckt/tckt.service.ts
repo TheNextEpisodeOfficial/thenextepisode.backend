@@ -241,7 +241,7 @@ export class TcktService {
   async useTcktById(tcktId: string) {
     try {
       const ticketInfo = await this.tcktRepository.findOne({
-        where: { id: tcktId },
+        where: { id: tcktId, delYn: "N" },
       });
       if (!ticketInfo) {
         throw new HttpException(
@@ -253,12 +253,8 @@ export class TcktService {
           "이미 사용처리된 티켓입니다.",
           HttpStatus.CONFLICT
         );
-      } else if (ticketInfo.delYn === "Y") {
-        throw new HttpException(
-          "사용할 수 없는 티켓입니다.",
-          HttpStatus.FORBIDDEN
-        );
       }
+      console.log(ticketInfo);
       return this.tcktRepository.update({ id: tcktId }, { usedYn: "Y" });
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);

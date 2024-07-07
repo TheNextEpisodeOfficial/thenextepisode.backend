@@ -218,12 +218,25 @@ export class OrdService {
     const queryBuilder = this.ordRepository.createQueryBuilder("ord");
 
     queryBuilder
-      .leftJoinAndSelect("ordPayment", "ordPayment")
+      .leftJoinAndSelect("ord.ordPayment", "ordPayment")
       .where("ord.ordMbrId = :mbrId", {
-        mbrId: srchOrdListDto.mbrId || "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
+        mbrId: srchOrdListDto.mbrId,
       })
+      .andWhere("ord.ordStt = 'PAID'")
       .andWhere("ordPayment.orderId = ord.id")
-      .andWhere("ordItem.ordId = ord.id");
+      .select([
+        "ord.id",
+        "ord.ordMbrId",
+        "ord.totalOrdAmt",
+        "ord.totalPayAmt",
+        "ord.totalDscntAmt",
+
+        "ordPayment.orderName",
+        "ordPayment.method",
+        "ordPayment.easyProvider",
+        "ordPayment.orderNum",
+        "ordPayment.receiptUrl",
+      ]);
 
     try {
       const ordList = await paginate<OrdEntity>(queryBuilder, srchOrdListDto);
@@ -233,6 +246,33 @@ export class OrdService {
         "주문 리스트 검색 중 오류가 발생했습니다.",
         HttpStatus.FORBIDDEN,
         { cause: error }
+      );
+    }
+  }
+
+  /**
+   * 주문 결제 상세 조회
+   * @returns Promise<OrdEntity[]>
+   */
+  async getOrdDtlById(ordId: string): Promise<OrdEntity> {
+    const ordDtlResult = this.ordRepository
+      .createQueryBuilder("ord")
+      .leftJoinAndSelect("ord.ordPayment", "ordPayment")
+      .leftJoinAndSelect("ord.ordItem", "ordItem")
+      .where("ord.id = :ordId", {
+        ordId: ordId,
+      })
+      .andWhere("ord.ordStt = 'PAID'")
+      .andWhere("ordPayment.orderId = ord.id")
+      .andWhere("ordItem.orderId = ord.id")
+      .getOne();
+
+    if (ordDtlResult) {
+      return ordDtlResult;
+    } else {
+      throw new HttpException(
+        "주문이 존재하지 않습니다.",
+        HttpStatus.NOT_FOUND
       );
     }
   }

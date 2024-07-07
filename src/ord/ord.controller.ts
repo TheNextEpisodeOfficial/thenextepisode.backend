@@ -7,7 +7,12 @@ import {
   Post,
   Req,
 } from "@nestjs/common";
-import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from "@nestjs/swagger";
 import { OrdService } from "./ord.service";
 import { OrdEntity } from "./entities/ord.entity";
 import { ResponseDto } from "@src/types/response";
@@ -88,7 +93,40 @@ export class OrdController {
     // srchOrdListDto.mbrId = session.loginUser.id;
 
     try {
-      const ordList = await this.ordService.getOrdList(srchOrdListDto);
+      const ordList = await this.ordService.getOrdList({
+        ...srchOrdListDto,
+        mbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
+      });
+      return ordList;
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
+  /**
+   * E : getOrdList
+   */
+
+  /**
+   * S : getOrdDtlById
+   */
+  @Get("/getOrdDtlById")
+  @ApiOperation({
+    summary: "주문 결제 리스트 조회",
+    description: "주문 결제 리스트를 조회한다.",
+  })
+  @ApiCreatedResponse({
+    description: "주문 결제 리스트를 조회한다.",
+    type: OrdEntity,
+  })
+  @ApiQuery({
+    name: "ordId",
+    required: true,
+    description: "주문 아이디",
+    type: String,
+  })
+  async getOrdDtlById(ordId: string, @Req() req: Request): Promise<OrdEntity> {
+    try {
+      const ordList = await this.ordService.getOrdDtlById(ordId);
       return ordList;
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
