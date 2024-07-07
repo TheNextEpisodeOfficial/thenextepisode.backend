@@ -1,7 +1,6 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { FileEntity } from "@src/s3file/entities/file.entity";
-import { Response } from "src/types/response";
 import { Repository } from "typeorm";
 import AWS from "aws-sdk";
 @Injectable()

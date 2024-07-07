@@ -7,8 +7,6 @@ import { CommonEntity } from "../../config/entities/common.entity";
 @Entity("ord_payment")
 export class OrdPaymentEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "주문 아이디" })
-  @OneToOne(() => OrdEntity, (ord) => ord.id)
-  @JoinColumn({ name: "ord_id" })
   orderId: string;
 
   @ApiProperty({ type: String, required: true, default: "주문명" })
@@ -374,4 +372,8 @@ export class OrdPaymentEntity extends CommonEntity {
     nullable: true,
   })
   cancelAmount: number;
+
+  @OneToOne(() => OrdEntity, (ord) => ord.ordPayment)
+  @JoinColumn({ name: "ord_id" })
+  ord: OrdEntity;
 }

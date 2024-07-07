@@ -1,5 +1,10 @@
 import { Body, Controller, Get, Post, Req, Res } from "@nestjs/common";
-import { ApiCreatedResponse, ApiOperation, ApiParam } from "@nestjs/swagger";
+import {
+  ApiCreatedResponse,
+  ApiOperation,
+  ApiParam,
+  ApiTags,
+} from "@nestjs/swagger";
 import { MbrEntity } from "./entities/mbr.entity";
 import { MbrService } from "./mbr.service";
 import { Request, Response } from "express";
@@ -10,6 +15,7 @@ import { InsertResult, UpdateResult } from "typeorm";
  * MbrController : 회원 API를 관리한다
  */
 @Controller("/mbr")
+@ApiTags("Mbr")
 export class MbrController {
   constructor(private readonly mbrService: MbrService) {}
 

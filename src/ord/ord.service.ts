@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
+import { Request } from "express";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AdncEntity } from "@src/adnc/entities/adnc.entity";
 import { BttlrEntity } from "@src/bttlr/entities/bttlr.entity";
@@ -12,12 +13,15 @@ import {
 } from "typeorm";
 import { OrdEntity } from "./entities/ord.entity";
 import { TcktService } from "@src/tckt/tckt.service";
+import { paginate, Pagination } from "nestjs-typeorm-paginate";
+import { SrchOrdListDto } from "./dtos/ord.dto";
+import { SessionData } from "express-session";
 
 @Injectable()
 export class OrdService {
   constructor(
     @InjectRepository(OrdEntity)
-    private readonly ordEntity: Repository<OrdEntity>,
+    private readonly ordRepository: Repository<OrdEntity>,
     private readonly entityManager: EntityManager,
     private readonly tcktService: TcktService
   ) {}
@@ -202,5 +206,34 @@ export class OrdService {
         });
       })
     );
+  }
+
+  /**
+   * 주문 결제 리스트 조회
+   * @returns Promise<OrdEntity[]>
+   */
+  async getOrdList(
+    srchOrdListDto: SrchOrdListDto
+  ): Promise<Pagination<OrdEntity>> {
+    const queryBuilder = this.ordRepository.createQueryBuilder("ord");
+
+    queryBuilder
+      .leftJoinAndSelect("ordPayment", "ordPayment")
+      .where("ord.ordMbrId = :mbrId", {
+        mbrId: srchOrdListDto.mbrId || "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
+      })
+      .andWhere("ordPayment.orderId = ord.id")
+      .andWhere("ordItem.ordId = ord.id");
+
+    try {
+      const ordList = await paginate<OrdEntity>(queryBuilder, srchOrdListDto);
+      return ordList;
+    } catch (error) {
+      throw new HttpException(
+        "주문 리스트 검색 중 오류가 발생했습니다.",
+        HttpStatus.FORBIDDEN,
+        { cause: error }
+      );
+    }
   }
 }

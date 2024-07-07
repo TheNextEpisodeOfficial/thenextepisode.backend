@@ -55,15 +55,17 @@ export class TcktService {
       },
     });
 
-    orderItems.map(async (ordItem) => {
-      await entityManager.update(
-        TcktEntity,
-        { ordItemId: ordItem.id },
-        { tcktStt: "PAID" }
-      );
-    });
+    // Promise.all을 사용하여 모든 업데이트 작업을 병렬로 처리
+    await Promise.all(
+      orderItems.map((ordItem) =>
+        entityManager.update(
+          TcktEntity,
+          { ordItemId: ordItem.id },
+          { tcktStt: "PAID" }
+        )
+      )
+    );
   }
-
   /**
    * 멤버 아이디를 기준으로 보유중인 티켓 리스트를 가져온다.
    */
@@ -238,12 +240,23 @@ export class TcktService {
 
   async useTcktById(tcktId: string) {
     try {
+      const ticketInfo = await this.tcktRepository.findOne({
+        where: { id: tcktId },
+      });
+      if (ticketInfo.usedYn === "Y") {
+        throw new HttpException(
+          "이미 사용처리된 티켓입니다.",
+          HttpStatus.CONFLICT
+        );
+      } else if (ticketInfo.delYn === "Y") {
+        throw new HttpException(
+          "사용할 수 없는 티켓입니다.",
+          HttpStatus.FORBIDDEN
+        );
+      }
       return this.tcktRepository.update({ id: tcktId }, { usedYn: "Y" });
     } catch (err) {
-      throw new HttpException(
-        "티켓 사용처리에 실패하였습니다.",
-        HttpStatus.BAD_REQUEST
-      );
+      throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
 }
