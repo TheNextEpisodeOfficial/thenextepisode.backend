@@ -5,6 +5,7 @@ import {
   HttpException,
   HttpStatus,
   Post,
+  Query,
   Req,
 } from "@nestjs/common";
 import {
@@ -111,11 +112,11 @@ export class OrdController {
    */
   @Get("/getOrdDtlById")
   @ApiOperation({
-    summary: "주문 결제 리스트 조회",
-    description: "주문 결제 리스트를 조회한다.",
+    summary: "주문 결제 상세 조회",
+    description: "주문 결제 상세 정보를 조회한다.",
   })
   @ApiCreatedResponse({
-    description: "주문 결제 리스트를 조회한다.",
+    description: "주문 결제 상세 정보를 조회한다.",
     type: OrdEntity,
   })
   @ApiQuery({
@@ -124,7 +125,10 @@ export class OrdController {
     description: "주문 아이디",
     type: String,
   })
-  async getOrdDtlById(ordId: string, @Req() req: Request): Promise<OrdEntity> {
+  async getOrdDtlById(
+    @Query("ordId") ordId: string,
+    @Req() req: Request
+  ): Promise<OrdEntity> {
     try {
       const ordList = await this.ordService.getOrdDtlById(ordId);
       return ordList;

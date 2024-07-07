@@ -255,16 +255,13 @@ export class OrdService {
    * @returns Promise<OrdEntity[]>
    */
   async getOrdDtlById(ordId: string): Promise<OrdEntity> {
-    const ordDtlResult = this.ordRepository
+    console.log("ordId:", ordId);
+    const ordDtlResult = await this.ordRepository
       .createQueryBuilder("ord")
       .leftJoinAndSelect("ord.ordPayment", "ordPayment")
       .leftJoinAndSelect("ord.ordItem", "ordItem")
-      .where("ord.id = :ordId", {
-        ordId: ordId,
-      })
+      .where("ord.id = :ordId", { ordId: ordId })
       .andWhere("ord.ordStt = 'PAID'")
-      .andWhere("ordPayment.orderId = ord.id")
-      .andWhere("ordItem.orderId = ord.id")
       .getOne();
 
     if (ordDtlResult) {
