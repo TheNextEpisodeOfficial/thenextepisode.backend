@@ -243,7 +243,12 @@ export class TcktService {
       const ticketInfo = await this.tcktRepository.findOne({
         where: { id: tcktId },
       });
-      if (ticketInfo.usedYn === "Y") {
+      if (!ticketInfo) {
+        throw new HttpException(
+          "존재하지 않는 티켓입니다.",
+          HttpStatus.NOT_FOUND
+        );
+      } else if (ticketInfo.usedYn === "Y") {
         throw new HttpException(
           "이미 사용처리된 티켓입니다.",
           HttpStatus.CONFLICT
