@@ -15,7 +15,7 @@ import { OrdPaymentService } from "./ordPayment.service";
  * OrdPaymentController : 주문결제 API를 관리한다
  */
 @Controller("/ordPayment")
-@ApiTags("OrdPayment")
+@ApiTags("Order Payment")
 export class OrdPaymentController {
   constructor(private readonly ordPaymentService: OrdPaymentService) {}
 

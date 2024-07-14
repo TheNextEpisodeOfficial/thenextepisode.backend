@@ -4,7 +4,7 @@ import { FileEntity } from "@src/s3file/entities/file.entity";
 import { FileService } from "@src/s3file/file.service";
 
 @Controller("/file")
-@ApiTags("File")
+@ApiTags("S3 File")
 export class FileController {
   constructor(private readonly fileService: FileService) {}
 

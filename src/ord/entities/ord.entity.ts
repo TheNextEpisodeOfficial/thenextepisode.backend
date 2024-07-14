@@ -11,6 +11,7 @@ import {
 } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { OrdPaymentEntity } from "@src/ordPayment/entities/ordPayment.entity";
+import { ColumnNumericTransformer } from "@src/util/number";
 
 @Entity("ord")
 export class OrdEntity extends CommonEntity {
@@ -32,17 +33,29 @@ export class OrdEntity extends CommonEntity {
 
   // 총 주문 금액
   @ApiProperty({ type: Number, required: true, default: 10000 })
-  @Column({ type: "decimal", comment: "총 주문금액" })
+  @Column({
+    type: "decimal",
+    comment: "총 주문금액",
+    transformer: new ColumnNumericTransformer(),
+  })
   totalOrdAmt: number;
 
   // 총 결제 금액
   @ApiProperty({ type: Number, required: true, default: 8000 })
-  @Column({ type: "decimal", comment: "총 주문금액" })
+  @Column({
+    type: "decimal",
+    comment: "총 주문금액",
+    transformer: new ColumnNumericTransformer(),
+  })
   totalPayAmt: number;
 
   // 총 할인 금액
   @ApiProperty({ type: Number, required: true, default: 2000 })
-  @Column({ type: "decimal", comment: "총 할인금액" })
+  @Column({
+    type: "decimal",
+    comment: "총 할인금액",
+    transformer: new ColumnNumericTransformer(),
+  })
   totalDscntAmt: number;
 
   // 주문 항목

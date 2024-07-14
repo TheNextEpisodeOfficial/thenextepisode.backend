@@ -3,6 +3,7 @@ import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { OrdEntity } from "@src/ord/entities/ord.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
+import { ColumnNumericTransformer } from "@src/util/number";
 
 @Entity("ord_payment")
 export class OrdPaymentEntity extends CommonEntity {
@@ -44,7 +45,11 @@ export class OrdPaymentEntity extends CommonEntity {
   paymentKey;
 
   @ApiProperty({ type: Number, required: true, default: "과세제외금액" })
-  @Column({ type: "decimal", comment: "과세제외금액" })
+  @Column({
+    type: "decimal",
+    comment: "과세제외금액",
+    transformer: new ColumnNumericTransformer(),
+  })
   taxExemptionAmount;
 
   @ApiProperty({ type: String, required: true, default: "상태" })
@@ -74,7 +79,12 @@ export class OrdPaymentEntity extends CommonEntity {
     type: Number,
     default: "카드사 결제 요청 금액",
   })
-  @Column({ type: "decimal", comment: "카드사 결제 요청 금액", nullable: true })
+  @Column({
+    type: "decimal",
+    comment: "카드사 결제 요청 금액",
+    nullable: true,
+    transformer: new ColumnNumericTransformer(),
+  })
   cardAmount;
 
   @ApiProperty({
@@ -197,6 +207,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "decimal",
     comment: "간편결제 결제금액",
     nullable: true,
+    transformer: new ColumnNumericTransformer(),
   })
   easyAmount: number;
 
@@ -209,6 +220,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "decimal",
     comment: "간편결제 할인금액",
     nullable: true,
+    transformer: new ColumnNumericTransformer(),
   })
   easyDiscountAmount: number;
   /**
@@ -274,6 +286,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({
     type: "decimal",
     comment: "총 금액",
+    transformer: new ColumnNumericTransformer(),
   })
   totalAmount: number;
 
@@ -284,6 +297,7 @@ export class OrdPaymentEntity extends CommonEntity {
   @Column({
     type: "decimal",
     comment: "잔액",
+    transformer: new ColumnNumericTransformer(),
   })
   balanceAmount: number;
 
@@ -315,6 +329,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "decimal",
     comment: "할인금액",
     nullable: true,
+    transformer: new ColumnNumericTransformer(),
   })
   discountAmount: number;
 
@@ -370,6 +385,7 @@ export class OrdPaymentEntity extends CommonEntity {
     type: "decimal",
     comment: "취소금액",
     nullable: true,
+    transformer: new ColumnNumericTransformer(),
   })
   cancelAmount: number;
 

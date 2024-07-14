@@ -26,7 +26,7 @@ import { Request, Response } from "express";
  * OrdController : 주문 API를 관리한다
  */
 @Controller("/ord")
-@ApiTags("Ord")
+@ApiTags("Order")
 export class OrdController {
   constructor(private readonly ordService: OrdService) {}
 
@@ -81,7 +81,7 @@ export class OrdController {
     type: OrdEntity,
   })
   async getOrdList(
-    srchOrdListDto: SrchOrdListDto,
+    @Query() srchOrdListDto: SrchOrdListDto,
     @Req() req: Request
   ): Promise<Pagination<OrdEntity>> {
     // let session: SessionData = req.session;

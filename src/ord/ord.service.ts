@@ -16,6 +16,8 @@ import { TcktService } from "@src/tckt/tckt.service";
 import { paginate, Pagination } from "nestjs-typeorm-paginate";
 import { SrchOrdListDto } from "./dtos/ord.dto";
 import { SessionData } from "express-session";
+import { PlnEntity } from "@src/pln/entities/pln.entity";
+import { FileEntity } from "@src/s3file/entities/file.entity";
 
 @Injectable()
 export class OrdService {
@@ -218,25 +220,35 @@ export class OrdService {
     const queryBuilder = this.ordRepository.createQueryBuilder("ord");
 
     queryBuilder
-      .leftJoinAndSelect("ord.ordPayment", "ordPayment")
-      .where("ord.ordMbrId = :mbrId", {
-        mbrId: srchOrdListDto.mbrId,
-      })
-      .andWhere("ord.ordStt = 'PAID'")
-      .andWhere("ordPayment.orderId = ord.id")
-      .select([
-        "ord.id",
-        "ord.ordMbrId",
-        "ord.totalOrdAmt",
-        "ord.totalPayAmt",
-        "ord.totalDscntAmt",
-
+      .leftJoin("ord.ordPayment", "ordPayment")
+      .addSelect([
+        "ordPayment.id",
         "ordPayment.orderName",
         "ordPayment.method",
-        "ordPayment.easyProvider",
-        "ordPayment.orderNum",
-        "ordPayment.receiptUrl",
-      ]);
+        "ordPayment.paymentTypeCd",
+        "ordPayment.discountAmount",
+        "ordPayment.totalAmount",
+        "ordPayment.currency",
+      ])
+      .leftJoinAndSelect("ord.ordItem", "ordItem")
+      .leftJoinAndSelect("ordItem.bttlOpt", "bttlOpt")
+      .leftJoinAndSelect("ordItem.adncOpt", "adncOpt")
+      .leftJoinAndMapOne(
+        "ordItem.pln",
+        PlnEntity,
+        "pln",
+        "pln.id = COALESCE(bttlOpt.plnId, adncOpt.plnId)"
+      )
+      .leftJoinAndMapOne(
+        "pln.file",
+        FileEntity,
+        "file",
+        "file.fileGrpId = pln.fileGrpId AND file.fileTypeCd = 'THMB_MN'"
+      )
+      .addSelect(["file.fileNm"])
+      .where("ord.ordMbrId = :mbrId", { mbrId: srchOrdListDto.mbrId })
+      .andWhere("ord.ordStt = 'PAID'")
+      .orderBy("ord.createdAt", "DESC");
 
     try {
       const ordList = await paginate<OrdEntity>(queryBuilder, srchOrdListDto);

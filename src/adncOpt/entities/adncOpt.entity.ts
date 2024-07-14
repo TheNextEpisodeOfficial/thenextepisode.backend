@@ -8,8 +8,6 @@ import { AdncEntity } from "@src/adnc/entities/adnc.entity";
 @Entity("adnc_opt")
 export class AdncOptEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "플랜 아이디" })
-  @ManyToOne(() => PlnEntity, (pln) => pln.id)
-  @JoinColumn({ name: "pln_id" })
   plnId: string;
 
   @Column({ type: "varchar", length: 100, comment: "옵션명" })
@@ -47,4 +45,8 @@ export class AdncOptEntity extends CommonEntity {
 
   @OneToMany(() => OrdItemEntity, (ordItem) => ordItem.adncOpt)
   adnc: AdncEntity[];
+
+  @ManyToOne(() => PlnEntity, (pln) => pln.id)
+  @JoinColumn({ name: "pln_id" })
+  pln;
 }
