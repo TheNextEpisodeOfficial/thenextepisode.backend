@@ -154,15 +154,23 @@ export class OrdService {
     item: OrdItemEntity,
     ordItemId: string
   ): Promise<void> {
-    const adncInsertResult = await entityManager.insert(AdncEntity, {
+    const adncEntities = Array.from({ length: item.qty }, () => ({
       ...item.adnc[0],
       adncOptId: item.adncOptId,
-    });
+    }));
 
-    await this.tcktService.createTckt(entityManager, {
+    const adncInsertResult = await entityManager.insert(
+      AdncEntity,
+      adncEntities
+    );
+
+    const adncIds = adncInsertResult.generatedMaps.map((map) => map.id);
+    const tickets = adncIds.map((adncId) => ({
       ordItemId: ordItemId,
-      adncId: adncInsertResult.generatedMaps[0].id,
-    });
+      adncId: adncId,
+    }));
+
+    await this.tcktService.createTcktBulk(entityManager, tickets);
   }
 
   /**

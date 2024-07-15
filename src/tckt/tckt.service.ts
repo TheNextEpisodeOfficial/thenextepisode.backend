@@ -260,4 +260,18 @@ export class TcktService {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
     }
   }
+
+  // 여러개의 티켓을 한번에 생성
+  async createTcktBulk(
+    entityManager: EntityManager,
+    tickets: Partial<TcktEntity>[]
+  ): Promise<void> {
+    const ticketsWithKeys = tickets.map((ticket) => ({
+      ...ticket,
+      secretKey: randomUUID(),
+      tcktHldMbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
+    }));
+
+    await entityManager.insert(TcktEntity, ticketsWithKeys);
+  }
 }
