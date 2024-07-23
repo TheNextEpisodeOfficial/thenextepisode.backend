@@ -225,9 +225,24 @@ export class OrdService {
   async getOrdList(
     srchOrdListDto: SrchOrdListDto
   ): Promise<Pagination<OrdEntity>> {
-    const queryBuilder = this.ordRepository.createQueryBuilder("ord");
+    const queryBuilder = this.ordRepository
+      .createQueryBuilder("ord")
+      .select("ord.id")
+      .where("ord.ordMbrId = :mbrId", { mbrId: srchOrdListDto.mbrId })
+      .andWhere("ord.ordStt = 'PAID'")
+      .orderBy("ord.createdAt", "DESC");
 
-    queryBuilder
+    const ordIdsPaginated = await paginate<{ id: string }>(
+      queryBuilder,
+      srchOrdListDto
+    );
+
+    if (!ordIdsPaginated.items.length) {
+      return new Pagination<OrdEntity>([], ordIdsPaginated.meta);
+    }
+
+    const fullQueryBuilder = this.ordRepository
+      .createQueryBuilder("ord")
       .leftJoin("ord.ordPayment", "ordPayment")
       .addSelect([
         "ordPayment.id",
@@ -254,20 +269,14 @@ export class OrdService {
         "file.fileGrpId = pln.fileGrpId AND file.fileTypeCd = 'THMB_MN'"
       )
       .addSelect(["file.fileNm"])
-      .where("ord.ordMbrId = :mbrId", { mbrId: srchOrdListDto.mbrId })
-      .andWhere("ord.ordStt = 'PAID'")
+      .where("ord.id IN (:...ids)", {
+        ids: ordIdsPaginated.items.map((item) => item.id),
+      })
       .orderBy("ord.createdAt", "DESC");
 
-    try {
-      const ordList = await paginate<OrdEntity>(queryBuilder, srchOrdListDto);
-      return ordList;
-    } catch (error) {
-      throw new HttpException(
-        "주문 리스트 검색 중 오류가 발생했습니다.",
-        HttpStatus.FORBIDDEN,
-        { cause: error }
-      );
-    }
+    const ordList = await fullQueryBuilder.getMany();
+
+    return new Pagination<OrdEntity>(ordList, ordIdsPaginated.meta);
   }
 
   /**
