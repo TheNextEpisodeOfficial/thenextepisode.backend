@@ -34,12 +34,12 @@ export class AuthController {
 
     if (isFirstLogin) {
       session.joinUser = user;
-      res.redirect(`http://localhost:4200/join`);
+      res.redirect(`${process.env.LOGIN_REDIRECT_URL}/join`);
     } else {
       session.loginUser = user;
       res.cookie("refreshToken", refreshToken);
       res.cookie("accessToken", accessToken);
-      res.redirect("http://localhost:4200/savememberInfo");
+      res.redirect(`${process.env.LOGIN_REDIRECT_URL}/savememberInfo`);
     }
   }
 
@@ -53,15 +53,13 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ): Promise<void> {
     let session: SessionData = req.session;
-    console.log("req.user::", req.user)
+    console.log("req.user::", req.user);
 
-    console.log("accessToken::", req.cookies.accessToken)
+    console.log("accessToken::", req.cookies.accessToken);
 
     res.clearCookie("refreshToken");
     res.clearCookie("accessToken");
   }
-
-  
 
   @Get("/getUserInfoByToken")
   @ApiOperation({
