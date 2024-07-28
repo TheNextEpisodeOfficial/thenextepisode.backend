@@ -55,4 +55,15 @@ export class OrdPaymentService {
       }
     });
   }
+
+  /**
+   * 멤버 아이디를 기준으로 결제 리스트를 가져온다.
+   */
+  async getOrdPaymentList(orderId: string): Promise<OrdPaymentEntity[]> {
+    return this.ordPaymentRepository.find({
+      where: {
+        orderId: orderId,
+      },
+    });
+  }
 }

@@ -14,7 +14,6 @@ import {
   ApiQuery,
   ApiTags,
 } from "@nestjs/swagger";
-import { Response } from "@src/types/response";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
 import { SrchPlnDto } from "./dtos/pln.dto";

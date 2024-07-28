@@ -29,7 +29,7 @@ export class AdncEntity extends CommonEntity {
   @Column({ type: "varchar", length: 11, comment: "연락처" })
   adncPhn: string;
 
-  @OneToOne(() => OrdItemEntity, (ordItem) => ordItem.adnc)
+  @ManyToOne(() => OrdItemEntity, (ordItem) => ordItem.adnc)
   ordItem: OrdItemEntity;
 
   @OneToMany(() => TcktEntity, (tckt) => tckt.adnc)

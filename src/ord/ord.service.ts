@@ -1,4 +1,5 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import { HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
+import { Request } from "express";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AdncEntity } from "@src/adnc/entities/adnc.entity";
 import { BttlrEntity } from "@src/bttlr/entities/bttlr.entity";
@@ -12,12 +13,17 @@ import {
 } from "typeorm";
 import { OrdEntity } from "./entities/ord.entity";
 import { TcktService } from "@src/tckt/tckt.service";
+import { paginate, Pagination } from "nestjs-typeorm-paginate";
+import { SrchOrdListDto } from "./dtos/ord.dto";
+import { SessionData } from "express-session";
+import { PlnEntity } from "@src/pln/entities/pln.entity";
+import { FileEntity } from "@src/s3file/entities/file.entity";
 
 @Injectable()
 export class OrdService {
   constructor(
     @InjectRepository(OrdEntity)
-    private readonly ordEntity: Repository<OrdEntity>,
+    private readonly ordRepository: Repository<OrdEntity>,
     private readonly entityManager: EntityManager,
     private readonly tcktService: TcktService
   ) {}
@@ -148,15 +154,23 @@ export class OrdService {
     item: OrdItemEntity,
     ordItemId: string
   ): Promise<void> {
-    const adncInsertResult = await entityManager.insert(AdncEntity, {
+    const adncEntities = Array.from({ length: item.qty }, () => ({
       ...item.adnc[0],
       adncOptId: item.adncOptId,
-    });
+    }));
 
-    await this.tcktService.createTckt(entityManager, {
+    const adncInsertResult = await entityManager.insert(
+      AdncEntity,
+      adncEntities
+    );
+
+    const adncIds = adncInsertResult.generatedMaps.map((map) => map.id);
+    const tickets = adncIds.map((adncId) => ({
       ordItemId: ordItemId,
-      adncId: adncInsertResult.generatedMaps[0].id,
-    });
+      adncId: adncId,
+    }));
+
+    await this.tcktService.createTcktBulk(entityManager, tickets);
   }
 
   /**
@@ -202,5 +216,90 @@ export class OrdService {
         });
       })
     );
+  }
+
+  /**
+   * 주문 결제 리스트 조회
+   * @returns Promise<OrdEntity[]>
+   */
+  async getOrdList(
+    srchOrdListDto: SrchOrdListDto
+  ): Promise<Pagination<OrdEntity>> {
+    const queryBuilder = this.ordRepository
+      .createQueryBuilder("ord")
+      .select("ord.id")
+      .where("ord.ordMbrId = :mbrId", { mbrId: srchOrdListDto.mbrId })
+      .andWhere("ord.ordStt = 'PAID'")
+      .orderBy("ord.createdAt", "DESC");
+
+    const ordIdsPaginated = await paginate<{ id: string }>(
+      queryBuilder,
+      srchOrdListDto
+    );
+
+    if (!ordIdsPaginated.items.length) {
+      return new Pagination<OrdEntity>([], ordIdsPaginated.meta);
+    }
+
+    const fullQueryBuilder = this.ordRepository
+      .createQueryBuilder("ord")
+      .leftJoin("ord.ordPayment", "ordPayment")
+      .addSelect([
+        "ordPayment.id",
+        "ordPayment.orderName",
+        "ordPayment.method",
+        "ordPayment.paymentTypeCd",
+        "ordPayment.discountAmount",
+        "ordPayment.totalAmount",
+        "ordPayment.currency",
+      ])
+      .leftJoinAndSelect("ord.ordItem", "ordItem")
+      .leftJoinAndSelect("ordItem.bttlOpt", "bttlOpt")
+      .leftJoinAndSelect("ordItem.adncOpt", "adncOpt")
+      .leftJoinAndMapOne(
+        "ordItem.pln",
+        PlnEntity,
+        "pln",
+        "pln.id = COALESCE(bttlOpt.plnId, adncOpt.plnId)"
+      )
+      .leftJoinAndMapOne(
+        "pln.file",
+        FileEntity,
+        "file",
+        "file.fileGrpId = pln.fileGrpId AND file.fileTypeCd = 'THMB_MN'"
+      )
+      .addSelect(["file.fileNm"])
+      .where("ord.id IN (:...ids)", {
+        ids: ordIdsPaginated.items.map((item) => item.id),
+      })
+      .orderBy("ord.createdAt", "DESC");
+
+    const ordList = await fullQueryBuilder.getMany();
+
+    return new Pagination<OrdEntity>(ordList, ordIdsPaginated.meta);
+  }
+
+  /**
+   * 주문 결제 상세 조회
+   * @returns Promise<OrdEntity[]>
+   */
+  async getOrdDtlById(ordId: string): Promise<OrdEntity> {
+    console.log("ordId:", ordId);
+    const ordDtlResult = await this.ordRepository
+      .createQueryBuilder("ord")
+      .leftJoinAndSelect("ord.ordPayment", "ordPayment")
+      .leftJoinAndSelect("ord.ordItem", "ordItem")
+      .where("ord.id = :ordId", { ordId: ordId })
+      .andWhere("ord.ordStt = 'PAID'")
+      .getOne();
+
+    if (ordDtlResult) {
+      return ordDtlResult;
+    } else {
+      throw new HttpException(
+        "주문이 존재하지 않습니다.",
+        HttpStatus.NOT_FOUND
+      );
+    }
   }
 }

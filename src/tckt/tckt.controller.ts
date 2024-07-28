@@ -12,12 +12,13 @@ import { I18n, I18nContext } from "nestjs-i18n";
 import { TicketListDto } from "./dtos/tckt.dto";
 import { TcktEntity } from "./entities/tckt.entity";
 import { TcktService } from "./tckt.service";
+import { ResponseDto } from "@src/types/response";
 
 /**
  * TcktController : 티켓 API를 관리한다
  */
 @Controller("/tckt")
-@ApiTags("tckt")
+@ApiTags("Tckt")
 export class TcktController {
   constructor(private readonly tcktService: TcktService) {}
   /**
@@ -108,21 +109,12 @@ export class TcktController {
     @Query("tcktId") tcktId: string,
     @I18n() i18n: I18nContext
   ) {
-    try {
-      const tcktDtl = await this.tcktService.useTcktById(tcktId);
-      if (tcktDtl.affected === 1) {
-        return {
-          status: 200,
-          message: "성공",
-        };
-      } else {
-        return {
-          status: 500,
-          message: "실패",
-        };
-      }
-    } catch (err) {
-      return err;
+    const tcktDtl = await this.tcktService.useTcktById(tcktId);
+    if (tcktDtl.affected === 1) {
+      return new ResponseDto({
+        status: 200,
+        message: "티켓 사용처리가 완료되었습니다.",
+      });
     }
   }
   /**

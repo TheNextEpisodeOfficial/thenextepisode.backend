@@ -13,6 +13,7 @@ import {
   OneToOne,
 } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
+import { ColumnNumericTransformer } from "@src/util/number";
 
 @Entity("ord_item")
 export class OrdItemEntity extends CommonEntity {
@@ -25,13 +26,25 @@ export class OrdItemEntity extends CommonEntity {
   @Column({ type: "uuid", comment: "입장옵션 아이디", nullable: true })
   adncOptId: string;
 
-  @Column({ type: "decimal", comment: "판매금액" })
+  @Column({
+    type: "decimal",
+    comment: "판매금액",
+    transformer: new ColumnNumericTransformer(),
+  })
   ordAmt;
 
-  @Column({ type: "decimal", comment: "결제금액" })
+  @Column({
+    type: "decimal",
+    comment: "결제금액",
+    transformer: new ColumnNumericTransformer(),
+  })
   payAmt;
 
-  @Column({ type: "decimal", comment: "할인금액" })
+  @Column({
+    type: "decimal",
+    comment: "할인금액",
+    transformer: new ColumnNumericTransformer(),
+  })
   dscntAmt;
 
   @Column({ type: "int", comment: "구매수량" })
@@ -49,6 +62,7 @@ export class OrdItemEntity extends CommonEntity {
     type: "decimal",
     comment: "클레임 금액",
     nullable: true,
+    transformer: new ColumnNumericTransformer(),
   })
   claimAmt: number;
 
@@ -59,8 +73,8 @@ export class OrdItemEntity extends CommonEntity {
   @OneToOne(() => BttlTeamEntity, (bttlTeam) => bttlTeam.ordItem)
   bttlTeam: BttlTeamEntity;
 
-  @OneToOne(() => AdncEntity, (adnc) => adnc.ordItem)
-  adnc: AdncEntity;
+  @OneToMany(() => AdncEntity, (adnc) => adnc.ordItem)
+  adnc: AdncEntity[];
 
   @OneToMany(() => TcktEntity, (tckt) => tckt.ordItem)
   tckt: TcktEntity;

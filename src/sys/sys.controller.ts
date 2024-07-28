@@ -2,7 +2,7 @@ import { Controller, Get, Param, Query } from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { SysDictItemEntity } from "@src/sys/entities/sysDictItem.entity";
 import { SysService } from "@src/sys/sys.service";
-import { Response } from "@src/types/response";
+import { ResponseDto } from "@src/types/response";
 
 @Controller("/sys")
 @ApiTags("System")
@@ -20,7 +20,7 @@ export class SysController {
   })
   async getDictItemsByDictCd(@Query("dictCd") dictCd: string) {
     const dictItemList = await this.sysService.getDictItemsByDictCd(dictCd);
-    const res: Response<SysDictItemEntity[]> = {
+    const res: ResponseDto<SysDictItemEntity[]> = {
       message: `${dictCd}에 대한 사전 아이템 리스트`,
       data: dictItemList,
       status: 200,
