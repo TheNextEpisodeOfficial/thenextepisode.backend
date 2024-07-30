@@ -28,7 +28,7 @@ export class MbrEntity extends CommonEntity {
   @Column({ type: "varchar", length: 8, comment: "생년월일" })
   birth;
 
-  @Column({ type: "varchar", length: 6, comment: "성별" })
+  @Column({ type: "varchar", length: 6, comment: "성별", nullable: true })
   gender;
 
   @Column({ type: "varchar", length: 4, comment: "회원 유형 코드" })
