@@ -390,6 +390,6 @@ export class OrdPaymentEntity extends CommonEntity {
   cancelAmount: number;
 
   @OneToOne(() => OrdEntity, (ord) => ord.ordPayment)
-  @JoinColumn({ name: "ord_id" })
+  @JoinColumn({ name: "order_id" })
   ord: OrdEntity;
 }

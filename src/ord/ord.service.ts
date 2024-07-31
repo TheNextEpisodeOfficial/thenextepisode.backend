@@ -243,6 +243,7 @@ export class OrdService {
 
     const fullQueryBuilder = this.ordRepository
       .createQueryBuilder("ord")
+      // S : 주문 결제 정보
       .leftJoin("ord.ordPayment", "ordPayment")
       .addSelect([
         "ordPayment.id",
@@ -252,16 +253,52 @@ export class OrdService {
         "ordPayment.discountAmount",
         "ordPayment.totalAmount",
         "ordPayment.currency",
+        "ordPayment.easyProvider",
+        "ordPayment.cardType",
+        "ordPayment.cardNumber",
+        "ordPayment.receiptUrl",
+        "ordPayment.createdAt",
       ])
-      .leftJoinAndSelect("ord.ordItem", "ordItem")
-      .leftJoinAndSelect("ordItem.bttlOpt", "bttlOpt")
-      .leftJoinAndSelect("ordItem.adncOpt", "adncOpt")
+      // E : 주문 결제 정보
+      // S : 주문 상품 정보
+      .leftJoin("ord.ordItem", "ordItem")
+      .addSelect([
+        "ordItem.ordAmt",
+        "ordItem.payAmt",
+        "ordItem.dscntAmt",
+        "ordItem.qty",
+        "ordItem.claimYn",
+        "ordItem.claimAmt",
+        "ordItem.sort",
+      ])
+      // E : 주문 상품 정보
+      // S : 배틀 옵션 정보
+      .leftJoin("ordItem.bttlOpt", "bttlOpt")
+      .addSelect([
+        "bttlOpt.bttlGnrCd",
+        "bttlOpt.bttlRule",
+        "bttlOpt.bttlMbrCnt",
+        "bttlOpt.mxdYn",
+        "bttlOpt.bttlRsvFee",
+        "bttlOpt.freeYn",
+        "bttlOpt.sort",
+      ])
+      // E : 배틀 옵션 정보
+      .leftJoin("ordItem.adncOpt", "adncOpt")
+      .addSelect([
+        "adncOpt.optNm",
+        "adncOpt.optFee",
+        "adncOpt.freeYn",
+        "adncOpt.sort",
+      ])
+      // S : 플랜 정보
       .leftJoinAndMapOne(
         "ordItem.pln",
         PlnEntity,
         "pln",
         "pln.id = COALESCE(bttlOpt.plnId, adncOpt.plnId)"
       )
+      // E : 플랜 정보
       .leftJoinAndMapOne(
         "pln.file",
         FileEntity,
@@ -272,6 +309,7 @@ export class OrdService {
       .where("ord.id IN (:...ids)", {
         ids: ordIdsPaginated.items.map((item) => item.id),
       })
+      .andWhere("ord.ordStt = 'PAID'")
       .orderBy("ord.createdAt", "DESC");
 
     const ordList = await fullQueryBuilder.getMany();

@@ -17,8 +17,6 @@ import { ColumnNumericTransformer } from "@src/util/number";
 export class OrdEntity extends CommonEntity {
   // 회원 ID
   @Column({ type: "uuid", comment: "플랜 아이디" })
-  @ManyToOne(() => MbrEntity, (mbr) => mbr.id)
-  @JoinColumn({ name: "ord_mbr_id" })
   ordMbrId: string;
 
   // 주문 번호
@@ -65,4 +63,8 @@ export class OrdEntity extends CommonEntity {
   // 주문 결제 정보
   @OneToOne(() => OrdPaymentEntity, (ordPayment) => ordPayment.ord)
   ordPayment: OrdPaymentEntity;
+
+  @ManyToOne(() => MbrEntity, (mbr) => mbr.ord)
+  @JoinColumn({ name: "ord_mbr_id" })
+  mbr: MbrEntity;
 }
