@@ -3,7 +3,7 @@ import { CommonEntity } from "@src/config/entities/common.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
-import { ColumnNumericTransformer } from "@src/util/number";
+import { ColumnNumericTransformer } from "@src/util/transformer";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
 
 @Entity("bttl_opt")

@@ -11,7 +11,7 @@ import {
 } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { OrdPaymentEntity } from "@src/ordPayment/entities/ordPayment.entity";
-import { ColumnNumericTransformer } from "@src/util/number";
+import { ColumnNumericTransformer } from "@src/util/transformer";
 
 @Entity("ord")
 export class OrdEntity extends CommonEntity {

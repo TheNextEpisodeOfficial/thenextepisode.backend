@@ -1,4 +1,4 @@
-import { ColumnNumericTransformer } from "@src/util/number";
+import { ColumnNumericTransformer } from "@src/util/transformer";
 import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { PlnEntity } from "../../pln/entities/pln.entity";

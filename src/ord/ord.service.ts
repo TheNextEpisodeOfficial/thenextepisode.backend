@@ -258,6 +258,7 @@ export class OrdService {
         "ordPayment.cardNumber",
         "ordPayment.receiptUrl",
         "ordPayment.createdAt",
+        "ordPayment.cardIssuerCode",
       ])
       // E : 주문 결제 정보
       // S : 주문 상품 정보
