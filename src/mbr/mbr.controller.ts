@@ -1,5 +1,15 @@
-import { Body, Controller, Get, Post, Req, Res } from "@nestjs/common";
 import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  Req,
+  Res,
+} from "@nestjs/common";
+import {
+  ApiBody,
   ApiCreatedResponse,
   ApiOperation,
   ApiParam,
@@ -36,11 +46,11 @@ export class MbrController {
    */
   @Post("/updateMbr")
   @ApiOperation({
-    summary: "멤버 정보 수정",
-    description: "멤버의 정보를 수정한다.",
+    summary: "회원 정보 수정",
+    description: "회원의 정보를 수정한다.",
   })
   @ApiCreatedResponse({
-    description: "멤버의 정보를 수정한다.",
+    description: "회원의 정보를 수정한다.",
     type: null,
   })
   async updateMbr(@Body() mbr: MbrEntity): Promise<UpdateResult> {
@@ -48,5 +58,92 @@ export class MbrController {
   }
   /**
    * E : updateMbr
+   */
+
+  /**
+   * S : BlockMbr
+   */
+  @Post("/blockMbr")
+  @ApiOperation({
+    summary: "회원 차단",
+    description: "회원를 차단한다.",
+  })
+  @ApiCreatedResponse({
+    description: "회원를 차단한다.",
+    type: null,
+  })
+  @ApiBody({
+    description: "회원 아이디",
+    required: true,
+    schema: {
+      type: "object",
+      properties: {
+        mbrId: { type: "string" },
+      },
+    },
+  })
+  async blockMbr(@Body("mbrId") mbrId: string): Promise<UpdateResult> {
+    return this.mbrService.blockMbr(mbrId);
+  }
+  /**
+   * E : BlockMbr
+   */
+
+  /**
+   * S : withdrawMbr
+   */
+  @Post("/withdrawMbr")
+  @ApiOperation({
+    summary: "회원 탈퇴",
+    description: "회원를 탈퇴한다.",
+  })
+  @ApiCreatedResponse({
+    description: "회원를 탈퇴한다.",
+    type: null,
+  })
+  @ApiBody({
+    description: "회원 아이디",
+    required: true,
+    schema: {
+      type: "object",
+      properties: {
+        mbrId: { type: "string" },
+      },
+    },
+  })
+  async withdrawMbr(@Body("mbrId") mbrId: string): Promise<UpdateResult> {
+    return this.mbrService.withdrawMbr(mbrId);
+  }
+  /**
+   * E : withdrawMbr
+   */
+
+  /**
+   * S : recoverMbr
+   */
+  @Post("/recoverMbr")
+  @ApiOperation({
+    summary: "회원 복구",
+    description: "회원를 복구한다.",
+  })
+  @ApiCreatedResponse({
+    description: "회원를 복구한다.",
+    type: null,
+  })
+  @ApiBody({
+    description: "회원 아이디",
+    required: true,
+    schema: {
+      type: "object",
+      properties: {
+        mbrId: { type: "string" },
+      },
+    },
+  })
+  async recoverMbr(@Body("mbrId") mbrId: string): Promise<UpdateResult> {
+    return this.mbrService.recoverMbr(mbrId);
+  }
+  /**
+   * E : recoverMbr
    */
 }

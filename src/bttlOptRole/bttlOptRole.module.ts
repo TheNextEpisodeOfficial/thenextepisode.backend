@@ -7,10 +7,14 @@ import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { MbrService } from "@src/mbr/mbr.service";
 import { BttlOptRoleEntity } from "./entities/bttlOptRole.entity";
 import { BttlOptRoleController } from "./bttlOptRole.controller";
+import { MbrModule } from "@src/mbr/mbr.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CelebEntity, MbrEntity, BttlOptRoleEntity])],
+  imports: [
+    TypeOrmModule.forFeature([CelebEntity, BttlOptRoleEntity]),
+    MbrModule,
+  ],
   controllers: [BttlOptRoleController],
-  providers: [CelebService, MbrService],
+  providers: [CelebService],
 })
 export class BttlOptRolebModule {}

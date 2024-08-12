@@ -65,14 +65,17 @@ export class MbrEntity extends CommonEntity {
 
   // 0: 가입미완료, 1: 가입완료, 2: 정지, 3: 탈퇴
   @Column({ type: "int", comment: "회원 상태 코드" })
-  mbrSttCd;
+  mbrSttCd: number;
 
+  // Join With BttlOptRoleEntity
   @OneToMany(() => BttlOptRoleEntity, (bttlOptRole) => bttlOptRole.mbr)
   bttlOptRole: BttlOptRoleEntity;
 
+  // Join With TcktEntity
   @OneToMany(() => TcktEntity, (tckt) => tckt.mbr)
   tckt: TcktEntity[];
 
+  // Join With OrdEntity
   @OneToMany(() => OrdEntity, (Ord) => Ord.mbr)
   ord: OrdEntity[];
 }
