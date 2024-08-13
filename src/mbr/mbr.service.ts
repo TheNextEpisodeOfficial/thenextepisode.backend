@@ -225,4 +225,10 @@ export class MbrService {
       }
     });
   }
+
+  // 회원 약관동의 수정
+  async updateMbrAgree(mbrAgree: MbrAgreeEntity): Promise<UpdateResult> {
+    const { mbrId, ...updateData } = mbrAgree;
+    return this.mbrAgreeRepository.update({ mbrId: mbrId }, updateData);
+  }
 }

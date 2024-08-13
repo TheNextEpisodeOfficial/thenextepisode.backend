@@ -20,6 +20,7 @@ import { MbrService } from "./mbr.service";
 import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { InsertResult, UpdateResult } from "typeorm";
+import { MbrAgreeEntity } from "./entities/mbrAgree.entity";
 
 /**
  * MbrController : 회원 API를 관리한다
@@ -146,4 +147,20 @@ export class MbrController {
   /**
    * E : recoverMbr
    */
+
+  // update MbrAgree
+  @Post("/updateMbrAgree")
+  @ApiOperation({
+    summary: "회원 약관동의 정보 수정",
+    description: "회원의 약관동의 정보를 수정한다.",
+  })
+  @ApiCreatedResponse({
+    description: "회원의 약관동의 정보를 수정한다.",
+    type: null,
+  })
+  async updateMbrAgree(
+    @Body() mbrAgree: MbrAgreeEntity
+  ): Promise<UpdateResult> {
+    return this.mbrService.updateMbrAgree(mbrAgree);
+  }
 }
