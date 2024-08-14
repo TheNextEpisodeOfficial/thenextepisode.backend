@@ -7,11 +7,16 @@ import { EntityManager, Repository } from "typeorm";
 import { TcktEntity } from "./entities/tckt.entity";
 import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
-import { TicketListDto } from "./dtos/tckt.dto";
+import { SrchTcktListDto, TicketListDto } from "./dtos/tckt.dto";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { getBttlOptTit } from "@src/util/system";
 import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
 import { plainToInstance } from "class-transformer";
+import {
+  IPaginationOptions,
+  paginate,
+  Pagination,
+} from "nestjs-typeorm-paginate";
 @Injectable()
 export class TcktService {
   constructor(
@@ -66,11 +71,30 @@ export class TcktService {
       )
     );
   }
+
   /**
    * 멤버 아이디를 기준으로 보유중인 티켓 리스트를 가져온다.
    */
-  async getMyTckts(mbrId: string): Promise<TicketListDto[]> {
+  async getMyTckts(
+    srchTcktListDto: SrchTcktListDto
+  ): Promise<Pagination<TicketListDto>> {
     const queryBuilder = this.tcktRepository
+      .createQueryBuilder("tckt")
+      .select("tckt.id")
+      .where("tckt.tcktHldMbrId = :mbrId", { mbrId: srchTcktListDto.mbrId })
+      .andWhere("tckt.tcktStt = :tcktStt", { tcktStt: "PAID" })
+      .orderBy("tckt.createdAt", "DESC");
+
+    const tcktIdsPaginated = await paginate<{ id: string }>(
+      queryBuilder,
+      srchTcktListDto
+    );
+
+    if (!tcktIdsPaginated.items.length) {
+      return new Pagination<TicketListDto>([], tcktIdsPaginated.meta);
+    }
+
+    const fullQueryBuilder = this.tcktRepository
       .createQueryBuilder("tckt")
       .leftJoinAndSelect("tckt.ordItem", "ordItem")
       .leftJoinAndSelect("tckt.bttlr", "bttlr")
@@ -93,51 +117,44 @@ export class TcktService {
         "s3_file",
         FileEntity,
         "file",
-        "file.fileGrpId = pln.fileGrpId"
-      );
+        "file.fileGrpId = pln.fileGrpId AND file.fileTypeCd = 'THMB_MN'"
+      )
+      .select([
+        'tckt.id AS "tcktId"',
+        'tckt.teamAsgnYn AS "teamAsgnYn"',
+        'tckt.hndOvrYn AS "hndOvrYn"',
+        'tckt.usedYn AS "usedYn"',
+        'ordItem.id AS "ordItemId"',
+        'ordItem.bttlOptId AS "bttlOptId"',
+        'ordItem.adncOptId AS "adncOptId"',
+        'bttlOpt.bttlGnrCd AS "bttlGnrCd"',
+        'bttlOpt.bttlRule AS "bttlRule"',
+        'bttlOpt.bttlMbrCnt AS "bttlMbrCnt"',
+        'bttlTeam.bttlTeamNm AS "bttlTeamNm"',
+        'adncOpt.optNm AS "adncOptNm"',
+        'bttlr.id AS "bttlrId"',
+        'bttlr.bttlrNm AS "bttlrNm"',
+        'bttlr.bttlrDncrNm AS "bttlrDncrNm"',
+        'bttlr.bttlrBirth AS "bttlrBirth"',
+        'bttlr.bttlrPhn AS "bttlrPhn"',
+        'adnc.adncNm AS "adncNm"',
+        'pln.plnNm AS "plnNm"',
+        'pln.plnRoadAddr AS "plnRoadAddr"',
+        'pln.plnAddrDtl AS "plnAddrDtl"',
+        'pln.plnDt AS "plnDt"',
+        'file.fileNm AS "tcktThumb"',
+      ])
+      .where("tckt.id IN (:...ids)", {
+        ids: tcktIdsPaginated.items.map((item) => item.id),
+      })
+      .andWhere("tckt.tcktStt = :tcktStt", { tcktStt: "PAID" })
+      .orderBy("tckt.createdAt", "DESC");
 
-    queryBuilder.select([
-      'tckt.id AS "tcktId"',
-      'tckt.teamAsgnYn AS "teamAsgnYn"',
-      'tckt.hndOvrYn AS "hndOvrYn"',
-      'tckt.usedYn AS "usedYn"',
-      'ordItem.id AS "ordItemId"',
-      'ordItem.bttlOptId AS "bttlOptId"',
-      'ordItem.adncOptId AS "adncOptId"',
-
-      'bttlOpt.bttlGnrCd AS "bttlGnrCd"',
-      'bttlOpt.bttlRule AS "bttlRule"',
-      'bttlOpt.bttlMbrCnt AS "bttlMbrCnt"',
-
-      'bttlTeam.bttlTeamNm AS "bttlTeamNm"',
-
-      'adncOpt.optNm AS "adncOptNm"',
-
-      'bttlr.id AS "bttlrId"',
-      'bttlr.bttlrNm AS "bttlrNm"',
-      'bttlr.bttlrDncrNm AS "bttlrDncrNm"',
-      'bttlr.bttlrBirth AS "bttlrBirth"',
-      'bttlr.bttlrPhn AS "bttlrPhn"',
-      'adnc.adncNm AS "adncNm"',
-      'pln.plnNm AS "plnNm"',
-      'pln.plnRoadAddr AS "plnRoadAddr"',
-      'pln.plnAddrDtl AS "plnAddrDtl"',
-      'pln.plnDt AS "plnDt"',
-      'file.fileNm AS "tcktThumb"',
-    ]);
-
-    // queryBuilder.where("tckt.tcktHldMbrId = :mbrId", { mbrId });
-    queryBuilder.where("tckt.tcktHldMbrId = :mbrId", {
-      mbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
-    });
-    queryBuilder.andWhere("tckt.tcktStt = :tcktStt", { tcktStt: "PAID" });
-    queryBuilder.andWhere("file.fileTypeCd = 'THMB_MN'");
-
-    const rawResults = await queryBuilder.getRawMany();
+    const tcktList = await fullQueryBuilder.getRawMany();
 
     const ticketList = plainToInstance(
       TicketListDto,
-      rawResults.map((result) => ({
+      tcktList.map((result) => ({
         ...result,
         optTit: result.adncOptNm
           ? result.adncOptNm
@@ -149,7 +166,7 @@ export class TcktService {
       }))
     );
 
-    return ticketList;
+    return new Pagination<TicketListDto>(ticketList, tcktIdsPaginated.meta);
   }
 
   /**

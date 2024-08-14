@@ -9,7 +9,7 @@ import {
 import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { I18n, I18nContext } from "nestjs-i18n";
-import { TicketListDto } from "./dtos/tckt.dto";
+import { SrchTcktListDto, TicketListDto } from "./dtos/tckt.dto";
 import { TcktEntity } from "./entities/tckt.entity";
 import { TcktService } from "./tckt.service";
 import { ResponseDto } from "@src/types/response";
@@ -33,20 +33,15 @@ export class TcktController {
     description: "멤버 아이디를 기준으로 보유중인 티켓 리스트를 가져온다.",
     type: TcktEntity,
   })
-  @ApiParam({
-    name: "mbrId",
-    required: true,
-    description: "멤버 아이디",
-    type: String,
-  })
   async getMyTckts(
     @Req() req: Request,
-    @Query("mbrId") mbrId: string,
+    @Query() srchTcktListDto: SrchTcktListDto,
     @I18n() i18n: I18nContext
   ) {
     // let session: SessionData = req.session;
     // console.log("session:::", session);
-    const tckts = await this.tcktService.getMyTckts(mbrId);
+    console.log(srchTcktListDto.mbrId);
+    const tckts = await this.tcktService.getMyTckts(srchTcktListDto);
     return tckts;
   }
   /**
