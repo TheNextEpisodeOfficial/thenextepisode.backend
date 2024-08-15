@@ -246,4 +246,21 @@ export class MbrService {
       }
     });
   }
+
+  // 회원 약관동의 조회
+  async getMbrAgree(mbrId: string): Promise<UpsertMbrAgreeDto> {
+    return this.mbrRepository.findOne({
+      select: [
+        "termsAcceptYn",
+        "privacyAcceptYn",
+        "advertisementYn",
+        "marketingYn",
+        "smsYn",
+        "emailYn",
+      ],
+      where: {
+        id: mbrId,
+      },
+    });
+  }
 }

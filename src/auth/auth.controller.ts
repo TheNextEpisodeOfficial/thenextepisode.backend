@@ -7,11 +7,15 @@ import axios from "axios";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { SessionData } from "express-session";
 import { Public } from "./public.decorator";
+import { MbrService } from "@src/mbr/mbr.service";
 
 @Controller("api/auth")
 @ApiTags("Authorization")
 export class AuthController {
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly mbrService: MbrService
+  ) {}
 
   private readonly DATA_URL = "https://kapi.kakao.com/v2/user/me";
 
@@ -41,16 +45,35 @@ export class AuthController {
     let session: SessionData = req.session;
 
     if (isFirstLogin) {
-      // 최초 로그인의 경우 가입 화면으로 리다이렉트
+      // S : 최초 로그인의 경우 가[입 화면으로 리다이렉트
       session.joinUser = user;
       res.redirect(`${process.env.LOGIN_REDIRECT_URL}/join`);
+      // E : 최초 로그인의 경우 가[입 화면으로 리다이렉트
     } else {
+      // S : 로그인 정보 세션에 임시저장
       session.loginUser = user;
+      session.tempToken.accessToken = accessToken;
+      session.tempToken.refreshToken = refreshToken;
+      // E : 로그인 정보 세션에 임시저장
 
-      res.cookie("accessToken", accessToken);
-      res.cookie("refreshToken", refreshToken);
+      // S : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
+      const mbrAgree = await this.mbrService.getMbrAgree(user.id);
+      if (
+        mbrAgree.termsAcceptYn === "N" ||
+        mbrAgree.privacyAcceptYn === "N" ||
+        mbrAgree.advertisementYn === "N"
+      ) {
+        res.redirect(`${process.env.LOGIN_REDIRECT_URL}/policyCheck`);
+      }
+      // E : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
+      // S : 필수 약관동의 여부 통과 시 로그인 완료
+      else {
+        res.cookie("accessToken", accessToken);
+        res.cookie("refreshToken", refreshToken);
 
-      res.redirect(`${process.env.LOGIN_REDIRECT_URL}/savememberInfo`);
+        res.redirect(`${process.env.LOGIN_REDIRECT_URL}/savememberInfo`);
+      }
+      // E : 필수 약관동의 여부 통과 시 로그인 완료
     }
   }
 
@@ -69,9 +92,6 @@ export class AuthController {
     @Res({ passthrough: true }) res: Response
   ): Promise<void> {
     let session: SessionData = req.session;
-    console.log("req.user::", req.user);
-
-    console.log("accessToken::", req.cookies.accessToken);
 
     res.clearCookie("refreshToken");
     res.clearCookie("accessToken");
@@ -109,5 +129,34 @@ export class AuthController {
     };
 
     return res;
+  }
+
+  /**
+   * 토큰 저장 후 회원정보 저장 페이지로 이동
+   * @param req
+   * @param res
+   */
+  @Public()
+  @Get("/saveToken")
+  @ApiOperation({
+    summary: "토큰 저장",
+    description: "토큰 저장 후 회원정보 저장 페이지로 이동한다.",
+  })
+  @ApiCreatedResponse({
+    description: "토큰 저장 후 회원정보 저장 페이지로 이동한다.",
+    type: null,
+  })
+  async saveToken(@Req() req: Request, @Res() res: Response) {
+    let session: SessionData = req.session;
+
+    res.cookie("accessToken", session.tempToken.accessToken);
+    res.cookie("refreshToken", session.tempToken.refreshToken);
+
+    if (session.tempToken.accessToken && session.tempToken.refreshToken) {
+      res.redirect(`${process.env.LOGIN_REDIRECT_URL}/savememberInfo`);
+    } else {
+      console.log("session.tempToken이 없습니다.");
+      res.redirect(`${process.env.LOGIN_REDIRECT_URL}`);
+    }
   }
 }
