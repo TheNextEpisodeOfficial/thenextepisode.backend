@@ -10,10 +10,9 @@ import {
   UpdateResult,
 } from "typeorm";
 import { MbrEntity } from "./entities/mbr.entity";
-import { UpsertMbrDto } from "./dtos/mbr.dto";
+import { UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
 import { SearchBttlOptRole } from "@src/bttlOptRole/dtos/bttlOptRole.dto";
 import { MbrLogEntity } from "./entities/mbrLog.entity";
-import { MbrAgreeEntity } from "./entities/mbrAgree.entity";
 
 @Injectable()
 export class MbrService {
@@ -22,8 +21,6 @@ export class MbrService {
     private readonly mbrRepository: Repository<MbrEntity>,
     @InjectRepository(MbrLogEntity)
     private readonly mbrLogRepository: Repository<MbrLogEntity>,
-    @InjectRepository(MbrAgreeEntity)
-    private readonly mbrAgreeRepository: Repository<MbrAgreeEntity>,
     private readonly entityManager: EntityManager
   ) {}
 
@@ -61,11 +58,6 @@ export class MbrService {
           logType: "J",
         });
 
-        // MbrAgree 삽입
-        await entityManager.insert(MbrAgreeEntity, {
-          mbrId: resultCreateMbr.id,
-        });
-
         return resultCreateMbr;
       } catch (error) {
         throw new HttpException(
@@ -94,10 +86,10 @@ export class MbrService {
    * @param mbr
    * @returns
    */
-  updateMbr(mbr: MbrEntity): Promise<UpdateResult> {
+  updateMbr(upsertMbrDto: UpsertMbrDto): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
-        const { id, ...updateData } = mbr;
+        const { id, ...updateData } = upsertMbrDto;
 
         // Mbr 수정
         const resultCreateMbr = await entityManager.update(
@@ -227,8 +219,31 @@ export class MbrService {
   }
 
   // 회원 약관동의 수정
-  async updateMbrAgree(mbrAgree: MbrAgreeEntity): Promise<UpdateResult> {
-    const { mbrId, ...updateData } = mbrAgree;
-    return this.mbrAgreeRepository.update({ mbrId: mbrId }, updateData);
+  async updateMbrAgree(
+    mbrId: string,
+    upsertMbrAgreeDto: UpsertMbrAgreeDto
+  ): Promise<UpdateResult> {
+    return this.entityManager.transaction(async (entityManager) => {
+      try {
+        const resultCreateMbr = await entityManager.update(
+          MbrEntity,
+          { id: mbrId },
+          upsertMbrAgreeDto
+        );
+
+        // MbrLog 삽입
+        await entityManager.insert(MbrLogEntity, {
+          mbrId: mbrId,
+          logType: "P",
+        });
+
+        return resultCreateMbr;
+      } catch (error) {
+        throw new HttpException(
+          error.message,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+    });
   }
 }

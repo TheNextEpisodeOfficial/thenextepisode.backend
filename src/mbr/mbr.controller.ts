@@ -20,7 +20,7 @@ import { MbrService } from "./mbr.service";
 import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { InsertResult, UpdateResult } from "typeorm";
-import { MbrAgreeEntity } from "./entities/mbrAgree.entity";
+import { UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
 
 /**
  * MbrController : 회원 API를 관리한다
@@ -54,7 +54,7 @@ export class MbrController {
     description: "회원의 정보를 수정한다.",
     type: null,
   })
-  async updateMbr(@Body() mbr: MbrEntity): Promise<UpdateResult> {
+  async updateMbr(@Body() mbr: UpsertMbrDto): Promise<UpdateResult> {
     return this.mbrService.updateMbr(mbr);
   }
   /**
@@ -159,8 +159,13 @@ export class MbrController {
     type: null,
   })
   async updateMbrAgree(
-    @Body() mbrAgree: MbrAgreeEntity
+    @Req() req: Request,
+    @Body() upsertMbrAgreeDto: UpsertMbrAgreeDto
   ): Promise<UpdateResult> {
-    return this.mbrService.updateMbrAgree(mbrAgree);
+    let session: SessionData = req.session;
+    return this.mbrService.updateMbrAgree(
+      session.loginUser.id,
+      upsertMbrAgreeDto
+    );
   }
 }

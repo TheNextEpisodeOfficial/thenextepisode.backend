@@ -6,18 +6,26 @@ import { Request, Response } from "express";
 import axios from "axios";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { SessionData } from "express-session";
+import { Public } from "./public.decorator";
 
 @Controller("api/auth")
-@ApiTags("Auth")
+@ApiTags("Authorization")
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   private readonly DATA_URL = "https://kapi.kakao.com/v2/user/me";
 
+  /**
+   * 카카오 로그인
+   * @param socialUser
+   * @param req
+   * @param res
+   */
   @ApiOperation({
     summary: "카카오 로그인",
     description: "카카오 서비스로 로그인을 요청한다.",
   })
+  @Public()
   @UseGuards(KakaoAuthGuard)
   @Get("login/kakao")
   async kakaoCallback(
@@ -33,16 +41,24 @@ export class AuthController {
     let session: SessionData = req.session;
 
     if (isFirstLogin) {
+      // 최초 로그인의 경우 가입 화면으로 리다이렉트
       session.joinUser = user;
       res.redirect(`${process.env.LOGIN_REDIRECT_URL}/join`);
     } else {
       session.loginUser = user;
-      res.cookie("refreshToken", refreshToken);
+
       res.cookie("accessToken", accessToken);
+      res.cookie("refreshToken", refreshToken);
+
       res.redirect(`${process.env.LOGIN_REDIRECT_URL}/savememberInfo`);
     }
   }
 
+  /**
+   * 카카오 로그아웃
+   * @param req
+   * @param res
+   */
   @ApiOperation({
     summary: "카카오 로그아웃",
     description: "카카오 서비스의 로그아웃을 요청한다.",
@@ -61,6 +77,12 @@ export class AuthController {
     res.clearCookie("accessToken");
   }
 
+  /**
+   * 토큰기반 로그인 유저 정보 조회
+   * @param req
+   * @returns
+   */
+  @Public()
   @Get("/getUserInfoByToken")
   @ApiOperation({
     summary: "토큰기반 로그인 유저 정보 조회",
