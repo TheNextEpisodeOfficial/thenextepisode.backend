@@ -45,16 +45,12 @@ export class AuthController {
     let session: SessionData = req.session;
 
     if (isFirstLogin) {
-      // S : 최초 로그인의 경우 가[입 화면으로 리다이렉트
+      // S : 최초 로그인의 경우 가입 화면으로 리다이렉트
       session.joinUser = user;
       res.redirect(`${process.env.LOGIN_REDIRECT_URL}/join`);
-      // E : 최초 로그인의 경우 가[입 화면으로 리다이렉트
+      // E : 최초 로그인의 경우 가입 화면으로 리다이렉트
     } else {
-      // S : 로그인 정보 세션에 임시저장
       session.loginUser = user;
-      session.tempToken.accessToken = accessToken;
-      session.tempToken.refreshToken = refreshToken;
-      // E : 로그인 정보 세션에 임시저장
 
       // S : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
       const mbrAgree = await this.mbrService.getMbrAgree(user.id);
@@ -63,6 +59,14 @@ export class AuthController {
         mbrAgree.privacyAcceptYn === "N" ||
         mbrAgree.advertisementYn === "N"
       ) {
+        session.tempToken = {
+          accessToken: "",
+          refreshToken: "",
+        };
+        // S : 로그인 정보 세션에 임시저장
+        session.tempToken.accessToken = accessToken;
+        session.tempToken.refreshToken = refreshToken;
+        // E : 로그인 정보 세션에 임시저장
         res.redirect(`${process.env.LOGIN_REDIRECT_URL}/policyCheck`);
       }
       // E : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
