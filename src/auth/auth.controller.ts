@@ -50,7 +50,28 @@ export class AuthController {
       res.redirect(`${process.env.LOGIN_REDIRECT_URL}/join`);
       // E : 최초 로그인의 경우 가입 화면으로 리다이렉트
     } else {
-      session.loginUser = user;
+      // S : 회원 상태 유효성 체크
+      if (user.mbrSttCd != 1) {
+        let redirectPath = "/";
+        switch (user.mbrSttCd) {
+          case 0:
+            // 카카오 최초 로그인은 하였으나 가입이 완료되지 않음
+            redirectPath = "/join";
+            break;
+          case 2:
+            // 정지된 회원
+            redirectPath = "/blocked";
+            break;
+          case 3:
+            // 탈퇴한 회원
+            break;
+          default:
+            console.log("회원 상태가 유효하지 않습니다.");
+            break;
+        }
+        res.redirect(`${process.env.LOGIN_REDIRECT_URL}/${redirectPath}`);
+      }
+      // E : 회원 상태 유효성 체크
 
       // S : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
       const mbrAgree = await this.mbrService.getMbrAgree(user.id);
@@ -59,19 +80,19 @@ export class AuthController {
         mbrAgree.privacyAcceptYn === "N" ||
         mbrAgree.advertisementYn === "N"
       ) {
+        // S : 토큰 정보 세션에 임시저장
         session.tempToken = {
-          accessToken: "",
-          refreshToken: "",
+          accessToken: accessToken,
+          refreshToken: refreshToken,
         };
-        // S : 로그인 정보 세션에 임시저장
-        session.tempToken.accessToken = accessToken;
-        session.tempToken.refreshToken = refreshToken;
-        // E : 로그인 정보 세션에 임시저장
+        // E : 토큰 정보 세션에 임시저장
         res.redirect(`${process.env.LOGIN_REDIRECT_URL}/policyCheck`);
       }
       // E : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
       // S : 필수 약관동의 여부 통과 시 로그인 완료
       else {
+        session.loginUser = user;
+
         res.cookie("accessToken", accessToken);
         res.cookie("refreshToken", refreshToken);
 
@@ -173,13 +194,13 @@ export class AuthController {
   @Get("/getMbrAgreeByTempToken")
   @ApiOperation({
     summary:
-      "회원 약관 미동의 회원 로그인시 블록 후 약관동의 처리시 기본 정보 조회",
+      "필수 약관 미동의 회원 로그인시 블록 후 약관동의 처리시 기본 정보 조회",
     description:
-      "회원 약관 미동의 회원 로그인 블록 후 약관동의 처리시 기본 정보 조회.",
+      "필수 약관 미동의 회원 로그인시 블록 후 약관동의 처리시 기본 정보 조회.",
   })
   @ApiCreatedResponse({
     description:
-      "회원 약관 미동의 회원 로그인 블록 후 약관동의 처리시 기본 정보 조회",
+      "회원 약관 미동의 회원 로그인시 블록 후 약관동의 처리시 기본 정보 조회",
     type: null,
   })
   async getMbrAgreeByTempToken(@Req() req) {
