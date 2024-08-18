@@ -10,7 +10,7 @@ import {
   UpdateResult,
 } from "typeorm";
 import { MbrEntity } from "./entities/mbr.entity";
-import { UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
+import { JoinMbrDto, UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
 import { SearchBttlOptRole } from "@src/bttlOptRole/dtos/bttlOptRole.dto";
 import { MbrLogEntity } from "./entities/mbrLog.entity";
 
@@ -78,6 +78,37 @@ export class MbrService {
       where: {
         chnlMbrId: mbrId,
       },
+    });
+  }
+
+  /**
+   *
+   * @param mbr
+   * @returns
+   */
+  joinMbr(joinMbrDto: JoinMbrDto): Promise<UpdateResult> {
+    return this.entityManager.transaction(async (entityManager) => {
+      try {
+        // Mbr 수정
+        const resultCreateMbr = await entityManager.update(
+          MbrEntity,
+          { id: joinMbrDto.mbr.id },
+          { ...joinMbrDto.mbr, ...joinMbrDto.agree }
+        );
+
+        // MbrLog 삽입
+        await entityManager.insert(MbrLogEntity, {
+          mbrId: joinMbrDto.mbr.id,
+          logType: "C",
+        });
+
+        return resultCreateMbr;
+      } catch (error) {
+        throw new HttpException(
+          error.message,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
     });
   }
 

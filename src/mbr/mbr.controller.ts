@@ -12,7 +12,6 @@ import {
   ApiBody,
   ApiCreatedResponse,
   ApiOperation,
-  ApiParam,
   ApiTags,
 } from "@nestjs/swagger";
 import { MbrEntity } from "./entities/mbr.entity";
@@ -20,7 +19,7 @@ import { MbrService } from "./mbr.service";
 import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { InsertResult, UpdateResult } from "typeorm";
-import { UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
+import { JoinMbrDto, UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
 import axios from "axios";
 import { AuthService } from "@src/auth/auth.service";
 
@@ -38,38 +37,43 @@ export class MbrController {
   private readonly DATA_URL = "https://kapi.kakao.com/v2/user/me";
 
   /**
-   * S : getJoinInfo
+   * 회원 정보 조회
+   * @param req
+   * @returns
    */
   @Get("/getJoinInfo")
   async getJoinInfo(@Req() req: Request): Promise<MbrEntity> {
     let session: SessionData = req.session;
     return session.joinUser;
   }
-  /**
-   * E : getJoinInfo
-   */
 
   /**
-   * S : joinMbr
+   * 회원 가입
+   * @param mbr
+   * @returns
    */
-  // @Post("/joinMbr")
-  // @ApiOperation({
-  //   summary: "회원 가입",
-  //   description: "회원을 가입한다.",
-  // })
-  // @ApiCreatedResponse({
-  //   description: "회원을 가입한다.",
-  //   type: InsertResult,
-  // })
-  // async joinMbr(@Body() mbr: UpsertMbrDto): Promise<InsertResult> {
-  //   return this.mbrService.createMbr(mbr);
-  // }
-  /**
-   * E : joinMbr
-   */
+  @Post("/joinMbr")
+  @ApiOperation({
+    summary: "회원 가입 정보 등록",
+    description: "회원 가입 정보를 등록한다. (가입완료 시점)",
+  })
+  @ApiCreatedResponse({
+    description: "회원 가입 정보를 등록한다. (가입완료 시점)",
+    type: UpdateResult,
+  })
+  @ApiBody({
+    description: "회원 정보",
+    required: true,
+    type: JoinMbrDto,
+  })
+  async joinMbr(@Body() joinMbrDto: JoinMbrDto): Promise<UpdateResult> {
+    return this.mbrService.joinMbr(joinMbrDto);
+  }
 
   /**
-   * S : updateMbr
+   * 회원 정보 수정
+   * @param mbr
+   * @returns
    */
   @Post("/updateMbr")
   @ApiOperation({
@@ -83,12 +87,11 @@ export class MbrController {
   async updateMbr(@Body() mbr: UpsertMbrDto): Promise<UpdateResult> {
     return this.mbrService.updateMbr(mbr);
   }
-  /**
-   * E : updateMbr
-   */
 
   /**
-   * S : BlockMbr
+   * 회원 차단
+   * @param mbrId
+   * @returns
    */
   @Post("/blockMbr")
   @ApiOperation({
@@ -112,12 +115,11 @@ export class MbrController {
   async blockMbr(@Body("mbrId") mbrId: string): Promise<UpdateResult> {
     return this.mbrService.blockMbr(mbrId);
   }
-  /**
-   * E : BlockMbr
-   */
 
   /**
-   * S : withdrawMbr
+   * 회원 탈퇴
+   * @param mbrId
+   * @returns
    */
   @Post("/withdrawMbr")
   @ApiOperation({
@@ -141,12 +143,11 @@ export class MbrController {
   async withdrawMbr(@Body("mbrId") mbrId: string): Promise<UpdateResult> {
     return this.mbrService.withdrawMbr(mbrId);
   }
-  /**
-   * E : withdrawMbr
-   */
 
   /**
-   * S : recoverMbr
+   * 회원 복구
+   * @param mbrId
+   * @returns
    */
   @Post("/recoverMbr")
   @ApiOperation({
@@ -170,11 +171,13 @@ export class MbrController {
   async recoverMbr(@Body("mbrId") mbrId: string): Promise<UpdateResult> {
     return this.mbrService.recoverMbr(mbrId);
   }
-  /**
-   * E : recoverMbr
-   */
 
-  // update MbrAgree
+  /**
+   * 회원 약관동의 정보 수정
+   * @param req
+   * @param upsertMbrAgreeDto
+   * @returns
+   */
   @Post("/updateMbrAgree")
   @ApiOperation({
     summary: "회원 약관동의 정보 수정",
