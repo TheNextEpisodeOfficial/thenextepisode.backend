@@ -20,11 +20,14 @@ async function bootstrap() {
     })
   );
 
+  console.log("process.env.LOGIN_REDIRECT_URL:", process.env.LOGIN_REDIRECT_URL);
+
   app.enableCors({
     origin: process.env.LOGIN_REDIRECT_URL,
-    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
     credentials: true,
   });
+
   setupSwagger(app);
   await app.listen(9090);
   console.log(

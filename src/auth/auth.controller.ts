@@ -85,6 +85,7 @@ export class AuthController {
           accessToken: accessToken,
           refreshToken: refreshToken,
         };
+        session.loginUser = user;
         // E : 토큰 정보 세션에 임시저장
         res.redirect(`${process.env.LOGIN_REDIRECT_URL}/policyCheck`);
       }
@@ -154,35 +155,6 @@ export class AuthController {
     };
 
     return res;
-  }
-
-  /**
-   * 토큰 저장 후 회원정보 저장 페이지로 이동
-   * @param req
-   * @param res
-   */
-  @Public()
-  @Get("/saveToken")
-  @ApiOperation({
-    summary: "토큰 저장",
-    description: "토큰 저장 후 회원정보 저장 페이지로 이동한다.",
-  })
-  @ApiCreatedResponse({
-    description: "토큰 저장 후 회원정보 저장 페이지로 이동한다.",
-    type: null,
-  })
-  async saveToken(@Req() req: Request, @Res() res: Response) {
-    let session: SessionData = req.session;
-
-    res.cookie("accessToken", session.tempToken.accessToken);
-    res.cookie("refreshToken", session.tempToken.refreshToken);
-
-    if (session.tempToken.accessToken && session.tempToken.refreshToken) {
-      res.redirect(`${process.env.LOGIN_REDIRECT_URL}/savememberInfo`);
-    } else {
-      console.log("session.tempToken이 없습니다.");
-      res.redirect(`${process.env.LOGIN_REDIRECT_URL}`);
-    }
   }
 
   /**
