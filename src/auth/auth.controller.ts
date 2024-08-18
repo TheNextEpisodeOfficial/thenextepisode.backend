@@ -183,9 +183,10 @@ export class AuthController {
     type: null,
   })
   async getMbrAgreeByTempToken(@Req() req) {
+    let session: SessionData = req.session;
     const userInfo = await axios.get(this.DATA_URL, {
       headers: {
-        Authorization: `Bearer ${req.cookies.tempToken.accessToken}`,
+        Authorization: `Bearer ${session.tempToken.accessToken}`,
       },
     });
 
