@@ -21,6 +21,8 @@ import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { InsertResult, UpdateResult } from "typeorm";
 import { UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
+import axios from "axios";
+import { AuthService } from "@src/auth/auth.service";
 
 /**
  * MbrController : 회원 API를 관리한다
@@ -28,7 +30,12 @@ import { UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
 @Controller("/mbr")
 @ApiTags("Mbr")
 export class MbrController {
-  constructor(private readonly mbrService: MbrService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly mbrService: MbrService
+  ) {}
+
+  private readonly DATA_URL = "https://kapi.kakao.com/v2/user/me";
 
   /**
    * S : getJoinInfo
@@ -163,9 +170,18 @@ export class MbrController {
     @Body() upsertMbrAgreeDto: UpsertMbrAgreeDto
   ): Promise<UpdateResult> {
     let session: SessionData = req.session;
-    return this.mbrService.updateMbrAgree(
-      session.loginUser.id,
-      upsertMbrAgreeDto
-    );
+    const userInfo = await axios.get(this.DATA_URL, {
+      headers: {
+        Authorization: `Bearer ${req.cookies.tempToken.accessToken}`,
+      },
+    });
+
+    const tempMbr = await this.authService.getUserInfo(userInfo.data.id);
+
+    const mbrId = upsertMbrAgreeDto.useTempToken
+      ? tempMbr.id
+      : session.loginUser.id;
+
+    return this.mbrService.updateMbrAgree(mbrId, upsertMbrAgreeDto);
   }
 }

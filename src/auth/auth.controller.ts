@@ -163,4 +163,33 @@ export class AuthController {
       res.redirect(`${process.env.LOGIN_REDIRECT_URL}`);
     }
   }
+
+  /**
+   * 회원 약관 미동의 회원 로그인시 블록 후 약관동의 처리시 기본 정보 조회
+   * @param req
+   * @param res
+   */
+  @Public()
+  @Get("/getMbrAgreeByTempToken")
+  @ApiOperation({
+    summary:
+      "회원 약관 미동의 회원 로그인시 블록 후 약관동의 처리시 기본 정보 조회",
+    description:
+      "회원 약관 미동의 회원 로그인 블록 후 약관동의 처리시 기본 정보 조회.",
+  })
+  @ApiCreatedResponse({
+    description:
+      "회원 약관 미동의 회원 로그인 블록 후 약관동의 처리시 기본 정보 조회",
+    type: null,
+  })
+  async getMbrAgreeByTempToken(@Req() req) {
+    const userInfo = await axios.get(this.DATA_URL, {
+      headers: {
+        Authorization: `Bearer ${req.cookies.tempToken.accessToken}`,
+      },
+    });
+
+    const tempMbr = await this.authService.getUserInfo(userInfo.data.id);
+    return this.mbrService.getMbrAgree(tempMbr.id);
+  }
 }

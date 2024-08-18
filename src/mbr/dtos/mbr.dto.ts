@@ -110,4 +110,7 @@ export class UpsertMbrAgreeDto {
     default: "N",
   })
   kakaoYn;
+
+  @ApiProperty({ type: Boolean, required: true, default: false })
+  useTempToken?;
 }
