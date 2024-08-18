@@ -10,7 +10,6 @@ declare const module: any;
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(cors());
   app.use(cookieParser());
   app.use("/public", express.static(join(process.cwd(), "src", "public")));
   app.use(
@@ -22,7 +21,7 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: true,
+    origin: process.env.LOGIN_REDIRECT_URL,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
   });

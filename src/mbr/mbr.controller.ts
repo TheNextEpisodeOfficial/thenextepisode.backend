@@ -188,18 +188,20 @@ export class MbrController {
     @Req() req: Request,
     @Body() upsertMbrAgreeDto: UpsertMbrAgreeDto
   ): Promise<UpdateResult> {
+    const useTempToken = upsertMbrAgreeDto.useTempToken;
+
     let session: SessionData = req.session;
-    const userInfo = await axios.get(this.DATA_URL, {
-      headers: {
-        Authorization: `Bearer ${session.tempToken.accessToken}`,
-      },
-    });
+    let tempMbr = null;
+    if (useTempToken) {
+      const userInfo = await axios.get(this.DATA_URL, {
+        headers: {
+          Authorization: `Bearer ${session.tempToken.accessToken}`,
+        },
+      });
+      tempMbr = await this.authService.getUserInfo(userInfo.data.id);
+    }
 
-    const tempMbr = await this.authService.getUserInfo(userInfo.data.id);
-
-    const mbrId = upsertMbrAgreeDto.useTempToken
-      ? tempMbr.id
-      : session.loginUser.id;
+    const mbrId = useTempToken ? tempMbr.id : session.loginUser.id;
 
     return this.mbrService.updateMbrAgree(mbrId, upsertMbrAgreeDto);
   }

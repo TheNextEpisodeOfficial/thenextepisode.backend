@@ -224,11 +224,12 @@ export class MbrService {
     upsertMbrAgreeDto: UpsertMbrAgreeDto
   ): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
+      const { useTempToken, ...mbrAgreeDto } = upsertMbrAgreeDto;
       try {
         const resultCreateMbr = await entityManager.update(
           MbrEntity,
           { id: mbrId },
-          upsertMbrAgreeDto
+          mbrAgreeDto
         );
 
         // MbrLog 삽입
