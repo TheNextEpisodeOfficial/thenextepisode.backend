@@ -18,7 +18,7 @@ export class BttlOptEntity extends CommonEntity {
   @ApiProperty({ type: String, required: false })
   @Column({
     type: "varchar",
-    length: 20,
+    length: 100,
     comment: "배틀 룰 (7 to smoke, Non locker 등)",
     nullable: true,
   })
