@@ -257,6 +257,7 @@ export class MbrService {
         "marketingYn",
         "smsYn",
         "emailYn",
+        "kakaoYn",
       ],
       where: {
         id: mbrId,
