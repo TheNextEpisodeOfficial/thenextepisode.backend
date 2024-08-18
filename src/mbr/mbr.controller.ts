@@ -50,6 +50,25 @@ export class MbrController {
    */
 
   /**
+   * S : joinMbr
+   */
+  // @Post("/joinMbr")
+  // @ApiOperation({
+  //   summary: "회원 가입",
+  //   description: "회원을 가입한다.",
+  // })
+  // @ApiCreatedResponse({
+  //   description: "회원을 가입한다.",
+  //   type: InsertResult,
+  // })
+  // async joinMbr(@Body() mbr: UpsertMbrDto): Promise<InsertResult> {
+  //   return this.mbrService.createMbr(mbr);
+  // }
+  /**
+   * E : joinMbr
+   */
+
+  /**
    * S : updateMbr
    */
   @Post("/updateMbr")
@@ -172,7 +191,7 @@ export class MbrController {
     let session: SessionData = req.session;
     const userInfo = await axios.get(this.DATA_URL, {
       headers: {
-        Authorization: `Bearer ${req.cookies.tempToken.accessToken}`,
+        Authorization: `Bearer ${session.tempToken.accessToken}`,
       },
     });
 
