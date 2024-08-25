@@ -24,7 +24,7 @@ export class CommonEntity extends BaseEntity {
   delYn: string;
 
   @CreateDateColumn({
-    type: "timestamp",
+    type: "timestamptz",
     comment: "데이터 생성 일시",
     select: false,
   })
@@ -41,7 +41,7 @@ export class CommonEntity extends BaseEntity {
   createdBy: string;
 
   @UpdateDateColumn({
-    type: "timestamp",
+    type: "timestamptz",
     comment: "데이터 수정 일시",
     nullable: true,
     select: false,

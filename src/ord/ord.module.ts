@@ -6,9 +6,10 @@ import { TcktService } from "@src/tckt/tckt.service";
 import { OrdEntity } from "./entities/ord.entity";
 import { OrdController } from "./ord.controller";
 import { OrdService } from "./ord.service";
+import { OrdTimerEntity } from "@src/ord/entities/ordTimer.entity";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrdEntity, TcktEntity, OrdItemEntity])],
+  imports: [TypeOrmModule.forFeature([OrdEntity, OrdTimerEntity, TcktEntity, OrdItemEntity])],
   controllers: [OrdController],
   providers: [OrdService, TcktService],
 })

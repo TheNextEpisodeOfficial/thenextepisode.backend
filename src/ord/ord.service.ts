@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
-import { Request } from "express";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AdncEntity } from "@src/adnc/entities/adnc.entity";
 import { BttlrEntity } from "@src/bttlr/entities/bttlr.entity";
@@ -16,9 +15,10 @@ import { OrdEntity } from "./entities/ord.entity";
 import { TcktService } from "@src/tckt/tckt.service";
 import { paginate, Pagination } from "nestjs-typeorm-paginate";
 import { SrchOrdListDto } from "./dtos/ord.dto";
-import { SessionData } from "express-session";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
+import { OrdTimerEntity } from "@src/ord/entities/ordTimer.entity";
+import dayjs from "dayjs";
 
 @Injectable()
 export class OrdService {
@@ -28,6 +28,46 @@ export class OrdService {
     private readonly entityManager: EntityManager,
     private readonly tcktService: TcktService
   ) {}
+
+  /**
+   * 주문 타이머 생성
+   */
+  async createOrdTimer(): Promise<InsertResult> {
+    return this.entityManager.insert(OrdTimerEntity, {});
+  }
+
+  /**
+   * 주문 시간 유효성 검사
+   */
+  async validateOrdTimer(timerId: string): Promise<boolean> {
+    const timer = await this.entityManager.findOne(OrdTimerEntity, {
+      where: { id: timerId },
+      select: ["id", "createdAt"], // 필요한 컬럼을 명시적으로 선택
+    });
+
+    if (timer) {
+      const createdAt = dayjs(timer.createdAt);
+      const currentTime = dayjs();
+
+      const timeDifference = currentTime.diff(createdAt, "minute"); // 시간 차이를 분 단위로 계산
+
+      if (timeDifference <= 10) {
+        return true;
+      } else {
+        throw new HttpException(
+          "타이머가 유효하지 않습니다. 10분이 초과되었습니다.",
+          HttpStatus.REQUEST_TIMEOUT
+        );
+      }
+    } else {
+      throw new HttpException(
+        "올바르지 않은 접근입니다.",
+        HttpStatus.FORBIDDEN
+      );
+    }
+
+    return true;
+  }
 
   /**
    * 주문 생성

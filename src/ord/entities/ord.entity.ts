@@ -67,4 +67,6 @@ export class OrdEntity extends CommonEntity {
   @ManyToOne(() => MbrEntity, (mbr) => mbr.ord)
   @JoinColumn({ name: "ord_mbr_id" })
   mbr: MbrEntity;
+
+  timerId: string;
 }
