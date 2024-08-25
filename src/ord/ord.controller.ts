@@ -126,7 +126,10 @@ export class OrdController {
         ord.timerId
       );
 
-      if (validateOrdTimer) {
+      // 주문 재고 유효성 검사
+      const validateOrdStock = await this.ordService.validateOrdStock(ord);
+
+      if (validateOrdTimer && validateOrdStock) {
         // 주문 생성
         const ordInsertResult = await this.ordService.createOrd(ord);
         // 주문 생성 결과 반환
@@ -165,14 +168,14 @@ export class OrdController {
     @Query() srchOrdListDto: SrchOrdListDto,
     @Req() req: Request
   ): Promise<Pagination<OrdEntity>> {
-    // let session: SessionData = req.session;
-    // if (!session.loginUser) {
-    //   throw new HttpException(
-    //     "토큰이 유효하지 않습니다.",
-    //     HttpStatus.INTERNAL_SERVER_ERROR
-    //   );
-    // }
-    // srchOrdListDto.mbrId = session.loginUser.id;
+    let session: SessionData = req.session;
+    if (!session.loginUser) {
+      throw new HttpException(
+        "토큰이 유효하지 않습니다.",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+    srchOrdListDto.mbrId = session.loginUser.id;
 
     try {
       const ordList = await this.ordService.getOrdList({

@@ -47,10 +47,10 @@ export class BttlOptEntity extends CommonEntity {
   freeYn: string;
 
   @Column({ type: "int", comment: "최대 신청 팀 수" })
-  maxTeamCnt: number;
+  maxRsvCnt: number;
 
   @Column({ type: "int", comment: "현재 신청 팀수", default: 0 })
-  crntTeamCnt: number;
+  crntRsvCnt: number;
 
   @Column({ type: "timestamp", comment: "예매 시작 일시" })
   rsvStDt;

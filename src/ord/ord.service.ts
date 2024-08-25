@@ -19,6 +19,9 @@ import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { OrdTimerEntity } from "@src/ord/entities/ordTimer.entity";
 import dayjs from "dayjs";
+import { getBttlOptTit } from "@src/util/system";
+import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
+import { AdncOptEntity } from "@src/adncOpt/entities/adncOpt.entity";
 
 @Injectable()
 export class OrdService {
@@ -40,6 +43,13 @@ export class OrdService {
    * 주문 시간 유효성 검사
    */
   async validateOrdTimer(timerId: string): Promise<boolean> {
+    if (!timerId) {
+      throw new HttpException(
+        "올바르지 않은 접근입니다.",
+        HttpStatus.FORBIDDEN
+      );
+    }
+
     const timer = await this.entityManager.findOne(OrdTimerEntity, {
       where: { id: timerId },
       select: ["id", "createdAt"], // 필요한 컬럼을 명시적으로 선택
@@ -64,6 +74,44 @@ export class OrdService {
         "올바르지 않은 접근입니다.",
         HttpStatus.FORBIDDEN
       );
+    }
+
+    return true;
+  }
+
+  /**
+   * 주문 재고 유효성 검사
+   */
+  async validateOrdStock(ord: OrdEntity): Promise<boolean> {
+    const ordItems = ord.ordItem;
+    for (const item of ordItems) {
+      let option: AdncOptEntity | BttlOptEntity = null;
+      let itemTit: string = "";
+
+      if (item.adncOptId) {
+        // 관람객 옵션
+        option = await this.entityManager.findOne(AdncOptEntity, {
+          where: { id: item.adncOptId },
+        });
+        itemTit = option.optNm;
+      } else if (item.bttlOptId) {
+        // 배틀 옵션
+        option = await this.entityManager.findOne(BttlOptEntity, {
+          where: { id: item.bttlOptId },
+        });
+        itemTit = getBttlOptTit(option);
+      }
+
+      // 최대 예매 가능수량과 현재 예매 숫자를 비교하여 재고가 부족한지 확인
+      const maxRsvCnt: number = option.maxRsvCnt;
+      const crntRsvCnt: number = option.crntRsvCnt;
+
+      if (maxRsvCnt - crntRsvCnt < item.qty) {
+        throw new HttpException(
+          `${itemTit} 상품의 재고가 부족합니다.`,
+          HttpStatus.BAD_REQUEST
+        );
+      }
     }
 
     return true;
@@ -143,6 +191,17 @@ export class OrdService {
         } else if (item.bttlOptId) {
           await this.insertBttlTeamAndBttlr(entityManager, item, ordItemId);
         }
+
+        // 재고 차감
+        await entityManager.update(
+          item.adncOptId ? AdncOptEntity : BttlOptEntity,
+          {
+            id: item.adncOptId ? item.adncOptId : item.bttlOptId,
+          },
+          {
+            crntRsvCnt: () => `crnt_rsv_cnt + ${item.qty}`,
+          }
+        );
       })
     );
   }
