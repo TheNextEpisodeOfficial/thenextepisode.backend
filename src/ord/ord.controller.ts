@@ -236,9 +236,9 @@ export class OrdController {
   /**
    * S : deleteOrd
    */
-  @Post("/deleteOrd")
+  @Post("/softDeleteOrd")
   @ApiOperation({
-    summary: "주문 삭제",
+    summary: "주문 삭제 (논리)",
     description: "주문아이디로 주문과 주문아이템을 논리 삭제한다.",
   })
   @ApiCreatedResponse({
@@ -255,7 +255,7 @@ export class OrdController {
     @Query("ordId") ordId: string
   ): Promise<ResponseDto<{ ordId: string }>> {
     try {
-      const ordDeleteResult = await this.ordService.deleteOrd(ordId);
+      const ordDeleteResult = await this.ordService.softDeleteOrd(ordId);
 
       if (ordDeleteResult) {
         let insertResult = new ResponseDto<{ ordId: string }>({
