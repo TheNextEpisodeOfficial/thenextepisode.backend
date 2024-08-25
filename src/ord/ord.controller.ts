@@ -21,6 +21,7 @@ import { Pagination } from "nestjs-typeorm-paginate";
 import { SrchOrdListDto } from "./dtos/ord.dto";
 import { SessionData } from "express-session";
 import { Request, Response } from "express";
+import dayjs from "dayjs";
 
 /**
  * OrdController : 주문 API를 관리한다
@@ -46,10 +47,18 @@ export class OrdController {
       const createTimerResult = await this.ordService.createOrdTimer();
 
       if (createTimerResult) {
-        let ordId = createTimerResult.generatedMaps[0].id;
-        let returnValue = new ResponseDto<{ timerId: string }>({
+        let timer = createTimerResult.generatedMaps[0];
+        let returnValue = new ResponseDto<{
+          timerId: string;
+          timerExpire: string;
+        }>({
           status: 200,
-          data: { timerId: ordId },
+          data: {
+            timerId: timer.id,
+            timerExpire: dayjs(timer.createdAt)
+              .add(10, "minute")
+              .format("YYYY-MM-DD HH:mm:ss"),
+          },
           message: "주문 타이머가 생성되었습니다.",
         });
 
