@@ -52,7 +52,34 @@ export class PlnService {
    */
   private async addBttlOpt(pln: PlnEntity): Promise<void> {
     const bttlOpt = await this.bttlOptRepository.findBy({ plnId: pln.id });
-    if (bttlOpt) {
+    if (bttlOpt && bttlOpt.length > 0) {
+      const bttlOptIds = bttlOpt.map((opt) => opt.id);
+
+      const bttlOptRoles = await this.bttlOptRoleRepository
+        .createQueryBuilder("bor")
+        .leftJoinAndSelect("bor.celeb", "c", "bor.role_celeb_id = c.id")
+        .leftJoinAndSelect("bor.mbr", "m", "bor.role_mbr_id = m.id")
+        .where("bor.bttlOptId IN (:...bttlOptIds)", { bttlOptIds })
+        .select([
+          "bor.bttlOptId",
+          "bor.roleInPln",
+          "c.id",
+          "c.celebNm",
+          "c.celebNckNm",
+          "m.id",
+          "m.mbrNm",
+          "m.nickNm",
+        ])
+        .getMany();
+
+      const rolesGroupedByBttlOptId = bttlOptRoles.reduce((acc, role) => {
+        if (!acc[role.bttlOptId]) {
+          acc[role.bttlOptId] = [];
+        }
+        acc[role.bttlOptId].push(role);
+        return acc;
+      }, {});
+
       await Promise.all(
         bttlOpt.map(async (opt) => {
           opt.optTit = getBttlOptTit({
@@ -60,21 +87,7 @@ export class PlnService {
             bttlRule: opt.bttlRule,
             bttlMbrCnt: opt.bttlMbrCnt,
           });
-          opt.bttlOptRole = await this.bttlOptRoleRepository
-            .createQueryBuilder("bor")
-            .leftJoinAndSelect("bor.celeb", "c", "bor.role_celeb_id = c.id")
-            .leftJoinAndSelect("bor.mbr", "m", "bor.role_mbr_id = m.id")
-            .where("bor.bttlOptId = :bttlOptId", { bttlOptId: opt.id })
-            .select([
-              "bor.roleInPln",
-              "c.id",
-              "c.celebNm",
-              "c.celebNckNm",
-              "m.id",
-              "m.mbrNm",
-              "m.nickNm",
-            ])
-            .getMany();
+          opt.bttlOptRole = rolesGroupedByBttlOptId[opt.id] || [];
         })
       );
       pln.bttlOpt = bttlOpt;
