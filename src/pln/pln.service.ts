@@ -102,10 +102,22 @@ export class PlnService {
       opt.optSttCd = "CLOSED";
     } else if (now.isBefore(opt.rsvStDt)) {
       opt.optSttCd = "YET";
-    } else if (opt.rsvAbleCnt === 0) {
+    } else if (opt.rsvAbleCnt <= 0) {
       opt.optSttCd = "ALREADY";
     } else {
       opt.optSttCd = "OPEN";
+    }
+
+    // 예약 불가인 상태일 때 예약 가능 매수를 0으로 설정
+    switch (opt.optSttCd) {
+      case "SOLDOUT":
+      case "CLOSED":
+      case "YET":
+      case "ALREADY":
+        opt.rsvAbleCnt = 0;
+        break;
+      default:
+        break;
     }
   }
 
