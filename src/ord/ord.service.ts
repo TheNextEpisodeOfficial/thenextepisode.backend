@@ -6,6 +6,7 @@ import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
 import {
   EntityManager,
+  In,
   InsertResult,
   ObjectLiteral,
   Repository,
@@ -441,103 +442,83 @@ export class OrdService {
     }
   }
 
-  /**
-   * 주문 삭제
-   * @param ordId - 주문 ID
-   * @returns Promise<UpdateResult>
-   */
   async softDeleteOrd(ordId: string): Promise<boolean> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
-        // 주문 논리삭제
-        const softDeleteOrd = await entityManager.update(
-          OrdEntity,
-          {
-            id: ordId,
-          },
-          {
-            delYn: "Y",
-          }
-        );
+        // 주문 엔티티 로드 및 논리삭제
+        const order = await entityManager.findOneBy(OrdEntity, { id: ordId });
+        if (order) {
+          order.delYn = "Y";
+          await entityManager.save(order); // save()를 사용하여 @BeforeUpdate 호출
+        }
 
-        // 주문 아이템 논리 삭제
-        const softDeleteOrdItem = await entityManager
-          .createQueryBuilder()
-          .update(OrdItemEntity)
-          .set({ delYn: "Y" })
-          .where("ordId = :ordId", { ordId: ordId })
-          .returning(["id"])
-          .execute();
+        // 주문 아이템 엔티티 로드 및 논리 삭제
+        const ordItems = await entityManager.find(OrdItemEntity, {
+          where: { ordId },
+        });
+        for (const item of ordItems) {
+          item.delYn = "Y";
+          await entityManager.save(item); // save()를 사용하여 @BeforeUpdate 호출
+        }
 
-        // softDeleteOrdItem.raw 배열 안에서 id 값들을 추출
-        const ordItemIds = softDeleteOrdItem.raw.map((item: any) => item.id);
+        // 티켓 엔티티 로드 및 논리 삭제
+        const tickets = await entityManager.find(TcktEntity, {
+          where: { ordItemId: In(ordItems.map((i) => i.id)) },
+        });
+        const bttlrIds: string[] = [];
+        const adncIds: string[] = [];
 
-        // 티켓 엔티티 논리 삭제
-        const softDeleteTckt = await entityManager
-          .createQueryBuilder()
-          .update(TcktEntity)
-          .set({ delYn: "Y" })
-          .where("ordItemId IN (:...ordItemIds)", { ordItemIds }) // IN 연산자로 여러 개의 id 조건을 설정합니다.
-          .returning(["id", "bttlrId", "adncId"])
-          .execute();
+        for (const ticket of tickets) {
+          ticket.delYn = "Y";
+          await entityManager.save(ticket); // save()를 사용하여 @BeforeUpdate 호출
 
-        // bttlrIds와 adncIds 분리 생성
-        const { bttlrIds, adncIds } = softDeleteTckt.raw.reduce(
-          (acc, item) => {
-            if (item.bttlr_id !== null) acc.bttlrIds.push(item.bttlr_id);
-            if (item.adnc_id !== null) acc.adncIds.push(item.adnc_id);
-            return acc;
-          },
-          { bttlrIds: [], adncIds: [] }
-        );
+          if (ticket.bttlrId !== null) bttlrIds.push(ticket.bttlrId);
+          if (ticket.adncId !== null) adncIds.push(ticket.adncId);
+        }
 
-        // 삭제해야 하는 배틀러 데이터가 있으면
+        // 배틀러 엔티티 로드 및 논리 삭제
         if (bttlrIds.length) {
-          const softDeleteBttlr = await entityManager
-            .createQueryBuilder()
-            .update(BttlrEntity)
-            .set({ delYn: "Y" })
-            .where("id IN (:...bttlrIds)", { bttlrIds })
-            .returning(["bttlTeamId"])
-            .execute();
+          const battlers = await entityManager.find(BttlrEntity, {
+            where: { id: In(bttlrIds) },
+          });
+          for (const battler of battlers) {
+            battler.delYn = "Y";
+            await entityManager.save(battler); // save()를 사용하여 @BeforeUpdate 호출
 
-          // 삭제된 참가자의 배틀팀 아이디를 추출
-          const bttlTeamIds = Array.from(
-            new Set(softDeleteBttlr.raw.map((item) => item.bttl_team_id))
-          );
-
-          // 삭제된 참가자의 배틀 팀 데이터 논리 삭제
-          if (bttlTeamIds) {
-            await entityManager
-              .createQueryBuilder()
-              .update(BttlTeamEntity)
-              .set({ delYn: "Y" })
-              .where("id IN (:...bttlTeamIds)", { bttlTeamIds })
-              .execute();
-          } else {
-            await entityManager.query("ROLLBACK");
-            throw new HttpException(
-              "배틀 팀이 존재하지 않습니다.",
-              HttpStatus.INTERNAL_SERVER_ERROR
-            );
+            // 배틀 팀 아이디 수집
+            const teamId = battler.bttlTeamId;
+            if (teamId) {
+              const team = await entityManager.findOneBy(BttlTeamEntity, {
+                id: teamId,
+              });
+              if (team) {
+                team.delYn = "Y";
+                await entityManager.save(team); // save()를 사용하여 @BeforeUpdate 호출
+              } else {
+                await entityManager.query("ROLLBACK");
+                throw new HttpException(
+                  "배틀 팀이 존재하지 않습니다.",
+                  HttpStatus.INTERNAL_SERVER_ERROR
+                );
+              }
+            }
           }
         }
 
-        // 삭제해야 하는 관람객 데이터가 있으면
+        // 관람객 엔티티 로드 및 논리 삭제
         if (adncIds.length) {
-          await entityManager
-            .createQueryBuilder()
-            .update(AdncEntity)
-            .set({ delYn: "Y" })
-            .where("id IN (:...adncIds)", { adncIds })
-            .execute();
+          const audience = await entityManager.find(AdncEntity, {
+            where: { id: In(adncIds) },
+          });
+          for (const aud of audience) {
+            aud.delYn = "Y";
+            await entityManager.save(aud); // save()를 사용하여 @BeforeUpdate 호출
+          }
         }
 
-        // 참가자, 관람객 논리삭제
-        if (softDeleteOrd && softDeleteOrdItem && softDeleteTckt) {
-          return true;
-        }
+        return true;
       } catch (error) {
+        await entityManager.query("ROLLBACK");
         throw new HttpException(
           error.message,
           HttpStatus.INTERNAL_SERVER_ERROR

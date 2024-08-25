@@ -1,5 +1,7 @@
 import {
   BaseEntity,
+  BeforeInsert,
+  BeforeUpdate,
   Column,
   CreateDateColumn,
   Index,
@@ -57,4 +59,15 @@ export class CommonEntity extends BaseEntity {
     select: false,
   })
   updatedBy: string;
+
+  @BeforeInsert()
+  setCreatedBy() {
+    // 세션에서 사용자 ID를 가져오는 방법은 애플리케이션에 따라 다를 수 있습니다.
+    this.createdBy = "kany";
+  }
+
+  @BeforeUpdate()
+  setUpdatedBy() {
+    this.updatedBy = "kany";
+  }
 }
