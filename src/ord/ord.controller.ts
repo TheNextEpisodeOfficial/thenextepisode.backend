@@ -139,4 +139,42 @@ export class OrdController {
   /**
    * E : getOrdList
    */
+
+  /**
+   * S : deleteOrd
+   */
+  @Post("/deleteOrd")
+  @ApiOperation({
+    summary: "주문 삭제",
+    description: "주문을 삭제한다.",
+  })
+  @ApiCreatedResponse({
+    description: "주문을 삭제한다.",
+    type: OrdEntity,
+  })
+  @ApiQuery({
+    name: "ordId",
+    required: true,
+    description: "주문 아이디",
+    type: String,
+  })
+  async deleteOrd(
+    @Query("ordId") ordId: string
+  ): Promise<ResponseDto<{ ordId: string }>> {
+    try {
+      const ordDeleteResult = await this.ordService.deleteOrd(ordId);
+
+      if (ordDeleteResult) {
+        let insertResult = new ResponseDto<{ ordId: string }>({
+          status: 200,
+          data: { ordId: ordId },
+          message: "주문이 삭제되었습니다.",
+        });
+
+        return insertResult;
+      }
+    } catch (error) {
+      throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+  }
 }

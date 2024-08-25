@@ -10,6 +10,7 @@ import {
   InsertResult,
   ObjectLiteral,
   Repository,
+  UpdateResult,
 } from "typeorm";
 import { OrdEntity } from "./entities/ord.entity";
 import { TcktService } from "@src/tckt/tckt.service";
@@ -340,5 +341,32 @@ export class OrdService {
         HttpStatus.NOT_FOUND
       );
     }
+  }
+
+  /**
+   * 주문 삭제
+   * @param ordId - 주문 ID
+   * @returns Promise<UpdateResult>
+   */
+  async deleteOrd(ordId: string): Promise<UpdateResult> {
+    return this.entityManager.transaction(async (entityManager) => {
+      try {
+        const softDeleteResult = await entityManager.update(
+          OrdEntity,
+          {
+            id: ordId,
+          },
+          {
+            delYn: "Y",
+          }
+        );
+        return softDeleteResult;
+      } catch (error) {
+        throw new HttpException(
+          error.message,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+    });
   }
 }
