@@ -69,4 +69,8 @@ export class BttlOptEntity extends CommonEntity {
   pln: PlnEntity;
 
   optTit: string;
+
+  optSttCd: string;
+
+  rsvAbleCnt: number;
 }

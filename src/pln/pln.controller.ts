@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Post,
   Query,
+  Req,
 } from "@nestjs/common";
 import {
   ApiCreatedResponse,
@@ -20,6 +21,8 @@ import { SrchPlnDto } from "./dtos/pln.dto";
 import { Pagination } from "nestjs-typeorm-paginate";
 import { InsertResult } from "typeorm";
 import { I18n, I18nContext, I18nService } from "nestjs-i18n";
+import { Request } from "express";
+import { SessionData } from "express-session";
 
 /**
  * PlnController : 플랜 API를 관리한다
@@ -48,10 +51,19 @@ export class PlnController {
     type: String,
   })
   async getPlnDtlById(
+    @Req() req: Request,
     @Query("plnId") plnId: string,
     @I18n() i18n: I18nContext
   ) {
-    const pln = await this.plnService.getPlnDtlById(plnId);
+    let session: SessionData = req.session;
+    if (!session.loginUser) {
+      throw new HttpException(
+        "세션이 유효하지 않습니다.",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+    const mbrId = session.loginUser.id;
+    const pln = await this.plnService.getPlnDtlById(plnId, mbrId);
     return pln;
   }
   /**

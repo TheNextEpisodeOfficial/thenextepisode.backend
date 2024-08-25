@@ -118,4 +118,6 @@ export class PlnEntity extends CommonEntity {
   plnImgs: FileEntity[];
 
   thumb: string;
+
+  mbrId?: string;
 }
