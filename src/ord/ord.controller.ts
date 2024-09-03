@@ -243,7 +243,7 @@ export class OrdController {
   })
   @ApiCreatedResponse({
     description: "주문아이디로 주문과 주문아이템을 논리 삭제한다.",
-    type: OrdEntity,
+    type: Promise<ResponseDto<{ ordId: string }>>,
   })
   @ApiQuery({
     name: "ordId",
@@ -251,7 +251,7 @@ export class OrdController {
     description: "주문 아이디",
     type: String,
   })
-  async deleteOrd(
+  async softDeleteOrd(
     @Query("ordId") ordId: string
   ): Promise<ResponseDto<{ ordId: string }>> {
     try {
