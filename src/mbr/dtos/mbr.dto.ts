@@ -42,6 +42,16 @@ export class UpsertMbrDto extends UpsertCommonDto {
   @ApiProperty({ type: Number, required: true, default: 0 })
   @Column({ type: "int", comment: "회원 상태 코드" })
   mbrSttCd;
+
+  @ApiProperty({ type: Number, required: true, default: [] })
+  @Column({
+    type: "varchar",
+    length: 4,
+    comment: "관심장르",
+    nullable: true,
+    array: true,
+  })
+  favGnr?: string[];
 }
 
 /**

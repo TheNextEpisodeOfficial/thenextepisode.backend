@@ -125,6 +125,15 @@ export class MbrEntity extends CommonEntity {
   kakaoYn;
   // E : 약관
 
+  @Column({
+    type: "varchar",
+    length: 4,
+    comment: "관심장르",
+    nullable: true,
+    array: true,
+  })
+  favGnr: string[];
+
   // Join With BttlOptRoleEntity
   @OneToMany(() => BttlOptRoleEntity, (bttlOptRole) => bttlOptRole.mbr)
   bttlOptRole: BttlOptRoleEntity;
