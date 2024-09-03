@@ -15,14 +15,18 @@ import { BttlrModule } from "./bttlr/bttlr.module";
 import { AdncModule } from "./adnc/adnc.module";
 import { OrdModule } from "./ord/ord.module";
 import { TcktModule } from "./tckt/tckt.module";
+import { APP_GUARD } from "@nestjs/core";
+import { JwtAuthGuard } from "./auth/jwtAuth.guard";
+import { CartModule } from "@src/cart/cart.module";
 
 @Module({
   imports: [
     ...MODULE_CONFIG,
+    AuthModule,
     PlnModule,
     BttlModule,
     BttlOptRolebModule,
-    AuthModule,
+    CartModule,
     MbrModule,
     CelebModule,
     AdncModule,
@@ -34,6 +38,7 @@ import { TcktModule } from "./tckt/tckt.module";
     TcktModule,
     FileModule,
     SysModule,
+    AuthModule,
   ],
 })
 export class AppModule {}
