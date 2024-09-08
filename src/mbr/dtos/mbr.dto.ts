@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { UpsertCommonDto } from "@src/config/dtos/common.dto";
 import { Column } from "typeorm";
+import { GNR, PLN_TYPE } from "@src/types/common.type";
 
 export class UpsertMbrDto extends UpsertCommonDto {
   @ApiProperty({ type: String, required: true, default: "회원 아이디" })
@@ -51,7 +52,8 @@ export class UpsertMbrDto extends UpsertCommonDto {
     nullable: true,
     array: true,
   })
-  favGnr?: string[];
+  favGnr?: Array<GNR>;
+  favPlnType?: Array<PLN_TYPE>;
 }
 
 /**

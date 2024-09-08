@@ -3,6 +3,7 @@ import { TcktEntity } from "@src/tckt/entities/tckt.entity";
 import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { OrdEntity } from "@src/ord/entities/ord.entity";
+import { GNR, PLN_TYPE } from "@src/types/common.type";
 
 @Entity("mbr")
 export class MbrEntity extends CommonEntity {
@@ -132,7 +133,16 @@ export class MbrEntity extends CommonEntity {
     nullable: true,
     array: true,
   })
-  favGnr: string[];
+  favGnr: Array<GNR>;
+
+  @Column({
+    type: "varchar",
+    length: 4,
+    comment: "관심행사타입",
+    nullable: true,
+    array: true,
+  })
+  favPlnType: Array<PLN_TYPE>;
 
   // Join With BttlOptRoleEntity
   @OneToMany(() => BttlOptRoleEntity, (bttlOptRole) => bttlOptRole.mbr)

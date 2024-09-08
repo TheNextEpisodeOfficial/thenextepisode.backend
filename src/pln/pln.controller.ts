@@ -89,7 +89,7 @@ export class PlnController {
       let insertPlnResult = await this.plnService.insertPln(pln);
       if (insertPlnResult) {
         return new ResponseDto<InsertResult>({
-          status: 200,
+          status: HttpStatus.CREATED,
           data: insertPlnResult,
           message: "플랜이 생성되었습니다.",
           isToast: true,

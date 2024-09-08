@@ -52,7 +52,7 @@ export class OrdController {
           timerId: string;
           timerExpire: string;
         }>({
-          status: 200,
+          status: HttpStatus.CREATED,
           data: {
             timerId: timer.id,
             timerExpire: dayjs(timer.createdAt)
@@ -242,8 +242,8 @@ export class OrdController {
     description: "주문아이디로 주문과 주문아이템을 논리 삭제한다.",
   })
   @ApiCreatedResponse({
+    type: null,
     description: "주문아이디로 주문과 주문아이템을 논리 삭제한다.",
-    type: Promise<ResponseDto<{ ordId: string }>>,
   })
   @ApiQuery({
     name: "ordId",
