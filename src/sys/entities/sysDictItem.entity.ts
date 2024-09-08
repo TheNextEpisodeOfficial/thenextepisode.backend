@@ -17,6 +17,9 @@ export class SysDictItemEntity extends CommonEntity {
   @Column({ type: "varchar", length: 100, comment: "사전 아이템 설명" })
   dictItemDesc;
 
+  @Column({ type: "varchar", length: 100, comment: "파일명", nullable: true })
+  fileNm;
+
   @ManyToOne(() => SysDictEntity, (dict) => dict.dictItem)
   @JoinColumn({ name: "dict_id" })
   dict: SysDictEntity;
