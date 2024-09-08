@@ -97,7 +97,15 @@ export class AuthController {
         res.cookie("accessToken", accessToken);
         res.cookie("refreshToken", refreshToken);
 
-        res.redirect(`${process.env.LOGIN_REDIRECT_URL}/savememberInfo`);
+        const isFavChecked =
+          user.favGnr &&
+          user.favGnr.length > 0 &&
+          user.favPlnType &&
+          user.favPlnType.length > 0;
+
+        res.redirect(
+          `${process.env.LOGIN_REDIRECT_URL}/savememberInfo?isFavChecked=${isFavChecked}`
+        );
       }
       // E : 필수 약관동의 여부 통과 시 로그인 완료
     }
