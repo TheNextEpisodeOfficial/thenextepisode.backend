@@ -366,6 +366,7 @@ export class PlnService {
     if (srchPlnDto.delYn) searchConditions.delYn = srchPlnDto.delYn || "N";
     if (srchPlnDto.plnLctnNm)
       searchConditions.plnLctnNm = Like(`%${srchPlnDto.plnLctnNm}%`);
+    if (srchPlnDto.createdBy) searchConditions.createdBy = srchPlnDto.createdBy;
     return searchConditions;
   }
 

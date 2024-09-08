@@ -97,6 +97,7 @@ export class AuthController {
         res.cookie("accessToken", accessToken);
         res.cookie("refreshToken", refreshToken);
 
+        // 관심 행사타입 & 장르가 설정되어 있는지 여부 (선택되어 있지 않으면 frontend에서 설정화면으로 이동)
         const isFavChecked =
           user.favGnr &&
           user.favGnr.length > 0 &&
