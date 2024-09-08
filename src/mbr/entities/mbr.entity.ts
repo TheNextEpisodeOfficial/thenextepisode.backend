@@ -130,7 +130,7 @@ export class MbrEntity extends CommonEntity {
     type: "varchar",
     length: 4,
     comment: "관심장르",
-    nullable: true,
+    default: "{}",
     array: true,
   })
   favGnr: Array<GNR>;
@@ -139,7 +139,7 @@ export class MbrEntity extends CommonEntity {
     type: "varchar",
     length: 4,
     comment: "관심행사타입",
-    nullable: true,
+    default: "{}",
     array: true,
   })
   favPlnType: Array<PLN_TYPE>;
