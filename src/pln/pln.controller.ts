@@ -23,6 +23,7 @@ import { InsertResult } from "typeorm";
 import { I18n, I18nContext, I18nService } from "nestjs-i18n";
 import { Request } from "express";
 import { SessionData } from "express-session";
+import { ResponseDto } from "@src/types/response";
 
 /**
  * PlnController : 플랜 API를 관리한다
@@ -83,11 +84,16 @@ export class PlnController {
     description: "새로운 플랜을 생성 한다.",
     type: null,
   })
-  async insertPln(@Body() pln: PlnEntity): Promise<InsertResult> {
+  async insertPln(@Body() pln: PlnEntity): Promise<ResponseDto<InsertResult>> {
     try {
-      let insertPlanResult = await this.plnService.insertPln(pln);
-      if (insertPlanResult) {
-        return insertPlanResult;
+      let insertPlnResult = await this.plnService.insertPln(pln);
+      if (insertPlnResult) {
+        return new ResponseDto<InsertResult>({
+          status: 200,
+          data: insertPlnResult,
+          message: "플랜이 생성되었습니다.",
+          isToast: true,
+        });
       }
     } catch (e) {
       console.log(e);
