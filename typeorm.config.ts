@@ -13,7 +13,7 @@ const dataSource: DataSource = new DataSource({
   entities: ["src/entities/*.ts"],
   migrations: ["src/migration/*.ts"],
   subscribers: ["src/subscriber/*.ts"],
-  synchronize: false,
+  synchronize: true,
   logging: true
 });
 
