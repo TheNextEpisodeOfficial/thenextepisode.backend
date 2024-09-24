@@ -199,6 +199,7 @@ export class PlnService {
   /**
    * 플랜 ID로 플랜의 상세정보를 조회한다.
    * @param plnId
+   * @param mbrId
    * @returns
    */
   async getPlnDtlById(plnId: string, mbrId: string): Promise<PlnEntity> {

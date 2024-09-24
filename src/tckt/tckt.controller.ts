@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Req, Res } from "@nestjs/common";
+import { Controller, Get, Query, Req, Res, UseGuards } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiOperation,
@@ -13,6 +13,7 @@ import { SrchTcktListDto, TicketListDto } from "./dtos/tckt.dto";
 import { TcktEntity } from "./entities/tckt.entity";
 import { TcktService } from "./tckt.service";
 import { ResponseDto } from "@src/types/response";
+import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
 
 /**
  * TcktController : 티켓 API를 관리한다
@@ -25,6 +26,7 @@ export class TcktController {
    * S : getMyTckts
    */
   @Get("/getMyTckts")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "보유 티켓 조회",
     description: "멤버 아이디를 기준으로 보유중인 티켓 리스트를 가져온다.",
@@ -38,9 +40,6 @@ export class TcktController {
     @Query() srchTcktListDto: SrchTcktListDto,
     @I18n() i18n: I18nContext
   ) {
-    // let session: SessionData = req.session;
-    // console.log("session:::", session);
-    console.log(srchTcktListDto.mbrId);
     const tckts = await this.tcktService.getMyTckts(srchTcktListDto);
     return tckts;
   }

@@ -1,4 +1,14 @@
-import { Controller, Get, Header, Req, Res, UseGuards } from "@nestjs/common";
+import {
+  Controller,
+  Get,
+  Header,
+  HttpException,
+  HttpStatus,
+  Req,
+  Res,
+  UnauthorizedException,
+  UseGuards,
+} from "@nestjs/common";
 import { KakaoAuthGuard } from "./guard";
 import { AuthService } from "./auth.service";
 import { SocialUser, SocialUserAfterAuth } from "./auth.decorator";
@@ -8,13 +18,16 @@ import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { SessionData } from "express-session";
 import { Public } from "./public.decorator";
 import { MbrService } from "@src/mbr/mbr.service";
+import { JwtService } from "@nestjs/jwt";
+import * as process from "process";
 
 @Controller("api/auth")
 @ApiTags("Authorization")
 export class AuthController {
   constructor(
     private readonly authService: AuthService,
-    private readonly mbrService: MbrService
+    private readonly mbrService: MbrService,
+    private readonly jwtService: JwtService
   ) {}
 
   private readonly DATA_URL = "https://kapi.kakao.com/v2/user/me";
@@ -37,10 +50,14 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ): Promise<void> {
-    const { accessToken, refreshToken, isFirstLogin, user } =
+    const { kakaoAccessToken, kakaoRefreshToken, isFirstLogin, user } =
       await this.authService.OAuthLogin({
         socialLoginDto: socialUser,
       });
+
+    const { accessToken, refreshToken } = this.authService.generateNewToken(
+      user.id
+    );
 
     let session: SessionData = req.session;
 
@@ -64,10 +81,10 @@ export class AuthController {
             break;
           case 3:
             // 탈퇴한 회원
+            // TODO: 회원 로그 테이블을 조회하여(e-mail과 플랫폼에서 제공하는 고유 ID 기준) 최근 탈퇴 일자가 1주 이상인 경우 /join으로 이동, 1주일 이내인 경우 /withdraw로 이동 구현하기
             break;
           default:
-            console.log("회원 상태가 유효하지 않습니다.");
-            break;
+            throw new UnauthorizedException("회원 상태가 유효하지 않습니다.");
         }
         res.redirect(`${process.env.LOGIN_REDIRECT_URL}/${redirectPath}`);
       }
@@ -85,15 +102,12 @@ export class AuthController {
           accessToken: accessToken,
           refreshToken: refreshToken,
         };
-        session.loginUser = user;
         // E : 토큰 정보 세션에 임시저장
         res.redirect(`${process.env.LOGIN_REDIRECT_URL}/policyCheck`);
       }
       // E : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
       // S : 필수 약관동의 여부 통과 시 로그인 완료
       else {
-        session.loginUser = user;
-
         res.cookie("accessToken", accessToken);
         res.cookie("refreshToken", refreshToken);
 
@@ -126,10 +140,26 @@ export class AuthController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response
   ): Promise<void> {
-    let session: SessionData = req.session;
+    // 카카오 로그아웃 요청 처리
+    const kakakoAccessToken = req.cookies.kakakoAccessToken;
+    if (!kakakoAccessToken) {
+      throw new HttpException(
+        "kakaoAccessToken이 존재하지 않습니다.",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
 
-    res.clearCookie("refreshToken");
+    if (kakakoAccessToken) {
+      await axios.post("https://kapi.kakao.com/v1/user/logout", null, {
+        headers: { Authorization: `Bearer ${kakakoAccessToken}` },
+      });
+    }
+
+    // 쿠키에서 JWT 삭제
     res.clearCookie("accessToken");
+    res.clearCookie("refreshToken");
+
+    res.status(200).send("Logged out");
   }
 
   /**
@@ -148,13 +178,17 @@ export class AuthController {
     type: null,
   })
   async getUserInfoByToken(@Req() req: Request) {
-    const userInfo = await axios.get(this.DATA_URL, {
-      headers: {
-        Authorization: `Bearer ${req.cookies.accessToken}`,
-      },
-    });
+    if (!req.cookies.accessToken) {
+      throw new HttpException(
+        "accessToken이 존재하지 않습니다.",
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
 
-    const mbr = await this.authService.getUserInfo(userInfo.data.id);
+    const payload = this.jwtService.verify(req.cookies.accessToken, {
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+    });
+    const mbr = await this.mbrService.findByMbrId(payload.id);
 
     let res = {
       title: "",
@@ -186,13 +220,10 @@ export class AuthController {
   })
   async getMbrAgreeByTempToken(@Req() req) {
     let session: SessionData = req.session;
-    const userInfo = await axios.get(this.DATA_URL, {
-      headers: {
-        Authorization: `Bearer ${session.tempToken.accessToken}`,
-      },
+    const payload = this.jwtService.verify(session.tempToken.accessToken, {
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
     });
 
-    const tempMbr = await this.authService.getUserInfo(userInfo.data.id);
-    return this.mbrService.getMbrAgree(tempMbr.id);
+    return this.mbrService.getMbrAgree(payload.id);
   }
 }

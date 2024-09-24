@@ -11,7 +11,10 @@ export class CartService {
     private readonly cartRepository: Repository<CartEntity>
   ) {}
 
-  // 회원 약관동의 수정
+  // 장바구니 목록 가져오기
+  async getMyCartList() {}
+
+  // 장바구니 upsert
   async upsertCart(cartEntity: CartEntity): Promise<UpdateResult> {
     try {
       return await this.cartRepository.upsert(cartEntity, ["id"]);

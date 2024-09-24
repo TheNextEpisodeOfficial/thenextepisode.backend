@@ -28,7 +28,7 @@ export class TcktService {
   /**
    * 티켓 생성
    * @param entityManager
-   * @param item
+   * @param info
    */
   async createTckt(
     entityManager: EntityManager,
@@ -36,6 +36,7 @@ export class TcktService {
       ordItemId: string;
       bttlrId?: string;
       adncId?: string;
+      tcktHldMbrId: string;
     }
   ): Promise<void> {
     const secretKey = randomUUID();
@@ -43,7 +44,7 @@ export class TcktService {
       ordItemId: info.ordItemId,
       bttlrId: info.bttlrId,
       adncId: info.adncId,
-      tcktHldMbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
+      tcktHldMbrId: info.tcktHldMbrId,
       secretKey: secretKey,
     });
   }
@@ -271,7 +272,6 @@ export class TcktService {
           HttpStatus.CONFLICT
         );
       }
-      console.log(ticketInfo);
       return this.tcktRepository.update({ id: tcktId }, { usedYn: "Y" });
     } catch (err) {
       throw new HttpException(err, HttpStatus.BAD_REQUEST);
@@ -286,7 +286,6 @@ export class TcktService {
     const ticketsWithKeys = tickets.map((ticket) => ({
       ...ticket,
       secretKey: randomUUID(),
-      tcktHldMbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
     }));
 
     await entityManager.insert(TcktEntity, ticketsWithKeys);

@@ -7,6 +7,7 @@ import {
   Post,
   Query,
   Req,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiCreatedResponse,
@@ -22,6 +23,9 @@ import { SrchOrdListDto } from "./dtos/ord.dto";
 import { SessionData } from "express-session";
 import { Request, Response } from "express";
 import dayjs from "dayjs";
+import { JwtService } from "@nestjs/jwt";
+import * as process from "process";
+import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
 
 /**
  * OrdController : 주문 API를 관리한다
@@ -29,7 +33,10 @@ import dayjs from "dayjs";
 @Controller("/ord")
 @ApiTags("Order")
 export class OrdController {
-  constructor(private readonly ordService: OrdService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly ordService: OrdService
+  ) {}
 
   /**
    * S : createOrdTimer
@@ -116,6 +123,7 @@ export class OrdController {
    * S : createOrd
    */
   @Post("/createOrd")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "주문을 생성한다",
     description:
@@ -127,9 +135,12 @@ export class OrdController {
     type: OrdEntity,
   })
   async createOrd(
-    @Body() ord: OrdEntity
+    @Body() ord: OrdEntity,
+    @Req() req: Request
   ): Promise<ResponseDto<{ ordId: string }>> {
     try {
+      ord.ordMbrId = req.user.id;
+      console.log("req.user:", req.user);
       // 주문 유효성 검사
       const validateOrdTimer = await this.ordService.validateOrdTimer(
         ord.timerId
@@ -177,19 +188,15 @@ export class OrdController {
     @Query() srchOrdListDto: SrchOrdListDto,
     @Req() req: Request
   ): Promise<Pagination<OrdEntity>> {
-    let session: SessionData = req.session;
-    if (!session.loginUser) {
-      throw new HttpException(
-        "토큰이 유효하지 않습니다.",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-    srchOrdListDto.mbrId = session.loginUser.id;
+    console.log(req.cookies.accessToken);
+    const payload = this.jwtService.verify(req.cookies.accessToken, {
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+    });
 
     try {
       const ordList = await this.ordService.getOrdList({
         ...srchOrdListDto,
-        mbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
+        mbrId: payload.id,
       });
       return ordList;
     } catch (error) {

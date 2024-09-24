@@ -6,7 +6,14 @@ import { KakaoStrategy } from "./kakao";
 import { MbrModule } from "@src/mbr/mbr.module";
 
 @Module({
-  imports: [JwtModule.register({}), forwardRef(() => MbrModule)],
+  imports: [
+    JwtModule.register({
+      secret: "TNE_JWT_SECERET",
+      global: true,
+      signOptions: { expiresIn: "300s" },
+    }),
+    forwardRef(() => MbrModule),
+  ],
   controllers: [AuthController],
   providers: [AuthService, KakaoStrategy],
   exports: [AuthService],

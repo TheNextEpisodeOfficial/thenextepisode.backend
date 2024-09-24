@@ -38,6 +38,15 @@ export class MbrService {
     });
   }
 
+  findByMbrId(mbrId: string): Promise<MbrEntity> {
+    return this.mbrRepository.findOne({
+      where: {
+        id: mbrId,
+        delYn: "N",
+      },
+    });
+  }
+
   /**
    *
    * @param upsertMbrDto
@@ -70,21 +79,8 @@ export class MbrService {
 
   /**
    *
-   * @param mbrId
    * @returns
-   */
-  getUserInfo(mbrId: string): Promise<MbrEntity> {
-    return this.mbrRepository.findOne({
-      where: {
-        chnlMbrId: mbrId,
-      },
-    });
-  }
-
-  /**
-   *
-   * @param mbr
-   * @returns
+   * @param joinMbrDto
    */
   joinMbr(joinMbrDto: JoinMbrDto): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {

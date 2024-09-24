@@ -17,14 +17,13 @@ async function bootstrap() {
       secret: "session",
       resave: false,
       saveUninitialized: false,
+      cookie: { maxAge: 3600000 }, // 1시간 세션 유지
     })
   );
 
-  console.log("process.env.LOGIN_REDIRECT_URL:", process.env.LOGIN_REDIRECT_URL);
-
   app.enableCors({
     origin: process.env.LOGIN_REDIRECT_URL,
-    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
   });
 

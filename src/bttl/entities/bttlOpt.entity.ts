@@ -1,10 +1,18 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { CommonEntity } from "@src/config/entities/common.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from "typeorm";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
 import { ColumnNumericTransformer } from "@src/util/transformer";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
+import { CartEntity } from "@src/cart/entities/cart.entity";
 
 @Entity("bttl_opt")
 export class BttlOptEntity extends CommonEntity {
@@ -67,6 +75,9 @@ export class BttlOptEntity extends CommonEntity {
   @ManyToOne(() => PlnEntity, (pln) => pln.bttlOpt)
   @JoinColumn({ name: "pln_id" })
   pln: PlnEntity;
+
+  @OneToOne(() => CartEntity, (cart) => cart.bttlOpt)
+  cart;
 
   optTit: string;
 

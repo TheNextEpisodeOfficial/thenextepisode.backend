@@ -7,9 +7,18 @@ import { OrdEntity } from "./entities/ord.entity";
 import { OrdController } from "./ord.controller";
 import { OrdService } from "./ord.service";
 import { OrdTimerEntity } from "@src/ord/entities/ordTimer.entity";
+import { MbrModule } from "@src/mbr/mbr.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([OrdEntity, OrdTimerEntity, TcktEntity, OrdItemEntity])],
+  imports: [
+    TypeOrmModule.forFeature([
+      OrdEntity,
+      OrdTimerEntity,
+      TcktEntity,
+      OrdItemEntity,
+    ]),
+    MbrModule,
+  ],
   controllers: [OrdController],
   providers: [OrdService, TcktService],
 })

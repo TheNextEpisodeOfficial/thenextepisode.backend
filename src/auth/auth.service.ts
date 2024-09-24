@@ -2,17 +2,18 @@ import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { MbrService } from "@src/mbr/mbr.service";
 import * as jwt from "jsonwebtoken";
 import { SocialUserAfterAuth } from "./auth.decorator";
+import { JwtService } from "@nestjs/jwt";
+import { IJwtPayload } from "@src/auth/types/auth.types";
 
 @Injectable()
 export class AuthService {
-  constructor(private readonly mbrService: MbrService) {}
+  constructor(
+    private readonly mbrService: MbrService,
+    private readonly jwtService: JwtService
+  ) {}
 
   private readonly JWT_SECRET = "your_jwt_secret";
-  private readonly JWT_REFRESH_SECRET = "your_jwt_refresh_secret"; // Refresh token secret
-
-  async getUserInfo(mbrId: string) {
-    return this.mbrService.getUserInfo(mbrId);
-  }
+  private readonly JWT_REFRESH_SECRET = "your_jwt_refresh_secret";
 
   async OAuthLogin({
     socialLoginDto,
@@ -40,7 +41,34 @@ export class AuthService {
       });
     }
 
-    return { accessToken, refreshToken, isFirstLogin, user };
+    return {
+      kakaoAccessToken: accessToken,
+      kakaoRefreshToken: refreshToken,
+      isFirstLogin,
+      user,
+    };
+  }
+
+  generateNewToken(userId: string) {
+    const accessToken = this.jwtService.sign(
+      { id: userId },
+      {
+        secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+        expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
+      }
+    );
+
+    const refreshToken = this.jwtService.sign(
+      { id: userId },
+      {
+        secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
+      }
+    );
+
+    // TODO: redis에 key(mbrId), value(refreshToken) 저장 로직 구현
+
+    return { accessToken, refreshToken };
   }
 
   async validateToken(token: string): Promise<boolean> {
@@ -57,8 +85,8 @@ export class AuthService {
       const payload = jwt.verify(
         refreshToken,
         this.JWT_REFRESH_SECRET
-      ) as jwt.JwtPayload & { email: string };
-      const user = await this.mbrService.findByEmail(payload.email);
+      ) as jwt.JwtPayload & IJwtPayload;
+      const user = await this.mbrService.findByMbrId(payload.id);
       if (!user) {
         throw new UnauthorizedException("User not found");
       }

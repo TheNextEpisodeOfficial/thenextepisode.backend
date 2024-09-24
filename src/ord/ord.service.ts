@@ -151,10 +151,7 @@ export class OrdService {
     entityManager: EntityManager,
     ord: OrdEntity
   ): Promise<InsertResult> {
-    return entityManager.insert(OrdEntity, {
-      ...ord,
-      ordMbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
-    });
+    return entityManager.insert(OrdEntity, ord);
   }
 
   /**
@@ -162,6 +159,7 @@ export class OrdService {
    * @param entityManager - 엔티티 매니저
    * @param ord - 주문 엔티티
    * @param ordId - 주문 ID
+   * @param tcktHldMbrId
    */
   private async insertOrderItems(
     entityManager: EntityManager,
@@ -187,9 +185,19 @@ export class OrdService {
         }
 
         if (item.adncOptId) {
-          await this.insertAdncEntity(entityManager, item, ordItemId);
+          await this.insertAdncEntity(
+            entityManager,
+            item,
+            ordItemId,
+            ord.ordMbrId
+          );
         } else if (item.bttlOptId) {
-          await this.insertBttlTeamAndBttlr(entityManager, item, ordItemId);
+          await this.insertBttlTeamAndBttlr(
+            entityManager,
+            item,
+            ordItemId,
+            ord.ordMbrId
+          );
         }
 
         // 재고 차감
@@ -248,11 +256,13 @@ export class OrdService {
    * @param entityManager - 엔티티 매니저
    * @param item - 주문 상품
    * @param ordItemId - 주문상품 ID
+   * @param tcktHldMbrId
    */
   private async insertAdncEntity(
     entityManager: EntityManager,
     item: OrdItemEntity,
-    ordItemId: string
+    ordItemId: string,
+    tcktHldMbrId: string
   ): Promise<void> {
     const adncEntities = Array.from({ length: item.qty }, () => ({
       ...item.adnc[0],
@@ -268,6 +278,7 @@ export class OrdService {
     const tickets = adncIds.map((adncId) => ({
       ordItemId: ordItemId,
       adncId: adncId,
+      tcktHldMbrId: tcktHldMbrId,
     }));
 
     await this.tcktService.createTcktBulk(entityManager, tickets);
@@ -275,14 +286,16 @@ export class OrdService {
 
   /**
    * 배틀 팀 및 배틀러 엔티티를 데이터베이스에 삽입
-   * @param entityManager - 엔티티 매니저
-   * @param item - 주문 상품
-   * @param ordItemId - 주문상품 ID
+   * @param entityManager
+   * @param item
+   * @param ordItemId
+   * @param tcktHldMbrId
    */
   private async insertBttlTeamAndBttlr(
     entityManager: EntityManager,
     item: OrdItemEntity,
-    ordItemId: string
+    ordItemId: string,
+    tcktHldMbrId: string
   ): Promise<void> {
     const bttlTeamInsertResult = await entityManager.insert(BttlTeamEntity, {
       ...item.bttlTeam,
@@ -313,6 +326,7 @@ export class OrdService {
         await this.tcktService.createTckt(entityManager, {
           ordItemId: ordItemId,
           bttlrId: bttlrInsertResult.generatedMaps[0].id,
+          tcktHldMbrId: tcktHldMbrId,
         });
       })
     );
@@ -423,7 +437,6 @@ export class OrdService {
    * @returns Promise<OrdEntity[]>
    */
   async getOrdDtlById(ordId: string): Promise<OrdEntity> {
-    console.log("ordId:", ordId);
     const ordDtlResult = await this.ordRepository
       .createQueryBuilder("ord")
       .leftJoinAndSelect("ord.ordPayment", "ordPayment")

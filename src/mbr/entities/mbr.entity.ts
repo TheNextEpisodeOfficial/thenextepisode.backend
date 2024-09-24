@@ -4,6 +4,7 @@ import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { OrdEntity } from "@src/ord/entities/ord.entity";
 import { GNR, PLN_TYPE } from "@src/types/common.type";
+import { CartEntity } from "@src/cart/entities/cart.entity";
 
 @Entity("mbr")
 export class MbrEntity extends CommonEntity {
@@ -153,6 +154,10 @@ export class MbrEntity extends CommonEntity {
   tckt: TcktEntity[];
 
   // Join With OrdEntity
-  @OneToMany(() => OrdEntity, (Ord) => Ord.mbr)
+  @OneToMany(() => OrdEntity, (ord) => ord.mbr)
   ord: OrdEntity[];
+
+  // Join With CartEntity
+  @OneToMany(() => CartEntity, (cart) => cart.mbr)
+  cart: CartEntity[];
 }

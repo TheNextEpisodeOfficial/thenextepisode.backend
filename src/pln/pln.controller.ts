@@ -2,7 +2,6 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
   HttpStatus,
   Post,
   Query,
@@ -11,7 +10,6 @@ import {
 import {
   ApiCreatedResponse,
   ApiOperation,
-  ApiParam,
   ApiQuery,
   ApiTags,
 } from "@nestjs/swagger";
@@ -20,10 +18,11 @@ import { PlnService } from "@src/pln/pln.service";
 import { SrchPlnDto } from "./dtos/pln.dto";
 import { Pagination } from "nestjs-typeorm-paginate";
 import { InsertResult } from "typeorm";
-import { I18n, I18nContext, I18nService } from "nestjs-i18n";
+import { I18n, I18nContext } from "nestjs-i18n";
 import { Request } from "express";
-import { SessionData } from "express-session";
 import { ResponseDto } from "@src/types/response";
+import { JwtService } from "@nestjs/jwt";
+import * as process from "process";
 
 /**
  * PlnController : 플랜 API를 관리한다
@@ -31,7 +30,10 @@ import { ResponseDto } from "@src/types/response";
 @Controller("/pln")
 @ApiTags("Plan")
 export class PlnController {
-  constructor(private readonly plnService: PlnService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly plnService: PlnService
+  ) {}
 
   /**
    * S : getPlnDtlById
@@ -56,16 +58,17 @@ export class PlnController {
     @Query("plnId") plnId: string,
     @I18n() i18n: I18nContext
   ) {
-    let session: SessionData = req.session;
-    if (!session.loginUser) {
-      throw new HttpException(
-        "세션이 유효하지 않습니다.",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
+    // FIXME : guard에 걸릴 필요는 없으나 로그인에 따라 선택적으로 로직이 변경되는 경우 구현 필요
+    let payload = {
+      id: "",
+    };
+    if (req.cookies.accessToken) {
+      payload = this.jwtService.verify(req.cookies.accessToken, {
+        secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+      });
     }
-    const mbrId = session.loginUser.id;
-    const pln = await this.plnService.getPlnDtlById(plnId, mbrId);
-    return pln;
+
+    return await this.plnService.getPlnDtlById(plnId, payload.id);
   }
   /**
    * E : getPlnDtlById
@@ -116,6 +119,28 @@ export class PlnController {
     type: PlnEntity,
   })
   async srchPln(@Query() pln: SrchPlnDto): Promise<Pagination<PlnEntity>> {
+    return this.plnService.srchPln({
+      ...pln,
+      route: "/srchPln",
+    });
+  }
+  /**
+   * E : srchPln
+   */
+
+  /**
+   * S : srchPln
+   */
+  @Get("/getPlndPln")
+  @ApiOperation({
+    summary: "내가 기획한 플랜 리스트",
+    description: "내가 기획한 플랜 리스트를 가져온다.",
+  })
+  @ApiCreatedResponse({
+    description: "내가 기획한 플랜 리스트를 가져온다.",
+    type: PlnEntity,
+  })
+  async getPlndPln(@Query() pln: SrchPlnDto): Promise<Pagination<PlnEntity>> {
     return this.plnService.srchPln({
       ...pln,
       route: "/srchPln",

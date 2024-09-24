@@ -1,9 +1,18 @@
 import { ColumnNumericTransformer } from "@src/util/transformer";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { PlnEntity } from "../../pln/entities/pln.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
 import { AdncEntity } from "@src/adnc/entities/adnc.entity";
+import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
+import { CartEntity } from "@src/cart/entities/cart.entity";
 
 @Entity("adnc_opt")
 export class AdncOptEntity extends CommonEntity {
@@ -49,6 +58,9 @@ export class AdncOptEntity extends CommonEntity {
   @ManyToOne(() => PlnEntity, (pln) => pln.id)
   @JoinColumn({ name: "pln_id" })
   pln;
+
+  @OneToOne(() => CartEntity, (cart) => cart.adncOpt)
+  cart;
 
   optSttCd: string;
 
