@@ -1,3 +1,5 @@
+import { SrchCommonDto } from "@src/config/dtos/common.dto";
+
 export class TicketListDto {
   tcktId: string;
   teamAsgnYn: string;
@@ -21,4 +23,8 @@ export class TicketListDto {
   plnAddrDtl: string | null;
   plnDt: string | null;
   tcktThumb: string | null;
+}
+
+export class SrchTcktListDto extends SrchCommonDto {
+  mbrId: string;
 }

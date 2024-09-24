@@ -8,3 +8,11 @@ dist
 
 db/db
 db/data
+.idea/vcs.xml
+.idea/modules.xml
+.idea/misc.xml
+.idea/inspectionProfiles/Project_Default.xml
+.idea/bridge.backend.iml
+.idea/prettier.xml
+.idea/inspectionProfiles/profiles_settings.xml
+.idea/git_toolbox_blame.xml

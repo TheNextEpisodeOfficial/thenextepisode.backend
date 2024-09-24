@@ -3,7 +3,10 @@ import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { OrdEntity } from "@src/ord/entities/ord.entity";
 import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
-import { ColumnNumericTransformer } from "@src/util/number";
+import {
+  ColumnNumericTransformer,
+  getCardCompanyNameTransformer,
+} from "@src/util/transformer";
 
 @Entity("ord_payment")
 export class OrdPaymentEntity extends CommonEntity {
@@ -93,6 +96,7 @@ export class OrdPaymentEntity extends CommonEntity {
     length: 100,
     comment: "카드 발급사 숫자코드",
     nullable: true,
+    transformer: new getCardCompanyNameTransformer(),
   })
   cardIssuerCode;
 
@@ -386,6 +390,6 @@ export class OrdPaymentEntity extends CommonEntity {
   cancelAmount: number;
 
   @OneToOne(() => OrdEntity, (ord) => ord.ordPayment)
-  @JoinColumn({ name: "ord_id" })
+  @JoinColumn({ name: "order_id" })
   ord: OrdEntity;
 }

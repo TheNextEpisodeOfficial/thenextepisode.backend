@@ -1,10 +1,18 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { CommonEntity } from "@src/config/entities/common.entity";
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from "typeorm";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
-import { ColumnNumericTransformer } from "@src/util/number";
+import { ColumnNumericTransformer } from "@src/util/transformer";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
+import { CartEntity } from "@src/cart/entities/cart.entity";
 
 @Entity("bttl_opt")
 export class BttlOptEntity extends CommonEntity {
@@ -18,7 +26,7 @@ export class BttlOptEntity extends CommonEntity {
   @ApiProperty({ type: String, required: false })
   @Column({
     type: "varchar",
-    length: 20,
+    length: 100,
     comment: "배틀 룰 (7 to smoke, Non locker 등)",
     nullable: true,
   })
@@ -47,10 +55,10 @@ export class BttlOptEntity extends CommonEntity {
   freeYn: string;
 
   @Column({ type: "int", comment: "최대 신청 팀 수" })
-  maxTeamCnt: number;
+  maxRsvCnt: number;
 
   @Column({ type: "int", comment: "현재 신청 팀수", default: 0 })
-  crntTeamCnt: number;
+  crntRsvCnt: number;
 
   @Column({ type: "timestamp", comment: "예매 시작 일시" })
   rsvStDt;
@@ -68,5 +76,12 @@ export class BttlOptEntity extends CommonEntity {
   @JoinColumn({ name: "pln_id" })
   pln: PlnEntity;
 
+  @OneToOne(() => CartEntity, (cart) => cart.bttlOpt)
+  cart;
+
   optTit: string;
+
+  optSttCd: string;
+
+  rsvAbleCnt: number;
 }

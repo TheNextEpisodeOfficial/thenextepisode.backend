@@ -6,10 +6,12 @@ import { CelebController } from "./celeb.controller";
 import { CelebService } from "./celeb.service";
 import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { MbrService } from "@src/mbr/mbr.service";
+import { MbrModule } from "@src/mbr/mbr.module";
 
 @Module({
-  imports: [TypeOrmModule.forFeature([CelebEntity, MbrEntity])],
+  imports: [TypeOrmModule.forFeature([CelebEntity]), MbrModule],
   controllers: [CelebController],
-  providers: [CelebService, MbrService],
+  providers: [CelebService],
+  exports: [CelebService],
 })
 export class CelebModule {}

@@ -2,6 +2,9 @@ import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity"
 import { TcktEntity } from "@src/tckt/entities/tckt.entity";
 import { Column, Entity, OneToMany, OneToOne } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
+import { OrdEntity } from "@src/ord/entities/ord.entity";
+import { GNR, PLN_TYPE } from "@src/types/common.type";
+import { CartEntity } from "@src/cart/entities/cart.entity";
 
 @Entity("mbr")
 export class MbrEntity extends CommonEntity {
@@ -64,11 +67,97 @@ export class MbrEntity extends CommonEntity {
 
   // 0: 가입미완료, 1: 가입완료, 2: 정지, 3: 탈퇴
   @Column({ type: "int", comment: "회원 상태 코드" })
-  mbrSttCd;
+  mbrSttCd: number;
 
+  // S: 약관
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "이용약관동의여부",
+    default: "N",
+  })
+  termsAcceptYn;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "개인정보처리동의여부",
+    default: "N",
+  })
+  privacyAcceptYn;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "개인정보수집동의여부",
+    default: "N",
+  })
+  advertisementYn;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "광고성정보수신여부",
+    default: "N",
+  })
+  marketingYn;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "sms여부",
+    default: "N",
+  })
+  smsYn;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "이메일여부",
+    default: "N",
+  })
+  emailYn;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "카카오알림톡여부",
+    default: "N",
+  })
+  kakaoYn;
+  // E : 약관
+
+  @Column({
+    type: "varchar",
+    length: 4,
+    comment: "관심장르",
+    default: "{}",
+    array: true,
+  })
+  favGnr: Array<GNR>;
+
+  @Column({
+    type: "varchar",
+    length: 4,
+    comment: "관심행사타입",
+    default: "{}",
+    array: true,
+  })
+  favPlnType: Array<PLN_TYPE>;
+
+  // Join With BttlOptRoleEntity
   @OneToMany(() => BttlOptRoleEntity, (bttlOptRole) => bttlOptRole.mbr)
   bttlOptRole: BttlOptRoleEntity;
 
+  // Join With TcktEntity
   @OneToMany(() => TcktEntity, (tckt) => tckt.mbr)
   tckt: TcktEntity[];
+
+  // Join With OrdEntity
+  @OneToMany(() => OrdEntity, (ord) => ord.mbr)
+  ord: OrdEntity[];
+
+  // Join With CartEntity
+  @OneToMany(() => CartEntity, (cart) => cart.mbr)
+  cart: CartEntity[];
 }

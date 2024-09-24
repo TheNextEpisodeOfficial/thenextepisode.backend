@@ -1,5 +1,4 @@
 import { HttpException, HttpStatus, Injectable, Req } from "@nestjs/common";
-import { Request } from "express";
 import { InjectRepository } from "@nestjs/typeorm";
 import { AdncEntity } from "@src/adnc/entities/adnc.entity";
 import { BttlrEntity } from "@src/bttlr/entities/bttlr.entity";
@@ -7,17 +6,24 @@ import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
 import {
   EntityManager,
+  In,
   InsertResult,
   ObjectLiteral,
   Repository,
+  UpdateResult,
 } from "typeorm";
 import { OrdEntity } from "./entities/ord.entity";
 import { TcktService } from "@src/tckt/tckt.service";
 import { paginate, Pagination } from "nestjs-typeorm-paginate";
 import { SrchOrdListDto } from "./dtos/ord.dto";
-import { SessionData } from "express-session";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
+import { OrdTimerEntity } from "@src/ord/entities/ordTimer.entity";
+import dayjs from "dayjs";
+import { getBttlOptTit } from "@src/util/system";
+import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
+import { AdncOptEntity } from "@src/adncOpt/entities/adncOpt.entity";
+import { TcktEntity } from "@src/tckt/entities/tckt.entity";
 
 @Injectable()
 export class OrdService {
@@ -27,6 +33,89 @@ export class OrdService {
     private readonly entityManager: EntityManager,
     private readonly tcktService: TcktService
   ) {}
+
+  /**
+   * 주문 타이머 생성
+   */
+  async createOrdTimer(): Promise<InsertResult> {
+    return this.entityManager.insert(OrdTimerEntity, {});
+  }
+
+  /**
+   * 주문 시간 유효성 검사
+   */
+  async validateOrdTimer(timerId: string): Promise<boolean> {
+    if (!timerId) {
+      throw new HttpException(
+        "올바르지 않은 접근입니다.",
+        HttpStatus.FORBIDDEN
+      );
+    }
+
+    const timer = await this.entityManager.findOne(OrdTimerEntity, {
+      where: { id: timerId },
+      select: ["id", "createdAt"], // 필요한 컬럼을 명시적으로 선택
+    });
+
+    if (timer) {
+      const createdAt = dayjs(timer.createdAt);
+      const currentTime = dayjs();
+
+      const timeDifference = currentTime.diff(createdAt, "minute"); // 시간 차이를 분 단위로 계산
+
+      if (timeDifference <= 10) {
+        return true;
+      } else {
+        throw new HttpException(
+          "타이머가 유효하지 않습니다. 10분이 초과되었습니다.",
+          HttpStatus.REQUEST_TIMEOUT
+        );
+      }
+    } else {
+      throw new HttpException(
+        "올바르지 않은 접근입니다.",
+        HttpStatus.FORBIDDEN
+      );
+    }
+  }
+
+  /**
+   * 주문 재고 유효성 검사
+   */
+  async validateOrdStock(ord: OrdEntity): Promise<boolean> {
+    const ordItems = ord.ordItem;
+    for (const item of ordItems) {
+      let option: AdncOptEntity | BttlOptEntity = null;
+      let itemTit: string = "";
+
+      if (item.adncOptId) {
+        // 관람객 옵션
+        option = await this.entityManager.findOne(AdncOptEntity, {
+          where: { id: item.adncOptId },
+        });
+        itemTit = option.optNm;
+      } else if (item.bttlOptId) {
+        // 배틀 옵션
+        option = await this.entityManager.findOne(BttlOptEntity, {
+          where: { id: item.bttlOptId },
+        });
+        itemTit = getBttlOptTit(option);
+      }
+
+      // 최대 예매 가능수량과 현재 예매 숫자를 비교하여 재고가 부족한지 확인
+      const maxRsvCnt: number = option.maxRsvCnt;
+      const crntRsvCnt: number = option.crntRsvCnt;
+
+      if (maxRsvCnt - crntRsvCnt < item.qty) {
+        throw new HttpException(
+          `${itemTit} 상품의 재고가 부족합니다.`,
+          HttpStatus.BAD_REQUEST
+        );
+      }
+    }
+
+    return true;
+  }
 
   /**
    * 주문 생성
@@ -62,10 +151,7 @@ export class OrdService {
     entityManager: EntityManager,
     ord: OrdEntity
   ): Promise<InsertResult> {
-    return entityManager.insert(OrdEntity, {
-      ...ord,
-      ordMbrId: "15a6e7db-a719-47e3-9ee1-f881b24f02f7",
-    });
+    return entityManager.insert(OrdEntity, ord);
   }
 
   /**
@@ -73,6 +159,7 @@ export class OrdService {
    * @param entityManager - 엔티티 매니저
    * @param ord - 주문 엔티티
    * @param ordId - 주문 ID
+   * @param tcktHldMbrId
    */
   private async insertOrderItems(
     entityManager: EntityManager,
@@ -98,10 +185,31 @@ export class OrdService {
         }
 
         if (item.adncOptId) {
-          await this.insertAdncEntity(entityManager, item, ordItemId);
+          await this.insertAdncEntity(
+            entityManager,
+            item,
+            ordItemId,
+            ord.ordMbrId
+          );
         } else if (item.bttlOptId) {
-          await this.insertBttlTeamAndBttlr(entityManager, item, ordItemId);
+          await this.insertBttlTeamAndBttlr(
+            entityManager,
+            item,
+            ordItemId,
+            ord.ordMbrId
+          );
         }
+
+        // 재고 차감
+        await entityManager.update(
+          item.adncOptId ? AdncOptEntity : BttlOptEntity,
+          {
+            id: item.adncOptId ? item.adncOptId : item.bttlOptId,
+          },
+          {
+            crntRsvCnt: () => `crnt_rsv_cnt + ${item.qty}`,
+          }
+        );
       })
     );
   }
@@ -148,11 +256,13 @@ export class OrdService {
    * @param entityManager - 엔티티 매니저
    * @param item - 주문 상품
    * @param ordItemId - 주문상품 ID
+   * @param tcktHldMbrId
    */
   private async insertAdncEntity(
     entityManager: EntityManager,
     item: OrdItemEntity,
-    ordItemId: string
+    ordItemId: string,
+    tcktHldMbrId: string
   ): Promise<void> {
     const adncEntities = Array.from({ length: item.qty }, () => ({
       ...item.adnc[0],
@@ -168,6 +278,7 @@ export class OrdService {
     const tickets = adncIds.map((adncId) => ({
       ordItemId: ordItemId,
       adncId: adncId,
+      tcktHldMbrId: tcktHldMbrId,
     }));
 
     await this.tcktService.createTcktBulk(entityManager, tickets);
@@ -175,14 +286,16 @@ export class OrdService {
 
   /**
    * 배틀 팀 및 배틀러 엔티티를 데이터베이스에 삽입
-   * @param entityManager - 엔티티 매니저
-   * @param item - 주문 상품
-   * @param ordItemId - 주문상품 ID
+   * @param entityManager
+   * @param item
+   * @param ordItemId
+   * @param tcktHldMbrId
    */
   private async insertBttlTeamAndBttlr(
     entityManager: EntityManager,
     item: OrdItemEntity,
-    ordItemId: string
+    ordItemId: string,
+    tcktHldMbrId: string
   ): Promise<void> {
     const bttlTeamInsertResult = await entityManager.insert(BttlTeamEntity, {
       ...item.bttlTeam,
@@ -213,6 +326,7 @@ export class OrdService {
         await this.tcktService.createTckt(entityManager, {
           ordItemId: ordItemId,
           bttlrId: bttlrInsertResult.generatedMaps[0].id,
+          tcktHldMbrId: tcktHldMbrId,
         });
       })
     );
@@ -243,6 +357,7 @@ export class OrdService {
 
     const fullQueryBuilder = this.ordRepository
       .createQueryBuilder("ord")
+      // S : 주문 결제 정보
       .leftJoin("ord.ordPayment", "ordPayment")
       .addSelect([
         "ordPayment.id",
@@ -252,16 +367,53 @@ export class OrdService {
         "ordPayment.discountAmount",
         "ordPayment.totalAmount",
         "ordPayment.currency",
+        "ordPayment.easyProvider",
+        "ordPayment.cardType",
+        "ordPayment.cardNumber",
+        "ordPayment.receiptUrl",
+        "ordPayment.createdAt",
+        "ordPayment.cardIssuerCode",
       ])
-      .leftJoinAndSelect("ord.ordItem", "ordItem")
-      .leftJoinAndSelect("ordItem.bttlOpt", "bttlOpt")
-      .leftJoinAndSelect("ordItem.adncOpt", "adncOpt")
+      // E : 주문 결제 정보
+      // S : 주문 상품 정보
+      .leftJoin("ord.ordItem", "ordItem")
+      .addSelect([
+        "ordItem.ordAmt",
+        "ordItem.payAmt",
+        "ordItem.dscntAmt",
+        "ordItem.qty",
+        "ordItem.claimYn",
+        "ordItem.claimAmt",
+        "ordItem.sort",
+      ])
+      // E : 주문 상품 정보
+      // S : 배틀 옵션 정보
+      .leftJoin("ordItem.bttlOpt", "bttlOpt")
+      .addSelect([
+        "bttlOpt.bttlGnrCd",
+        "bttlOpt.bttlRule",
+        "bttlOpt.bttlMbrCnt",
+        "bttlOpt.mxdYn",
+        "bttlOpt.bttlRsvFee",
+        "bttlOpt.freeYn",
+        "bttlOpt.sort",
+      ])
+      // E : 배틀 옵션 정보
+      .leftJoin("ordItem.adncOpt", "adncOpt")
+      .addSelect([
+        "adncOpt.optNm",
+        "adncOpt.optFee",
+        "adncOpt.freeYn",
+        "adncOpt.sort",
+      ])
+      // S : 플랜 정보
       .leftJoinAndMapOne(
         "ordItem.pln",
         PlnEntity,
         "pln",
         "pln.id = COALESCE(bttlOpt.plnId, adncOpt.plnId)"
       )
+      // E : 플랜 정보
       .leftJoinAndMapOne(
         "pln.file",
         FileEntity,
@@ -272,6 +424,7 @@ export class OrdService {
       .where("ord.id IN (:...ids)", {
         ids: ordIdsPaginated.items.map((item) => item.id),
       })
+      .andWhere("ord.ordStt = 'PAID'")
       .orderBy("ord.createdAt", "DESC");
 
     const ordList = await fullQueryBuilder.getMany();
@@ -284,7 +437,6 @@ export class OrdService {
    * @returns Promise<OrdEntity[]>
    */
   async getOrdDtlById(ordId: string): Promise<OrdEntity> {
-    console.log("ordId:", ordId);
     const ordDtlResult = await this.ordRepository
       .createQueryBuilder("ord")
       .leftJoinAndSelect("ord.ordPayment", "ordPayment")
@@ -301,5 +453,90 @@ export class OrdService {
         HttpStatus.NOT_FOUND
       );
     }
+  }
+
+  async softDeleteOrd(ordId: string): Promise<boolean> {
+    return this.entityManager.transaction(async (entityManager) => {
+      try {
+        // 주문 엔티티 로드 및 논리삭제
+        const order = await entityManager.findOneBy(OrdEntity, { id: ordId });
+        if (order) {
+          order.delYn = "Y";
+          await entityManager.save(order); // save()를 사용하여 @BeforeUpdate 호출
+        }
+
+        // 주문 아이템 엔티티 로드 및 논리 삭제
+        const ordItems = await entityManager.find(OrdItemEntity, {
+          where: { ordId },
+        });
+        for (const item of ordItems) {
+          item.delYn = "Y";
+          await entityManager.save(item); // save()를 사용하여 @BeforeUpdate 호출
+        }
+
+        // 티켓 엔티티 로드 및 논리 삭제
+        const tickets = await entityManager.find(TcktEntity, {
+          where: { ordItemId: In(ordItems.map((i) => i.id)) },
+        });
+        const bttlrIds: string[] = [];
+        const adncIds: string[] = [];
+
+        for (const ticket of tickets) {
+          ticket.delYn = "Y";
+          await entityManager.save(ticket); // save()를 사용하여 @BeforeUpdate 호출
+
+          if (ticket.bttlrId !== null) bttlrIds.push(ticket.bttlrId);
+          if (ticket.adncId !== null) adncIds.push(ticket.adncId);
+        }
+
+        // 배틀러 엔티티 로드 및 논리 삭제
+        if (bttlrIds.length) {
+          const battlers = await entityManager.find(BttlrEntity, {
+            where: { id: In(bttlrIds) },
+          });
+          for (const battler of battlers) {
+            battler.delYn = "Y";
+            await entityManager.save(battler); // save()를 사용하여 @BeforeUpdate 호출
+
+            // 배틀 팀 아이디 수집
+            const teamId = battler.bttlTeamId;
+            if (teamId) {
+              const team = await entityManager.findOneBy(BttlTeamEntity, {
+                id: teamId,
+              });
+              if (team) {
+                team.delYn = "Y";
+                await entityManager.save(team); // save()를 사용하여 @BeforeUpdate 호출
+              } else {
+                await entityManager.query("ROLLBACK");
+                throw new HttpException(
+                  "배틀 팀이 존재하지 않습니다.",
+                  HttpStatus.INTERNAL_SERVER_ERROR
+                );
+              }
+            }
+          }
+        }
+
+        // 관람객 엔티티 로드 및 논리 삭제
+        if (adncIds.length) {
+          const audience = await entityManager.find(AdncEntity, {
+            where: { id: In(adncIds) },
+          });
+          for (const aud of audience) {
+            aud.delYn = "Y";
+            await entityManager.save(aud); // save()를 사용하여 @BeforeUpdate 호출
+          }
+        }
+
+        return true;
+      } catch (error) {
+        await entityManager.query("ROLLBACK");
+        throw new HttpException(
+          error.message,
+          HttpStatus.INTERNAL_SERVER_ERROR
+        );
+      }
+    });
   }
 }

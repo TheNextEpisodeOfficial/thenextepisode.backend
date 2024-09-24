@@ -2,15 +2,14 @@ import {
   Body,
   Controller,
   Get,
-  HttpException,
   HttpStatus,
   Post,
   Query,
+  Req,
 } from "@nestjs/common";
 import {
   ApiCreatedResponse,
   ApiOperation,
-  ApiParam,
   ApiQuery,
   ApiTags,
 } from "@nestjs/swagger";
@@ -19,7 +18,11 @@ import { PlnService } from "@src/pln/pln.service";
 import { SrchPlnDto } from "./dtos/pln.dto";
 import { Pagination } from "nestjs-typeorm-paginate";
 import { InsertResult } from "typeorm";
-import { I18n, I18nContext, I18nService } from "nestjs-i18n";
+import { I18n, I18nContext } from "nestjs-i18n";
+import { Request } from "express";
+import { ResponseDto } from "@src/types/response";
+import { JwtService } from "@nestjs/jwt";
+import * as process from "process";
 
 /**
  * PlnController : 플랜 API를 관리한다
@@ -27,7 +30,10 @@ import { I18n, I18nContext, I18nService } from "nestjs-i18n";
 @Controller("/pln")
 @ApiTags("Plan")
 export class PlnController {
-  constructor(private readonly plnService: PlnService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    private readonly plnService: PlnService
+  ) {}
 
   /**
    * S : getPlnDtlById
@@ -48,11 +54,21 @@ export class PlnController {
     type: String,
   })
   async getPlnDtlById(
+    @Req() req: Request,
     @Query("plnId") plnId: string,
     @I18n() i18n: I18nContext
   ) {
-    const pln = await this.plnService.getPlnDtlById(plnId);
-    return pln;
+    // FIXME : guard에 걸릴 필요는 없으나 로그인에 따라 선택적으로 로직이 변경되는 경우 구현 필요
+    let payload = {
+      id: "",
+    };
+    if (req.cookies.accessToken) {
+      payload = this.jwtService.verify(req.cookies.accessToken, {
+        secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+      });
+    }
+
+    return await this.plnService.getPlnDtlById(plnId, payload.id);
   }
   /**
    * E : getPlnDtlById
@@ -71,11 +87,16 @@ export class PlnController {
     description: "새로운 플랜을 생성 한다.",
     type: null,
   })
-  async insertPln(@Body() pln: PlnEntity): Promise<InsertResult> {
+  async insertPln(@Body() pln: PlnEntity): Promise<ResponseDto<InsertResult>> {
     try {
-      let insertPlanResult = await this.plnService.insertPln(pln);
-      if (insertPlanResult) {
-        return insertPlanResult;
+      let insertPlnResult = await this.plnService.insertPln(pln);
+      if (insertPlnResult) {
+        return new ResponseDto<InsertResult>({
+          status: HttpStatus.CREATED,
+          data: insertPlnResult,
+          message: "플랜이 생성되었습니다.",
+          isToast: true,
+        });
       }
     } catch (e) {
       console.log(e);
@@ -98,6 +119,28 @@ export class PlnController {
     type: PlnEntity,
   })
   async srchPln(@Query() pln: SrchPlnDto): Promise<Pagination<PlnEntity>> {
+    return this.plnService.srchPln({
+      ...pln,
+      route: "/srchPln",
+    });
+  }
+  /**
+   * E : srchPln
+   */
+
+  /**
+   * S : srchPln
+   */
+  @Get("/getPlndPln")
+  @ApiOperation({
+    summary: "내가 기획한 플랜 리스트",
+    description: "내가 기획한 플랜 리스트를 가져온다.",
+  })
+  @ApiCreatedResponse({
+    description: "내가 기획한 플랜 리스트를 가져온다.",
+    type: PlnEntity,
+  })
+  async getPlndPln(@Query() pln: SrchPlnDto): Promise<Pagination<PlnEntity>> {
     return this.plnService.srchPln({
       ...pln,
       route: "/srchPln",

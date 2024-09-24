@@ -23,6 +23,7 @@ export class SysService {
     if (dict) {
       dictItemList = this.dictItemRepository.find({
         where: { dictId: dict.id, delYn: "N" },
+        order: { sort: "ASC" },
       });
     }
 

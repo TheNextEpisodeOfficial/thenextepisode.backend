@@ -13,7 +13,7 @@ import {
   OneToOne,
 } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
-import { ColumnNumericTransformer } from "@src/util/number";
+import { ColumnNumericTransformer } from "@src/util/transformer";
 
 @Entity("ord_item")
 export class OrdItemEntity extends CommonEntity {

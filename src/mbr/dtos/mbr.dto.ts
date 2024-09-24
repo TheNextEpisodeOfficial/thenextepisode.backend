@@ -1,6 +1,7 @@
 import { ApiProperty } from "@nestjs/swagger";
 import { UpsertCommonDto } from "@src/config/dtos/common.dto";
 import { Column } from "typeorm";
+import { GNR, PLN_TYPE } from "@src/types/common.type";
 
 export class UpsertMbrDto extends UpsertCommonDto {
   @ApiProperty({ type: String, required: true, default: "회원 아이디" })
@@ -42,4 +43,93 @@ export class UpsertMbrDto extends UpsertCommonDto {
   @ApiProperty({ type: Number, required: true, default: 0 })
   @Column({ type: "int", comment: "회원 상태 코드" })
   mbrSttCd;
+
+  @ApiProperty({ type: Number, required: true, default: [] })
+  @Column({
+    type: "varchar",
+    length: 4,
+    comment: "관심장르",
+    nullable: true,
+    array: true,
+  })
+  favGnr?: Array<GNR>;
+  favPlnType?: Array<PLN_TYPE>;
+}
+
+/**
+ * 회원 약관 동의 정보 upsert DTO
+ */
+export class UpsertMbrAgreeDto {
+  @ApiProperty({ type: String, required: true, default: "N" })
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "이용약관동의여부",
+    default: "N",
+  })
+  termsAcceptYn;
+
+  @ApiProperty({ type: String, required: true, default: "N" })
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "개인정보처리동의여부",
+    default: "N",
+  })
+  privacyAcceptYn;
+
+  @ApiProperty({ type: String, required: true, default: "N" })
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "개인정보수집동의여부",
+    default: "N",
+  })
+  advertisementYn;
+
+  @ApiProperty({ type: String, required: true, default: "N" })
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "광고성정보수신여부",
+    default: "N",
+  })
+  marketingYn;
+
+  @ApiProperty({ type: String, required: true, default: "N" })
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "sms여부",
+    default: "N",
+  })
+  smsYn;
+
+  @ApiProperty({ type: String, required: true, default: "N" })
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "이메일여부",
+    default: "N",
+  })
+  emailYn;
+
+  @ApiProperty({ type: String, required: true, default: "N" })
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "카카오알림톡여부",
+    default: "N",
+  })
+  kakaoYn;
+  @ApiProperty({ type: Boolean, required: true, default: false })
+  useTempToken?;
+}
+
+export class JoinMbrDto {
+  @ApiProperty({ type: UpsertMbrDto })
+  mbr: UpsertMbrDto;
+
+  @ApiProperty({ type: UpsertMbrAgreeDto })
+  agree: UpsertMbrAgreeDto;
 }
