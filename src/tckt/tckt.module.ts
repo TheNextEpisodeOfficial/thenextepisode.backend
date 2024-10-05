@@ -5,8 +5,9 @@ import { TcktEntity } from "./entities/tckt.entity";
 import { TcktController } from "./tckt.controller";
 import { TcktService } from "./tckt.service";
 import { MbrModule } from "@src/mbr/mbr.module";
+import {AuthModule} from "@src/auth/auth.module";
 @Module({
-  imports: [TypeOrmModule.forFeature([TcktEntity, OrdItemEntity]), MbrModule],
+  imports: [TypeOrmModule.forFeature([TcktEntity, OrdItemEntity]), MbrModule, AuthModule],
   controllers: [TcktController],
   providers: [TcktService],
 })

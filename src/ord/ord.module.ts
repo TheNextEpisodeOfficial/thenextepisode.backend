@@ -8,6 +8,7 @@ import { OrdController } from "./ord.controller";
 import { OrdService } from "./ord.service";
 import { OrdTimerEntity } from "@src/ord/entities/ordTimer.entity";
 import { MbrModule } from "@src/mbr/mbr.module";
+import {AuthModule} from "@src/auth/auth.module";
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { MbrModule } from "@src/mbr/mbr.module";
       TcktEntity,
       OrdItemEntity,
     ]),
+    AuthModule,
     MbrModule,
   ],
   controllers: [OrdController],

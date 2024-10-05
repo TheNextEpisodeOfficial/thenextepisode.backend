@@ -9,7 +9,7 @@ export class MbrLogEntity extends CommonEntity {
   @Column({
     type: "varchar",
     length: 1,
-    comment: "로그타입(J: 가입, Q: 탈퇴, B:정지, R:복구)",
+    comment: "로그타입(J: 퇴가입, Q: 탈퇴, B:정지, R:복구)",
   })
   logType: string;
 }

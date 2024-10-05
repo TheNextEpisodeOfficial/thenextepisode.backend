@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Post,
   Query,
-  Req,
+  Req, UnauthorizedException,
 } from "@nestjs/common";
 import {
   ApiCreatedResponse,
@@ -58,17 +58,27 @@ export class PlnController {
     @Query("plnId") plnId: string,
     @I18n() i18n: I18nContext
   ) {
-    // FIXME : guard에 걸릴 필요는 없으나 로그인에 따라 선택적으로 로직이 변경되는 경우 구현 필요
-    let payload = {
-      id: "",
-    };
-    if (req.cookies.accessToken) {
-      payload = this.jwtService.verify(req.cookies.accessToken, {
-        secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-      });
-    }
+    try{
+      // FIXME : guard에 걸릴 필요는 없으나 로그인에 따라 선택적으로 로직이 변경되는 경우 구현 필요
+      let payload = {
+        id: "",
+      };
+      if (req.cookies.accessToken) {
+        payload = this.jwtService.verify(req.cookies.accessToken, {
+          secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+        });
+      }
 
-    return await this.plnService.getPlnDtlById(plnId, payload.id);
+      return await this.plnService.getPlnDtlById(plnId, payload.id);
+    } catch (error) {
+      if (error.name === 'TokenExpiredError') {
+        // 토큰 만료 예외를 명시적으로 던짐
+        throw new UnauthorizedException('액세스 토큰이 만료되었습니다.');
+      } else {
+        // 그 외의 에러는 그대로 처리
+        return error
+      }
+    }
   }
   /**
    * E : getPlnDtlById

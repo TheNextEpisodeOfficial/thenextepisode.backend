@@ -6,7 +6,7 @@ import {
   Post,
   Query,
   Req,
-  Res,
+  Res, UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
@@ -22,6 +22,7 @@ import { InsertResult, UpdateResult } from "typeorm";
 import { JoinMbrDto, UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
 import axios from "axios";
 import { AuthService } from "@src/auth/auth.service";
+import {JwtAuthGuard} from "@src/auth/jwtAuth.guard";
 
 /**
  * MbrController : 회원 API를 관리한다
@@ -175,10 +176,12 @@ export class MbrController {
   /**
    * 회원 약관동의 정보 수정
    * @param req
+   * @param res
    * @param upsertMbrAgreeDto
    * @returns
    */
   @Post("/updateMbrAgree")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "회원 약관동의 정보 수정",
     description: "회원의 약관동의 정보를 수정한다.",
@@ -192,15 +195,6 @@ export class MbrController {
     @Res({ passthrough: true }) res: Response,
     @Body() upsertMbrAgreeDto: UpsertMbrAgreeDto
   ): Promise<UpdateResult> {
-    const useTempToken = upsertMbrAgreeDto.useTempToken;
-
-    let session: SessionData = req.session;
-
-    if (useTempToken && session.tempToken.accessToken && session.tempToken.refreshToken) {
-      res.cookie("accessToken", session.tempToken.accessToken);
-      res.cookie("refreshToken", session.tempToken.refreshToken);
-    }
-
-    return this.mbrService.updateMbrAgree(session.loginUser.id, upsertMbrAgreeDto);
+    return this.mbrService.updateMbrAgree(req.user.id, upsertMbrAgreeDto);
   }
 }
