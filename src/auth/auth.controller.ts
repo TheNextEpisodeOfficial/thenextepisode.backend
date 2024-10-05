@@ -1,25 +1,27 @@
 import {
+  Body,
   Controller,
   Get,
-  Header,
   HttpException,
   HttpStatus,
+  Post,
   Req,
   Res,
   UnauthorizedException,
   UseGuards,
 } from "@nestjs/common";
-import { KakaoAuthGuard } from "./guard";
-import { AuthService } from "./auth.service";
-import { SocialUser, SocialUserAfterAuth } from "./auth.decorator";
-import { Request, Response } from "express";
+import {KakaoAuthGuard} from "./guard";
+import {AuthService} from "./auth.service";
+import {SocialUser, SocialUserAfterAuth} from "./auth.decorator";
+import {Request, Response} from "express";
 import axios from "axios";
-import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
-import { SessionData } from "express-session";
-import { Public } from "./public.decorator";
-import { MbrService } from "@src/mbr/mbr.service";
-import { JwtService } from "@nestjs/jwt";
+import {ApiCreatedResponse, ApiOperation, ApiTags} from "@nestjs/swagger";
+import {SessionData} from "express-session";
+import {Public} from "./public.decorator";
+import {MbrService} from "@src/mbr/mbr.service";
+import {JwtService} from "@nestjs/jwt";
 import * as process from "process";
+import {JwtAuthGuard} from "@src/auth/jwtAuth.guard";
 
 @Controller("api/auth")
 @ApiTags("Authorization")
@@ -55,74 +57,60 @@ export class AuthController {
         socialLoginDto: socialUser,
       });
 
-    const { accessToken, refreshToken } = this.authService.generateNewToken(
-      user.id
-    );
-
     let session: SessionData = req.session;
 
     if (isFirstLogin) {
       // S : 최초 로그인의 경우 가입 화면으로 리다이렉트
       session.joinUser = user;
-      res.redirect(`${process.env.LOGIN_REDIRECT_URL}/join`);
+      return res.redirect(`${process.env.LOGIN_REDIRECT_URL}/join`);
       // E : 최초 로그인의 경우 가입 화면으로 리다이렉트
     } else {
       // S : 회원 상태 유효성 체크
-      if (user.mbrSttCd != 1) {
-        let redirectPath = "/";
-        switch (user.mbrSttCd) {
-          case 0:
-            // 카카오 최초 로그인은 하였으나 가입이 완료되지 않음
-            redirectPath = "/join";
-            break;
-          case 2:
-            // 정지된 회원
-            redirectPath = "/blocked";
-            break;
-          case 3:
-            // 탈퇴한 회원
-            // TODO: 회원 로그 테이블을 조회하여(e-mail과 플랫폼에서 제공하는 고유 ID 기준) 최근 탈퇴 일자가 1주 이상인 경우 /join으로 이동, 1주일 이내인 경우 /withdraw로 이동 구현하기
-            break;
-          default:
-            throw new UnauthorizedException("회원 상태가 유효하지 않습니다.");
-        }
-        res.redirect(`${process.env.LOGIN_REDIRECT_URL}/${redirectPath}`);
+      const validateMbr = await this.authService.validateMbr(res, user.mbrSttCd);
+      if(validateMbr.redirectPath) {
+        return res.redirect(`${process.env.LOGIN_REDIRECT_URL}${validateMbr.redirectPath}`);
       }
+
       // E : 회원 상태 유효성 체크
 
       // S : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
       const mbrAgree = await this.mbrService.getMbrAgree(user.id);
-      if (
-        mbrAgree.termsAcceptYn === "N" ||
-        mbrAgree.privacyAcceptYn === "N" ||
-        mbrAgree.advertisementYn === "N"
-      ) {
-        // S : 토큰 정보 세션에 임시저장
-        session.tempToken = {
-          accessToken: accessToken,
-          refreshToken: refreshToken,
-        };
-        // E : 토큰 정보 세션에 임시저장
-        res.redirect(`${process.env.LOGIN_REDIRECT_URL}/policyCheck`);
+
+      // S : 필수 약관 동의 여부
+      const invalidPolicy = (
+          mbrAgree.termsAcceptYn === "N" ||
+          mbrAgree.privacyAcceptYn === "N" ||
+          mbrAgree.advertisementYn === "N"
+      )
+      // E : 필수 약관 동의 여부
+
+      // S : 토큰 생성 및 쿠키 세팅
+      const { accessToken, refreshToken } = this.authService.generateNewToken(
+    {
+            id: user.id,
+            invalidPolicy: invalidPolicy,
+            mbrSttCd: user.mbrSttCd
+          }
+      );
+      res.cookie("accessToken", accessToken, {});
+      res.cookie("refreshToken", refreshToken, {});
+      // E : 토큰 생성 및 쿠키 세팅
+
+      // S : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
+      if(invalidPolicy) {
+        return res.redirect(`${process.env.LOGIN_REDIRECT_URL}/policyCheck`);
       }
       // E : 필수 약관동의 여부 확인 (미동의 시 약관동의 화면으로 리다이렉트)
-      // S : 필수 약관동의 여부 통과 시 로그인 완료
-      else {
-        res.cookie("accessToken", accessToken);
-        res.cookie("refreshToken", refreshToken);
 
-        // 관심 행사타입 & 장르가 설정되어 있는지 여부 (선택되어 있지 않으면 frontend에서 설정화면으로 이동)
-        const isFavChecked =
+      // 관심 행사타입 & 장르가 설정되어 있는지 여부 (선택되어 있지 않으면 설정화면으로 리다이렉트)
+      const isFavChecked =
           user.favGnr &&
           user.favGnr.length > 0 &&
           user.favPlnType &&
           user.favPlnType.length > 0;
 
-        res.redirect(
-          `${process.env.LOGIN_REDIRECT_URL}/savememberInfo?isFavChecked=${isFavChecked}`
-        );
-      }
-      // E : 필수 약관동의 여부 통과 시 로그인 완료
+      return res.redirect(`${process.env.LOGIN_REDIRECT_URL}/savememberInfo?isFavChecked=${isFavChecked}`);
+
     }
   }
 
@@ -169,6 +157,7 @@ export class AuthController {
    */
   @Public()
   @Get("/getUserInfoByToken")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "토큰기반 로그인 유저 정보 조회",
     description: "access token을 기반으로 mbr 테이블의 유저정보를 가져온다.",
@@ -178,35 +167,21 @@ export class AuthController {
     type: null,
   })
   async getUserInfoByToken(@Req() req: Request) {
-    if (!req.cookies.accessToken) {
-      throw new HttpException(
-        "accessToken이 존재하지 않습니다.",
-        HttpStatus.INTERNAL_SERVER_ERROR
-      );
-    }
-
-    const payload = this.jwtService.verify(req.cookies.accessToken, {
-      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-    });
-    const mbr = await this.mbrService.findByMbrId(payload.id);
-
-    let res = {
+    return {
       title: "",
       message: "access token을 기반으로 mbr 테이블의 유저정보를 가져온다.",
-      data: mbr,
+      data: req.user,
       status: 200,
     };
-
-    return res;
   }
 
   /**
    * 회원 약관 미동의 회원 로그인시 블록 후 약관동의 처리시 기본 정보 조회
    * @param req
-   * @param res
    */
   @Public()
   @Get("/getMbrAgreeByTempToken")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary:
       "필수 약관 미동의 회원 로그인시 블록 후 약관동의 처리시 기본 정보 조회",
@@ -219,11 +194,47 @@ export class AuthController {
     type: null,
   })
   async getMbrAgreeByTempToken(@Req() req) {
-    let session: SessionData = req.session;
-    const payload = this.jwtService.verify(session.tempToken.accessToken, {
-      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-    });
+    return this.mbrService.getMbrAgree(req.user.id);
+  }
 
-    return this.mbrService.getMbrAgree(payload.id);
+
+  @Public()
+  @Post("/resignNewAccessToken")
+  @ApiOperation({
+    summary:
+        "AccessToken 만료시 RefreshToken으로 AccessToken 재발급",
+    description:
+        "AccessToken 만료시 RefreshToken으로 AccessToken 재발급",
+  })
+  @ApiCreatedResponse({
+    description:
+        "회원 약관 미동의 회원 로그인시 블록 후 약관동의 처리시 기본 정보 조회",
+    type: null,
+  })
+  async resignNewAccessToken(
+      @Body() body: { refreshToken: string },
+      @Res() res: Response
+  ) {
+    console.log(body.refreshToken)
+    const refreshToken = body.refreshToken;
+
+    if(!refreshToken) {
+      throw new HttpException(
+          "refreshToken이 없습니다.",
+          HttpStatus.BAD_REQUEST
+      );
+    }
+
+    const newAccessToken = await this.authService.resignNewAccessToken(refreshToken);
+
+    if(newAccessToken) {
+      res.cookie("accessToken", newAccessToken, {});
+      return res.status(200).send({ message: 'Access token 재발급 완료' });
+    } else {
+      throw new HttpException(
+          "토큰 재발급 실패",
+          HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
   }
 }

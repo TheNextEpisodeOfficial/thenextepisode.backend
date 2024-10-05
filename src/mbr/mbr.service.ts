@@ -25,7 +25,7 @@ export class MbrService {
   ) {}
 
   /**
-   *
+   * email로 멤버 정보 조회
    * @param email
    * @returns
    */
@@ -38,6 +38,10 @@ export class MbrService {
     });
   }
 
+  /**
+   * mbrId로 멤버 정보 조회
+   * @param mbrId
+   */
   findByMbrId(mbrId: string): Promise<MbrEntity> {
     return this.mbrRepository.findOne({
       where: {
@@ -48,7 +52,7 @@ export class MbrService {
   }
 
   /**
-   *
+   * 멤버 생성
    * @param upsertMbrDto
    * @returns
    */
@@ -64,7 +68,7 @@ export class MbrService {
         // MbrLog 삽입
         await entityManager.insert(MbrLogEntity, {
           mbrId: resultCreateMbr.id,
-          logType: "J",
+          logType: "C",
         });
 
         return resultCreateMbr;
@@ -78,7 +82,7 @@ export class MbrService {
   }
 
   /**
-   *
+   * 회원가입
    * @returns
    * @param joinMbrDto
    */
@@ -95,7 +99,7 @@ export class MbrService {
         // MbrLog 삽입
         await entityManager.insert(MbrLogEntity, {
           mbrId: joinMbrDto.mbr.id,
-          logType: "C",
+          logType: "J",
         });
 
         return resultCreateMbr;
@@ -109,9 +113,9 @@ export class MbrService {
   }
 
   /**
-   *
-   * @param mbr
+   * 멤버 정보 업데이트
    * @returns
+   * @param upsertMbrDto
    */
   updateMbr(upsertMbrDto: UpsertMbrDto): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
@@ -142,7 +146,7 @@ export class MbrService {
   }
 
   /**
-   *
+   * 키워드로 멤버의 id, mbrNm, nickNm을 조회
    * @param keyword
    * @returns
    */
@@ -164,7 +168,10 @@ export class MbrService {
     });
   }
 
-  // 회원 정지
+  /**
+   * 회원 정지
+   * @param mbrId
+   */
   async blockMbr(mbrId: string): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
@@ -191,7 +198,10 @@ export class MbrService {
     });
   }
 
-  // 회원 탈퇴
+  /**
+   * 회원 탈퇴
+   * @param mbrId
+   */
   async withdrawMbr(mbrId: string): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
@@ -218,7 +228,10 @@ export class MbrService {
     });
   }
 
-  //회원 복구
+  /**
+   * 회원 복구
+   * @param mbrId
+   */
   async recoverMbr(mbrId: string): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
@@ -245,7 +258,11 @@ export class MbrService {
     });
   }
 
-  // 회원 약관동의 수정
+  /**
+   * 회원 약관동의 수정
+   * @param mbrId
+   * @param upsertMbrAgreeDto
+   */
   async updateMbrAgree(
     mbrId: string,
     upsertMbrAgreeDto: UpsertMbrAgreeDto
@@ -275,7 +292,10 @@ export class MbrService {
     });
   }
 
-  // 회원 약관동의 조회
+  /**
+   * 회원 약관동의 조회
+   * @param mbrId
+   */
   async getMbrAgree(mbrId: string): Promise<UpsertMbrAgreeDto> {
     return this.mbrRepository.findOne({
       select: [

@@ -26,6 +26,7 @@ import dayjs from "dayjs";
 import { JwtService } from "@nestjs/jwt";
 import * as process from "process";
 import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
+import {KakaoAuthGuard} from "@src/auth/guard";
 
 /**
  * OrdController : 주문 API를 관리한다
@@ -175,6 +176,7 @@ export class OrdController {
   /**
    * S : getOrdList
    */
+  @UseGuards(JwtAuthGuard)
   @Get("/getOrdList")
   @ApiOperation({
     summary: "주문 결제 리스트 조회",
