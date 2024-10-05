@@ -10,7 +10,7 @@ const dataSource: DataSource = new DataSource({
   port: parseInt(process.env.DB_PORT),
   host: process.env.DB_HOST,
   database: process.env.DB_SCHEMA,
-  entities: ["src/entities/*.ts"],
+  entities: ["src/**/entities/*.ts"],
   migrations: ["src/migration/*.ts"],
   subscribers: ["src/subscriber/*.ts"],
   synchronize: true,
