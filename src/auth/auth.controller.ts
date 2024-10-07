@@ -85,7 +85,7 @@ export class AuthController {
       // E : 필수 약관 동의 여부
 
       // S : 토큰 생성 및 쿠키 세팅
-      const { accessToken, refreshToken } = this.authService.generateNewToken(
+      const { accessToken, refreshToken } = await this.authService.generateNewToken(
     {
             id: user.id,
             invalidPolicy: invalidPolicy,

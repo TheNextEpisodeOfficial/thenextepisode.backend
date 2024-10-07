@@ -50,7 +50,7 @@ export class AuthService {
     };
   }
 
-  generateNewToken(user: IJwtPayload) {
+  async generateNewToken(user: IJwtPayload) {
     const accessToken = this.jwtService.sign(
       user,
       {
