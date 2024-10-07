@@ -40,6 +40,7 @@ export class TcktController {
     @Query() srchTcktListDto: SrchTcktListDto,
     @I18n() i18n: I18nContext
   ) {
+    srchTcktListDto.mbrId = req.user.id;
     const tckts = await this.tcktService.getMyTckts(srchTcktListDto);
     return tckts;
   }
