@@ -19,5 +19,5 @@ const dataSource: DataSource = new DataSource({
 
 export default dataSource;
 
-// 마이그 제너레이트 파일 생성 :  npm run typeorm migration:generate ./src/migration/마이그레이션파일명 -- -d typeorm.config.ts
+// 마이그 제너레이트 파일 생성 : npx ts-node -r tsconfig-paths/register ./node_modules/typeorm/cli.js migration:generate ./src/migration/mig_20241006_dev -d ./typeorm.config.ts
 // 마이그 파일기반 DB 스키마 생성 : npm run typeorm migration:run -- -d typeorm.config.ts

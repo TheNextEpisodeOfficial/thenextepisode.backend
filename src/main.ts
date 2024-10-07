@@ -25,6 +25,7 @@ async function bootstrap() {
     origin: process.env.LOGIN_REDIRECT_URL,
     methods: "GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS",
     credentials: true,
+    allowedHeaders: 'Authorization, Content-Type, X-Refresh-Token',
   });
 
   setupSwagger(app);
