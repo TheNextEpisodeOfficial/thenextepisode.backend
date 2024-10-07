@@ -23,18 +23,25 @@ export class JwtAuthGuard implements CanActivate {
 
     const { authorization, 'X-Refresh-Token': refreshToken } = req.headers;
 
+    let accessToken: string;
+
     if (!authorization) {
-      throw new UnauthorizedException("액세스 토큰이 필요한 작업입니다.");
-    }
+      if(!req.cookies.accessToken) {
+        throw new UnauthorizedException("액세스 토큰이 필요한 작업입니다.");
+      } else {
+        accessToken = req.cookies.accessToken;
+      }
+    } else {
+      const isBearer = authorization.startsWith("Bearer");
+      if (!isBearer) {
+        throw new UnauthorizedException("Bearer 토큰이 아닙니다.");
+      }
 
-    const isBearer = authorization.startsWith("Bearer");
-    if (!isBearer) {
-      throw new UnauthorizedException("Bearer 토큰이 아닙니다.");
-    }
+      accessToken = authorization.split(" ").pop();
 
-    const accessToken = authorization.split(" ").pop();
-    if (!accessToken) {
-      throw new UnauthorizedException("토큰을 찾을 수 없습니다.");
+      if (!accessToken) {
+        throw new UnauthorizedException("토큰을 찾을 수 없습니다.");
+      }
     }
 
     try {
