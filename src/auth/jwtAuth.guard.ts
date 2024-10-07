@@ -22,6 +22,8 @@ export class JwtAuthGuard implements CanActivate {
     const res = context.switchToHttp().getResponse<any>();
 
     const { authorization, 'X-Refresh-Token': refreshToken } = req.headers;
+    console.log("req.headers:", req.headers)
+    console.log("authorization:", authorization)
 
     if (!authorization) {
       throw new UnauthorizedException("액세스 토큰이 필요한 작업입니다.");
