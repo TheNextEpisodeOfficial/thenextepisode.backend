@@ -36,7 +36,6 @@ export class CommonEntity extends BaseEntity {
     type: "varchar",
     length: 36,
     comment: "데이터 생성자 아이디",
-    default: "memberid",
     precision: 0,
     select: false,
   })

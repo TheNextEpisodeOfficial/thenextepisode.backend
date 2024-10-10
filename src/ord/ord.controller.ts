@@ -141,7 +141,8 @@ export class OrdController {
   ): Promise<ResponseDto<{ ordId: string }>> {
     try {
       ord.ordMbrId = req.user.id;
-      console.log("req.user:", req.user);
+      ord.createdBy = req.user.id;
+
       // 주문 유효성 검사
       const validateOrdTimer = await this.ordService.validateOrdTimer(
         ord.timerId

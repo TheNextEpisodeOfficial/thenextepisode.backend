@@ -173,7 +173,8 @@ export class OrdService {
         const insertedOrdItem = await this.insertOrderItem(
           entityManager,
           item,
-          ordId
+          ordId,
+            ord.ordMbrId
         );
         const ordItemId = insertedOrdItem.generatedMaps[0].id;
 
@@ -238,16 +239,19 @@ export class OrdService {
    * @param entityManager - 엔티티 매니저
    * @param item - 주문 상품
    * @param ordId - 주문 ID
+   * @param mbrId
    * @returns Promise<InsertResult>
    */
   private async insertOrderItem(
     entityManager: EntityManager,
     item: OrdItemEntity,
-    ordId: string
+    ordId: string,
+    mbrId: string
   ): Promise<InsertResult> {
     return entityManager.insert(OrdItemEntity, {
       ...item,
       ordId,
+      createdBy: mbrId
     });
   }
 
