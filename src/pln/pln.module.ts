@@ -9,6 +9,8 @@ import { AdncOptEntity } from "../adncOpt/entities/adncOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
+import {AuthModule} from "@src/auth/auth.module";
+import {MbrModule} from "@src/mbr/mbr.module";
 
 @Module({
   imports: [
@@ -20,6 +22,8 @@ import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
       FileEntity,
       OrdItemEntity,
     ]),
+    AuthModule,
+    MbrModule
   ],
   controllers: [PlnController],
   providers: [PlnService],

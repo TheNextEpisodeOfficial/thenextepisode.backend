@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import {HttpException, HttpStatus, Injectable, UnauthorizedException} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import {
   EntityManager,
@@ -202,11 +202,14 @@ export class PlnService {
    * @param mbrId
    * @returns
    */
-  async getPlnDtlById(plnId: string, mbrId: string): Promise<PlnEntity> {
+  async getPlnDtlById(plnId: string, mbrId: string, getParticipant?: boolean): Promise<PlnEntity> {
     logger.log("start", "getPlnDtlById :: 플랜 상세 가져오기");
     const pln = await this.plnRepository.findOneBy({ id: plnId });
-    pln.mbrId = mbrId;
+    if(getParticipant && pln.createdBy != mbrId) {
+      throw new UnauthorizedException("해당 플랜을 기획한 플래너만 조회가 가능합니다.");
+    }
 
+    pln.mbrId = mbrId;
     if (!pln) {
       throw new HttpException("플랜을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
     }
@@ -240,7 +243,7 @@ export class PlnService {
             HttpStatus.BAD_REQUEST
           );
         }
-        await this.insertBttlOpts(pln.bttlOpt, insertedPln.id, entityManager);
+        await this.insertBttlOpts(pln.bttlOpt, insertedPln.id, pln.createdBy, entityManager);
 
         if (!pln.adncOpt.length) {
           throw new HttpException(
@@ -250,13 +253,13 @@ export class PlnService {
         }
         await entityManager.insert(
           AdncOptEntity,
-          pln.adncOpt.map((opt) => ({ ...opt, plnId: insertedPln.id }))
+          pln.adncOpt.map((opt) => ({ ...opt, plnId: insertedPln.id, createdBy: pln.createdBy }))
         );
 
         if (pln.plnImgs.length) {
           await entityManager.insert(
             FileEntity,
-            pln.plnImgs.map((img) => ({ ...img, fileGrpId }))
+            pln.plnImgs.map((img) => ({ ...img, fileGrpId, createdBy: pln.createdBy }))
           );
         }
 
@@ -277,11 +280,13 @@ export class PlnService {
    * 배틀옵션 데이터를 INSERT 한다.
    * @param bttlOpts
    * @param plnId
+   * @param createdBy
    * @param entityManager
    */
   private async insertBttlOpts(
     bttlOpts: BttlOptEntity[],
     plnId: string,
+    createdBy: string,
     entityManager: EntityManager
   ): Promise<void> {
     await Promise.all(
@@ -289,12 +294,14 @@ export class PlnService {
         const insertedBttlOpt = await entityManager.insert(BttlOptEntity, {
           ...bttlOpt,
           plnId,
+          createdBy: createdBy
         });
         await Promise.all(
           bttlOpt.bttlOptRole.map(async (role) => {
             await entityManager.insert(BttlOptRoleEntity, {
               ...role,
               bttlOptId: insertedBttlOpt.generatedMaps[0].id,
+              createdBy: createdBy
             });
           })
         );

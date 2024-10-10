@@ -5,7 +5,7 @@ import {
   HttpStatus,
   Post,
   Query,
-  Req, UnauthorizedException,
+  Req, UnauthorizedException, UseGuards,
 } from "@nestjs/common";
 import {
   ApiCreatedResponse,
@@ -23,6 +23,7 @@ import { Request } from "express";
 import { ResponseDto } from "@src/types/response";
 import { JwtService } from "@nestjs/jwt";
 import * as process from "process";
+import {JwtAuthGuard} from "@src/auth/jwtAuth.guard";
 
 /**
  * PlnController : 플랜 API를 관리한다
@@ -85,9 +86,41 @@ export class PlnController {
    */
 
   /**
+   * S : getPlnDtlById
+   */
+  @Get("/getPlndPlnDtlById")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: "플랜 ID로 기획한 플랜 상세 조회",
+    description: "플랜 ID로 기획한 플랜 상세를 가져온다.",
+  })
+  @ApiCreatedResponse({
+    description: "플랜 ID로 기획한 플랜 상세를 가져온다.",
+    type: PlnEntity,
+  })
+  @ApiQuery({
+    name: "plnId",
+    required: true,
+    description: "플랜 아이디",
+    type: String,
+  })
+  async getPlndPlnDtlById(
+      @Req() req: Request,
+      @Query("plnId") plnId: string,
+      @I18n() i18n: I18nContext
+  ) {
+    const mbrId = req.user.id;
+    return await this.plnService.getPlnDtlById(plnId, mbrId);
+  }
+  /**
+   * E : getPlnDtlById
+   */
+
+  /**
    * S : insertPln
    */
   @Post("/insertPln")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "플랜 생성/수정",
     description:
@@ -97,8 +130,12 @@ export class PlnController {
     description: "새로운 플랜을 생성 한다.",
     type: null,
   })
-  async insertPln(@Body() pln: PlnEntity): Promise<ResponseDto<InsertResult>> {
+  async insertPln(
+      @Body() pln: PlnEntity,
+      @Req() req: Request
+      ): Promise<ResponseDto<InsertResult>> {
     try {
+      pln.createdBy = req.user.id;
       let insertPlnResult = await this.plnService.insertPln(pln);
       if (insertPlnResult) {
         return new ResponseDto<InsertResult>({
@@ -142,6 +179,7 @@ export class PlnController {
    * S : srchPln
    */
   @Get("/getPlndPln")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "내가 기획한 플랜 리스트",
     description: "내가 기획한 플랜 리스트를 가져온다.",
@@ -150,10 +188,14 @@ export class PlnController {
     description: "내가 기획한 플랜 리스트를 가져온다.",
     type: PlnEntity,
   })
-  async getPlndPln(@Query() pln: SrchPlnDto): Promise<Pagination<PlnEntity>> {
+  async getPlndPln(
+      @Req() req: Request,
+      @Query() pln: SrchPlnDto
+  ): Promise<Pagination<PlnEntity>> {
+    const mbrId = req.user.id;
     return this.plnService.srchPln({
       ...pln,
-      route: "/srchPln",
+      createdBy: mbrId
     });
   }
   /**
