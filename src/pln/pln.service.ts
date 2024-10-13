@@ -4,6 +4,7 @@ import {
   EntityManager,
   InsertResult,
   Like,
+  In,
   Repository,
   SelectQueryBuilder,
 } from "typeorm";
@@ -20,6 +21,9 @@ import { logger } from "@src/util/logger";
 import { getBttlOptTit } from "@src/util/system";
 import dayjs from "dayjs";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
+import {BttlrEntity} from "@src/bttlr/entities/bttlr.entity";
+import {BttlTeamEntity} from "@src/bttlTeam/entities/bttlTeam.entity";
+import {AdncEntity} from "@src/adnc/entities/adnc.entity";
 
 @Injectable()
 export class PlnService {
@@ -30,8 +34,14 @@ export class PlnService {
     private readonly bttlOptRepository: Repository<BttlOptEntity>,
     @InjectRepository(BttlOptRoleEntity)
     private readonly bttlOptRoleRepository: Repository<BttlOptRoleEntity>,
+    @InjectRepository(BttlTeamEntity)
+    private readonly bttlTeamRepository: Repository<BttlTeamEntity>,
+    @InjectRepository(BttlrEntity)
+    private readonly bttlrRepository: Repository<BttlrEntity>,
     @InjectRepository(AdncOptEntity)
     private readonly adncOptRepository: Repository<AdncOptEntity>,
+    @InjectRepository(AdncEntity)
+    private readonly adncRepository: Repository<AdncEntity>,
     @InjectRepository(FileEntity)
     private readonly s3FileRepository: Repository<FileEntity>,
     @InjectRepository(OrdItemEntity)
@@ -180,10 +190,6 @@ export class PlnService {
     if (adncOpt) pln.adncOpt = adncOpt;
   }
 
-  async getAllPln(): Promise<PlnEntity[]> {
-    return this.plnRepository.find({ where: { delYn: "N" } });
-  }
-
   /**
    * 멤버 아이디로 기획한 플랜 리스트를 조회한다.
    * @param mbrId
@@ -202,22 +208,121 @@ export class PlnService {
    * @param mbrId
    * @returns
    */
-  async getPlnDtlById(plnId: string, mbrId: string, getParticipant?: boolean): Promise<PlnEntity> {
+  async getPlnDtlById(plnId: string, mbrId: string): Promise<PlnEntity> {
     logger.log("start", "getPlnDtlById :: 플랜 상세 가져오기");
     const pln = await this.plnRepository.findOneBy({ id: plnId });
-    if(getParticipant && pln.createdBy != mbrId) {
-      throw new UnauthorizedException("해당 플랜을 기획한 플래너만 조회가 가능합니다.");
-    }
-
-    pln.mbrId = mbrId;
     if (!pln) {
       throw new HttpException("플랜을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
     }
+
+    pln.mbrId = mbrId;
     await Promise.all([
       this.addPlnImgs(pln),
       this.addBttlOpt(pln),
       this.addAdncOpt(pln),
     ]).finally(() => logger.log("end", "getPlnDtlById :: 플랜 상세 가져오기"));
+    return pln;
+  }
+
+  /**
+   * 플랜 배틀 옵션을 기준으로 참가예매한 배틀팀과 하위 배틀러 리스트를 가져온다.
+   * @param pln
+   */
+  private async addBttlrList(pln: PlnEntity): Promise<void> {
+    const bttlOpt = pln.bttlOpt;
+
+    if (bttlOpt && bttlOpt.length) {
+      // bttlOpt 배열에서 id만 추출
+      const bttlOptIds = bttlOpt.map(opt => opt.id); // opt에서 id만 가져옴
+
+      // IN 절을 사용하여 bttlOptId가 포함된 데이터를 조회
+      const bttlTeamList = await this.bttlTeamRepository.find({
+        where: {
+          bttlOptId: In(bttlOptIds),
+          delYn: 'N'
+        },
+        relations: ['bttlr']  // 하위 bttlr 엔티티를 함께 조회
+      });
+
+      // 각 bttlTeamAndBttlr에 대해 title 설정
+      bttlTeamList.forEach(bttlTeam => {
+        // bttlOptId에 맞는 opt 객체를 찾음
+        const opt = bttlOpt.find(o => o.id === bttlTeam.bttlOptId);
+
+        // opt가 존재하면 getBttlOptTit(opt) 실행 후 title 설정
+        if (opt) {
+          bttlTeam.optTit = getBttlOptTit(opt);
+        }
+      });
+
+      // 이후 bttlTeamAndBttlr 데이터 사용
+      pln.bttlTeamList = bttlTeamList;
+    }
+  }
+  /**
+   * 플랜 관람 옵션을 기준으로 관람예매한 관람객 리스트를 가져온다.
+   * @param pln
+   */
+  private async addAdncList(pln: PlnEntity): Promise<void> {
+    const adncOpt = pln.adncOpt;
+
+    if (adncOpt && adncOpt.length) {
+      // adncOpt 배열에서 id만 추출
+      const adncOptIds = adncOpt.map(opt => opt.id); // opt에서 id만 가져옴
+
+      // IN 절을 사용하여 adncOptId가 포함된 데이터를 조회
+      const adncList = await this.adncRepository.find({
+        where: {
+          adncOptId: In(adncOptIds),
+          delYn: 'N'
+        }
+      });
+
+      adncList.forEach(adnc => {
+        // adncOptId에 맞는 opt 객체를 찾음
+        const opt = adncOpt.find(o => o.id === adnc.adncOptId);
+
+        // opt가 존재하면 adnc의 option title 설정
+        if (opt) {
+          adnc.optTit = opt.optNm
+        }
+      });
+
+      pln.adncList = adncList;
+    }
+  }
+
+  /**
+   * 플랜 ID로 기획한 플랜의 상세정보를 조회한다.
+   * @param plnId
+   * @param mbrId
+   * @returns
+   */
+  async getPlndPlnDtlById(plnId: string, mbrId: string): Promise<PlnEntity> {
+    logger.log("start", "getPlndPlnDtlById :: 기획한 플랜 상세 가져오기");
+    const pln = await this.plnRepository
+        .createQueryBuilder('pln')
+        .addSelect('pln.createdBy')
+        .where('pln.id = :plnId', { plnId })
+        .getOne();
+    if(pln.createdBy != mbrId) {
+      throw new UnauthorizedException("해당 플랜을 기획한 플래너만 조회가 가능합니다.");
+    }
+    if (!pln) {
+      throw new HttpException("플랜을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    }
+    pln.mbrId = mbrId;
+
+    await Promise.all([
+      this.addPlnImgs(pln),
+      this.addBttlOpt(pln),
+      this.addAdncOpt(pln),
+    ]).then(async() => {
+      await Promise.all([
+        this.addBttlrList(pln),
+        this.addAdncList(pln),
+      ])
+    }).finally(() => logger.log("end", "getPlndPlnDtlById :: 기획한 플랜 상세 가져오기"));
     return pln;
   }
 

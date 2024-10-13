@@ -110,7 +110,7 @@ export class PlnController {
       @I18n() i18n: I18nContext
   ) {
     const mbrId = req.user.id;
-    return await this.plnService.getPlnDtlById(plnId, mbrId);
+    return await this.plnService.getPlndPlnDtlById(plnId, mbrId);
   }
   /**
    * E : getPlnDtlById

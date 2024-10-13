@@ -11,6 +11,9 @@ import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity"
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
 import {AuthModule} from "@src/auth/auth.module";
 import {MbrModule} from "@src/mbr/mbr.module";
+import {BttlTeamEntity} from "@src/bttlTeam/entities/bttlTeam.entity";
+import {BttlrEntity} from "@src/bttlr/entities/bttlr.entity";
+import {AdncEntity} from "@src/adnc/entities/adnc.entity";
 
 @Module({
   imports: [
@@ -18,7 +21,10 @@ import {MbrModule} from "@src/mbr/mbr.module";
       PlnEntity,
       BttlOptEntity,
       BttlOptRoleEntity,
+      BttlTeamEntity,
+      BttlrEntity,
       AdncOptEntity,
+      AdncEntity,
       FileEntity,
       OrdItemEntity,
     ]),

@@ -38,4 +38,6 @@ export class BttlTeamEntity extends CommonEntity {
 
   @OneToOne(() => OrdItemEntity, (ordItem) => ordItem.bttlTeam)
   ordItem: OrdItemEntity;
+
+  optTit?: string;
 }

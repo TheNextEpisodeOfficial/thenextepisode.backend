@@ -46,6 +46,7 @@ export class TcktService {
       adncId: info.adncId,
       tcktHldMbrId: info.tcktHldMbrId,
       secretKey: secretKey,
+      createdBy: info.tcktHldMbrId
     });
   }
 

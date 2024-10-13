@@ -37,8 +37,10 @@ export class OrdService {
   /**
    * 주문 타이머 생성
    */
-  async createOrdTimer(): Promise<InsertResult> {
-    return this.entityManager.insert(OrdTimerEntity, {});
+  async createOrdTimer(mbrId): Promise<InsertResult> {
+    return this.entityManager.insert(OrdTimerEntity, {
+      createdBy: mbrId
+    });
   }
 
   /**
@@ -271,6 +273,7 @@ export class OrdService {
     const adncEntities = Array.from({ length: item.qty }, () => ({
       ...item.adnc[0],
       adncOptId: item.adncOptId,
+      createdBy: tcktHldMbrId
     }));
 
     const adncInsertResult = await entityManager.insert(
@@ -283,6 +286,7 @@ export class OrdService {
       ordItemId: ordItemId,
       adncId: adncId,
       tcktHldMbrId: tcktHldMbrId,
+      createdBy: tcktHldMbrId
     }));
 
     await this.tcktService.createTcktBulk(entityManager, tickets);
@@ -304,6 +308,7 @@ export class OrdService {
     const bttlTeamInsertResult = await entityManager.insert(BttlTeamEntity, {
       ...item.bttlTeam,
       bttlOptId: item.bttlOptId,
+      createdBy: tcktHldMbrId
     });
 
     if (!bttlTeamInsertResult) {
@@ -318,6 +323,7 @@ export class OrdService {
         const bttlrInsertResult = await entityManager.insert(BttlrEntity, {
           ...bttlr,
           bttlTeamId: bttlTeamInsertResult.generatedMaps[0].id,
+          createdBy: tcktHldMbrId
         });
 
         if (!bttlrInsertResult) {

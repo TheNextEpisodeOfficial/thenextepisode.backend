@@ -38,4 +38,6 @@ export class AdncEntity extends CommonEntity {
   @ManyToOne(() => AdncOptEntity, (adncOpt) => adncOpt.adnc)
   @JoinColumn({ name: "adnc_opt_id" })
   adncOpt: AdncEntity;
+
+  optTit?: string;
 }

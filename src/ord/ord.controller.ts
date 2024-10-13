@@ -43,6 +43,7 @@ export class OrdController {
    * S : createOrdTimer
    */
   @Post("/createOrdTimer")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "주문 타이머 생성",
     description: "주문 타이머를 생성한다.",
@@ -50,9 +51,11 @@ export class OrdController {
   @ApiCreatedResponse({
     description: "주문 타이머를 생성한다.",
   })
-  async createOrdTimer(): Promise<ResponseDto<{ timerId: string }>> {
+  async createOrdTimer(
+      @Req() req
+  ): Promise<ResponseDto<{ timerId: string }>> {
     try {
-      const createTimerResult = await this.ordService.createOrdTimer();
+      const createTimerResult = await this.ordService.createOrdTimer(req.user.id);
 
       if (createTimerResult) {
         let timer = createTimerResult.generatedMaps[0];

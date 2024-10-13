@@ -11,6 +11,8 @@ import {
   Unique,
 } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
+import {BttlTeamEntity} from "@src/bttlTeam/entities/bttlTeam.entity";
+import {AdncEntity} from "@src/adnc/entities/adnc.entity";
 @Entity("pln")
 @Unique(["fileGrpId"])
 export class PlnEntity extends CommonEntity {
@@ -120,4 +122,8 @@ export class PlnEntity extends CommonEntity {
   thumb: string;
 
   mbrId?: string;
+
+  bttlTeamList?: BttlTeamEntity[]; // 기획한 플랜 상세에서 배틀 팀 리스트 조회
+
+  adncList?: AdncEntity[]; // 기획한 플랜 상세에서 관객 리스트 조회
 }
