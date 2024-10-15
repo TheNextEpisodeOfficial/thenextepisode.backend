@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
+import {HttpException, HttpStatus, Injectable, UnauthorizedException} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { BttlrEntity } from "@src/bttlr/entities/bttlr.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
@@ -174,7 +174,7 @@ export class TcktService {
   /**
    * 티켓 아이디를 기준으로 티켓 상세정보를 가져온다.
    */
-  async getTcktDtlById(tcktId: string): Promise<TicketListDto> {
+  async getTcktDtlById(mbrId, tcktId: string): Promise<TicketListDto> {
     const queryBuilder = this.tcktRepository
       .createQueryBuilder("tckt")
       .leftJoinAndSelect("tckt.ordItem", "ordItem")
@@ -205,6 +205,7 @@ export class TcktService {
       'tckt.id AS "tcktId"',
       'tckt.teamAsgnYn AS "teamAsgnYn"',
       'tckt.hndOvrYn AS "hndOvrYn"',
+      'tckt.tcktHldMbrId AS "tcktHldMbrId"',
       'tckt.usedYn AS "usedYn"',
       'ordItem.id AS "ordItemId"',
       'ordItem.bttlOptId AS "bttlOptId"',
@@ -238,6 +239,10 @@ export class TcktService {
     queryBuilder.andWhere("file.fileTypeCd = 'THMB_MN'");
 
     const rawResult = await queryBuilder.getRawOne();
+
+    if(rawResult.tcktHldMbrId != mbrId) {
+      throw new UnauthorizedException("티켓 소유자만 조회 가능합니다.");
+    }
 
     if (rawResult) {
       rawResult.optTit = rawResult.adncOptNm

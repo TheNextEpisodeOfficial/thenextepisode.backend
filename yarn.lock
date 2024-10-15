@@ -6854,6 +6854,11 @@ trim-repeated@^2.0.0:
   dependencies:
     escape-string-regexp "^5.0.0"
 
+ts-case-convert@^2.1.0:
+  version "2.1.0"
+  resolved "https://registry.yarnpkg.com/ts-case-convert/-/ts-case-convert-2.1.0.tgz#071f3cc3735e7559ca35853c80bb4d1f96d878a2"
+  integrity sha512-Ye79el/pHYXfoew6kqhMwCoxp4NWjKNcm2kBzpmEMIU9dd9aBmHNNFtZ+WTm0rz1ngyDmfqDXDlyUnBXayiD0w==
+
 ts-graphviz@^1.5.4:
   version "1.8.1"
   resolved "https://registry.yarnpkg.com/ts-graphviz/-/ts-graphviz-1.8.1.tgz#5d95e58120be8b571847331516327d4840cc44f7"

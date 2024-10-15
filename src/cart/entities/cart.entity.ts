@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import {BeforeUpdate, Column, Entity, JoinColumn, ManyToOne, OneToOne} from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { PLN_TYPE } from "@src/types/common.type";
@@ -27,7 +27,21 @@ export class CartEntity extends CommonEntity {
   @JoinColumn({ name: "adnc_opt_id" })
   adncOpt: AdncOptEntity;
 
+  @Column({
+    type: "uuid",
+    comment: "입장 옵션 id",
+    nullable: true
+  })
+  adncOptId: string;
+
   @OneToOne(() => BttlOptEntity, (bttlOpt) => bttlOpt.cart)
   @JoinColumn({ name: "bttl_opt_id" })
   bttlOpt: BttlOptEntity;
+
+  @Column({
+    type: "uuid",
+    comment: "참가 옵션 id",
+    nullable: true
+  })
+  bttlOptId: string;
 }
