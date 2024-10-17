@@ -22,10 +22,11 @@ export class CartService {
   constructor(
     @InjectRepository(CartEntity)
     private readonly cartRepository: Repository<CartEntity>,
-    private readonly MAX_BTTL_TCKT_CNT = 1,
-    private readonly MAX_ADNC_TCKT_CNT = 2,
-    private readonly MAX_CART_ITEM_CNT = 20,
 ) {}
+
+  private readonly MAX_BTTL_TCKT_CNT = 1;
+  private readonly MAX_ADNC_TCKT_CNT = 2;
+  private readonly MAX_CART_ITEM_CNT = 20;
 
   /**
    * 나의 장바구니 리스트 조회
