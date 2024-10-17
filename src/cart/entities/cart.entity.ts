@@ -44,4 +44,7 @@ export class CartEntity extends CommonEntity {
     nullable: true
   })
   bttlOptId: string;
+
+  // 중복 시 CONFIRM 후 UPDATE 플래그
+  consciousUpdate: boolean;
 }
