@@ -3,6 +3,19 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository, UpdateResult } from "typeorm";
 import { CartEntity } from "./entities/cart.entity";
 import {objectToCamel} from "ts-case-convert";
+import {getBttlOptTit} from "@src/util/system";
+
+export interface ICart {
+  id: string;
+  qty: number;
+  sort: number;
+  optNm: string;
+  bttlGnrCd: string;
+  bttlRule: string;
+  bttlMbrCnt: number;
+  plnNm: string;
+  thumb: string;
+}
 
 @Injectable()
 export class CartService {
@@ -15,33 +28,53 @@ export class CartService {
    * 나의 장바구니 리스트 조회
    * @param mbrId
    */
-  async getMyCartList(mbrId): Promise<any[]> {
-    //TODO: DTO 생성 및 any type 제거
+  async getMyCartList(mbrId): Promise<ICart[]> {
     try {
-      const cartList = await this.cartRepository
+      const cartRawList = await this.cartRepository
           .createQueryBuilder('cart')
           .select([
-            'cart',
-            'adncOpt.id',
-            'adncOpt.optNm',
-            'bttlOpt.id',
-            'bttlOpt.bttlRule',
-            'adncPln.plnNm',
-            'bttlPln.plnNm',
+            'cart.id AS id',
+            'cart.qty AS qty',
+            'cart.createdAt AS created_at',
+            'adncOpt.optNm as opt_nm',
+            'bttlOpt.bttlGnrCd AS bttl_gnr_cd',
+            'bttlOpt.bttlRule AS bttl_rule',
+            'bttlOpt.bttlMbrCnt AS bttl_mbr_cnt',
+            `COALESCE(adncPln.plnNm, bttlPln.plnNm) AS pln_nm`,
+            `COALESCE(adncFile.fileNm, bttlFile.fileNm) AS thumb`,
           ])
           .leftJoin('cart.adncOpt', 'adncOpt')
           .leftJoin('adncOpt.pln', 'adncPln')
           .leftJoin('cart.bttlOpt', 'bttlOpt')
           .leftJoin('bttlOpt.pln', 'bttlPln')
+          .leftJoin('bttlPln.file', 'bttlFile')
+          .leftJoin('adncPln.file', 'adncFile')
           .where('cart.mbrId = :mbrId', { mbrId })
           .andWhere('cart.delYn = :delYn', { delYn: 'N' })
-          .getRawMany();
+          .orderBy('cart.createdAt', 'DESC')
+          .getRawMany<ICart>();
 
-      return objectToCamel(cartList);
+      const cartList = objectToCamel(cartRawList);
+      cartList.map((cart) => {
+        if(!cart.optNm) {
+          cart.optNm = getBttlOptTit({
+            bttlGnrCd: cart.bttlGnrCd,
+            bttlRule: cart.bttlRule,
+            bttlMbrCnt: cart.bttlMbrCnt
+          });
+        }
+
+        delete cart.bttlGnrCd;
+        delete cart.bttlRule;
+        delete cart.bttlMbrCnt;
+      })
+
+      return cartList;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
   }
+
 
   /**
    * 장바구니 UPSERT

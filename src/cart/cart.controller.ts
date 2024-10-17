@@ -1,7 +1,7 @@
 import {Body, Controller, Get, HttpException, HttpStatus, Post, Query, Req, Res, UseGuards} from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CartEntity } from "./entities/cart.entity";
-import { CartService } from "./cart.service";
+import {CartService, ICart} from "./cart.service";
 import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { UpdateResult } from "typeorm";
@@ -82,7 +82,7 @@ export class CartController {
   })
   async getMyCartList(
       @Req() req: Request,
-  ): Promise<CartEntity[]> {
+  ): Promise<ICart[]> {
     return this.cartService.getMyCartList(req.user.id);
   }
 }
