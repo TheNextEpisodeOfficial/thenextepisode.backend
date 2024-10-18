@@ -47,11 +47,11 @@ export class CartController {
   @Post("/deleteCartById")
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: "장바구니 상품 추가/업데이트",
-    description: "장바구니에 상품을 추가/업데이트 한다.",
+    summary: "장바구니 상품 삭제",
+    description: "장바구니에 상품을 논리 삭제한다.",
   })
   @ApiCreatedResponse({
-    description: "장바구니에 상품을 추가/업데이트 한다.",
+    description: "장바구니에 상품을 논리 삭제한다.",
     type: CartEntity,
   })
   async deleteCartById(
