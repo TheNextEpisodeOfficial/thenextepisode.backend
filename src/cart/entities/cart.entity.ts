@@ -4,6 +4,7 @@ import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { PLN_TYPE } from "@src/types/common.type";
 import { AdncOptEntity } from "@src/adncOpt/entities/adncOpt.entity";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
+import {Exclude, Expose} from "class-transformer";
 
 @Entity("cart")
 export class CartEntity extends CommonEntity {
@@ -44,7 +45,4 @@ export class CartEntity extends CommonEntity {
     nullable: true
   })
   bttlOptId: string;
-
-  // 중복 시 CONFIRM 후 UPDATE 플래그
-  consciousUpdate: boolean;
 }

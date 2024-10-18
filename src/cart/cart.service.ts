@@ -4,6 +4,7 @@ import { Repository, UpdateResult } from "typeorm";
 import { CartEntity } from "./entities/cart.entity";
 import {objectToCamel} from "ts-case-convert";
 import {getBttlOptTit} from "@src/util/system";
+import {UpsertCartDto} from "@src/cart/dtos/cart.dto";
 
 export interface ICart {
   id: string;
@@ -84,7 +85,7 @@ export class CartService {
    * @param cartEntity
    * @param mbrId
    */
-  async upsertCart(cartEntity: CartEntity, mbrId: string): Promise<UpdateResult> {
+  async upsertCart(cartDto: UpsertCartDto, mbrId: string): Promise<UpdateResult> {
     try {
       // S : 최대 갯수 유효성 체크
       const totalQty = await this.cartRepository.count({
@@ -102,19 +103,18 @@ export class CartService {
       }
       // E : 최대 갯수 유효성 체크
 
-      if(!cartEntity.id) {
-        cartEntity.consciousUpdate = false; // cart id가 없으므로 플랜 상세에서 옵션 선택 후 장바구니 클릭한 케이스
-
+      if(!cartDto.id) { // cart id가 없으므로 플랜 상세에서 옵션 선택 후 장바구니 클릭한 케이스
+        cartDto.consciousUpdate = cartDto.consciousUpdate || false;
         // 중복 아이템 조회
         let existItem:CartEntity;
 
-        if (cartEntity.bttlOptId) {
+        if (cartDto.bttlOptId) {
           // bttlOptId가 있는 경우
           existItem = await this.cartRepository.findOne({
             where: {
               mbrId: mbrId,
               delYn: 'N',
-              bttlOptId: cartEntity.bttlOptId,
+              bttlOptId: cartDto.bttlOptId,
             },
           });
         } else {
@@ -123,19 +123,19 @@ export class CartService {
             where: {
               mbrId: mbrId,
               delYn: 'N',
-              adncOptId: cartEntity.adncOptId,
+              adncOptId: cartDto.adncOptId,
             },
           });
         }
 
         if(existItem && existItem.id) {
           // S : 중복된 bttlOptId나 adncOptId가 있으면 update
-          return this.updateCart(cartEntity, existItem, mbrId);
+          return this.updateCart(cartDto, existItem, mbrId);
           // E : 중복된 bttlOptId나 adncOptId가 있으면 update
         } else {
           // S : 중복 아이템 없으므로 새로운 카트 아이템 INSERT
           return await this.cartRepository.insert({
-            ...cartEntity,
+            ...cartDto,
             createdBy: mbrId
           });
           // E : 중복 아이템 없으므로 새로운 카트 아이템 INSERT
@@ -143,12 +143,12 @@ export class CartService {
 
       } else {
         // UPDATE
-        cartEntity.consciousUpdate = true; // 요청 엔터티에 ID가 존재하므로 의도적인 업데이트로 판단 (+, - 버튼 클릭)
+        cartDto.consciousUpdate = true; // 요청 엔터티에 ID가 존재하므로 의도적인 업데이트로 판단 (+, - 버튼 클릭)
 
         // 중복 아이템 조회
         const existItem = await this.cartRepository.findOne({
           where: {
-            id: cartEntity.id,
+            id: cartDto.id,
             delYn: 'N',
           }
         })
@@ -157,7 +157,7 @@ export class CartService {
           throw new HttpException('해당 장바구니 상품이 존재하지 않습니다.', HttpStatus.INTERNAL_SERVER_ERROR)
         }
 
-        this.updateCart(cartEntity, existItem, mbrId);
+        return this.updateCart(cartDto, existItem, mbrId);
       }
 
     } catch (error) {
@@ -165,9 +165,9 @@ export class CartService {
     }
   }
 
-  async updateCart(cartEntity, existItem, mbrId) {
+  async updateCart(cartDto, existItem, mbrId) {
     // S : 장바구니 유효성 체크
-    if(cartEntity.delYn != 'Y') { // deleteCart API 가 아니면
+    if(cartDto.delYn != 'Y') { // deleteCart API 가 아니면
       if((existItem.bttlOptId && existItem.qty >= this.MAX_BTTL_TCKT_CNT) || (existItem.adncOptId && existItem.qty >= this.MAX_ADNC_TCKT_CNT)) {
         throw new HttpException(
             '이미 최대수량만큼 장바구니에 담겨있습니다.',
@@ -176,7 +176,7 @@ export class CartService {
       }
 
       // 의도적인 업데이트가 아니고 관객 옵션 상품을 더 추가할 수 있는 경우
-      if(!cartEntity.consciousUpdate && (existItem.adncOptId && existItem.qty < this.MAX_ADNC_TCKT_CNT)) {
+      if(!cartDto.consciousUpdate && (existItem.adncOptId && existItem.qty < this.MAX_ADNC_TCKT_CNT)) {
         throw new HttpException(
             {
               message: '해당 상품이 이미 장바구니에 존재합니다. 수량을 추가할까요?',
@@ -187,18 +187,18 @@ export class CartService {
       }
 
 
-      if(!cartEntity.qty || cartEntity.qty === 0) {
+      if(!cartDto.qty || cartDto.qty === 0) {
         throw new HttpException(
             '장바구니 상품의 갯수는 0개일 수 없습니다.',
             HttpStatus.BAD_REQUEST
         );
-      } else if(existItem.bttlOptId && cartEntity.qty > this.MAX_BTTL_TCKT_CNT) {
+      } else if(existItem.bttlOptId && cartDto.qty > this.MAX_BTTL_TCKT_CNT) {
         throw new HttpException(
             `참가 상품의 갯수는 ${this.MAX_BTTL_TCKT_CNT}개를 초과할 수 없습니다.`,
             HttpStatus.BAD_REQUEST
         );
       }
-      else if(existItem.adncOptId && cartEntity.qty > this.MAX_ADNC_TCKT_CNT) {
+      else if(existItem.adncOptId && cartDto.qty > this.MAX_ADNC_TCKT_CNT) {
         throw new HttpException(
             `입장 상품의 갯수는 ${this.MAX_ADNC_TCKT_CNT}개를 초과할 수 없습니다.`,
             HttpStatus.BAD_REQUEST
@@ -208,10 +208,12 @@ export class CartService {
     // E : 장바구니 유효성 체크
 
     return await this.cartRepository.update({
-      id: cartEntity.id
+      id: cartDto.id
     }, {
       ...existItem,
-      ...cartEntity,
+      bttlOptId: cartDto.bttlOptId,
+      adncOptId: cartDto.adncOptId,
+      qty: cartDto.qty,
       updatedBy: mbrId
     });
   }
