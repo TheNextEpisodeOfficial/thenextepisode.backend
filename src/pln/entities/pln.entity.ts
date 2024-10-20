@@ -7,12 +7,14 @@ import {
   Entity,
   JoinColumn,
   OneToMany,
+  OneToOne,
   PrimaryGeneratedColumn,
   Unique,
 } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
-import {BttlTeamEntity} from "@src/bttlTeam/entities/bttlTeam.entity";
-import {AdncEntity} from "@src/adnc/entities/adnc.entity";
+import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
+import { AdncEntity } from "@src/adnc/entities/adnc.entity";
+import { FavEntity } from "@src/fav/entities/fav.entity";
 @Entity("pln")
 @Unique(["fileGrpId"])
 export class PlnEntity extends CommonEntity {
@@ -118,6 +120,9 @@ export class PlnEntity extends CommonEntity {
 
   @ApiProperty({ type: [FileEntity], required: false })
   plnImgs: FileEntity[];
+
+  @OneToOne(() => FavEntity, (fav) => fav.pln)
+  fav: FavEntity;
 
   thumb: string;
 

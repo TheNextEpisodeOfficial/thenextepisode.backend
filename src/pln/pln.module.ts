@@ -9,11 +9,12 @@ import { AdncOptEntity } from "../adncOpt/entities/adncOpt.entity";
 import { FileEntity } from "@src/s3file/entities/file.entity";
 import { BttlOptRoleEntity } from "@src/bttlOptRole/entities/bttlOptRole.entity";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
-import {AuthModule} from "@src/auth/auth.module";
-import {MbrModule} from "@src/mbr/mbr.module";
-import {BttlTeamEntity} from "@src/bttlTeam/entities/bttlTeam.entity";
-import {BttlrEntity} from "@src/bttlr/entities/bttlr.entity";
-import {AdncEntity} from "@src/adnc/entities/adnc.entity";
+import { AuthModule } from "@src/auth/auth.module";
+import { MbrModule } from "@src/mbr/mbr.module";
+import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
+import { BttlrEntity } from "@src/bttlr/entities/bttlr.entity";
+import { AdncEntity } from "@src/adnc/entities/adnc.entity";
+import { FavEntity } from "@src/fav/entities/fav.entity";
 
 @Module({
   imports: [
@@ -27,9 +28,10 @@ import {AdncEntity} from "@src/adnc/entities/adnc.entity";
       AdncEntity,
       FileEntity,
       OrdItemEntity,
+      FavEntity,
     ]),
     AuthModule,
-    MbrModule
+    MbrModule,
   ],
   controllers: [PlnController],
   providers: [PlnService],
