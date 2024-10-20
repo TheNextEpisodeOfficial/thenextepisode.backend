@@ -1,4 +1,12 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToOne } from "typeorm";
+import {
+  Column,
+  Entity,
+  JoinColumn,
+  ManyToMany,
+  ManyToOne,
+  OneToMany,
+  OneToOne,
+} from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { MbrEntity } from "@src/mbr/entities/mbr.entity";
 import { PlnEntity } from "@src/pln/entities/pln.entity";
@@ -21,7 +29,7 @@ export class FavEntity extends CommonEntity {
   })
   plnId: string;
 
-  @OneToOne(() => PlnEntity, (pln) => pln.fav)
+  @OneToMany(() => PlnEntity, (pln) => pln.fav)
   @JoinColumn({ name: "pln_id" })
   pln: PlnEntity;
 }

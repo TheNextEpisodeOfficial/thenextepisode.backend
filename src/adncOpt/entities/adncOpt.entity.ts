@@ -3,6 +3,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -59,8 +60,11 @@ export class AdncOptEntity extends CommonEntity {
   @JoinColumn({ name: "pln_id" })
   pln;
 
-  @OneToOne(() => CartEntity, (cart) => cart.adncOpt)
-  cart;
+  @Column({ type: "uuid", comment: "장바구니 아이디", nullable: true })
+  cartId: string;
+
+  @OneToMany(() => CartEntity, (cart) => cart.adncOpt)
+  cart: CartEntity[];
 
   optSttCd: string;
 

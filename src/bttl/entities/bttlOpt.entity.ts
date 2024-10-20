@@ -4,6 +4,7 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
   ManyToOne,
   OneToMany,
   OneToOne,
@@ -76,8 +77,11 @@ export class BttlOptEntity extends CommonEntity {
   @JoinColumn({ name: "pln_id" })
   pln: PlnEntity;
 
-  @OneToOne(() => CartEntity, (cart) => cart.bttlOpt)
-  cart;
+  @Column({ type: "uuid", comment: "장바구니 아이디", nullable: true })
+  cartId: string;
+
+  @OneToMany(() => CartEntity, (cart) => cart.bttlOpt)
+  cart: CartEntity[];
 
   optTit: string;
 

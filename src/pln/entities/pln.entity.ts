@@ -6,6 +6,8 @@ import {
   Column,
   Entity,
   JoinColumn,
+  ManyToMany,
+  ManyToOne,
   OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
@@ -121,7 +123,7 @@ export class PlnEntity extends CommonEntity {
   @ApiProperty({ type: [FileEntity], required: false })
   plnImgs: FileEntity[];
 
-  @OneToOne(() => FavEntity, (fav) => fav.pln)
+  @ManyToOne(() => FavEntity, (fav) => fav.pln)
   fav: FavEntity;
 
   thumb: string;
