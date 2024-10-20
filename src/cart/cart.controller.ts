@@ -1,11 +1,22 @@
-import {Body, Controller, Get, HttpException, HttpStatus, Post, Query, Req, Res, UseGuards} from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpException,
+  HttpStatus,
+  Post,
+  Query,
+  Req,
+  Res,
+  UseGuards,
+} from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { CartEntity } from "./entities/cart.entity";
-import {CartService, ICart} from "./cart.service";
+import { CartService, ICart } from "./cart.service";
 import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { UpdateResult } from "typeorm";
-import {JwtAuthGuard} from "@src/auth/jwtAuth.guard";
+import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
 /**
  * CartController : 회원 API를 관리한다
  */
@@ -55,19 +66,19 @@ export class CartController {
     type: CartEntity,
   })
   async deleteCartById(
-      @Req() req: Request,
-      @Res({ passthrough: true }) res: Response,
-      @Query("id") id: string,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+    @Query("id") id: string
   ): Promise<UpdateResult> {
     const cartEntity = new CartEntity();
     cartEntity.id = id;
-    cartEntity.delYn = 'Y';
+    cartEntity.delYn = "Y";
 
     return this.cartService.upsertCart(cartEntity, req.user.id);
   }
 
   /**
-   * 장바구니 상품 논리 삭제
+   * 나의 장바구니 리스트 조회
    * @param req
    */
   @Get("/getMyCartList")
@@ -77,12 +88,10 @@ export class CartController {
     description: "나의 장바구니 리스트를 조회한다.",
   })
   @ApiCreatedResponse({
-    description: "장바구니에 상품을 추가/업데이트 한다.",
+    description: "나의 장바구니 리스트를 조회한다.",
     type: CartEntity,
   })
-  async getMyCartList(
-      @Req() req: Request,
-  ): Promise<ICart[]> {
+  async getMyCartList(@Req() req: Request): Promise<ICart[]> {
     return this.cartService.getMyCartList(req.user.id);
   }
 }
