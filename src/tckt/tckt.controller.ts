@@ -19,7 +19,7 @@ import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
  * TcktController : 티켓 API를 관리한다
  */
 @Controller("/tckt")
-@ApiTags("Tckt")
+@ApiTags("Ticket")
 export class TcktController {
   constructor(private readonly tcktService: TcktService) {}
   /**

@@ -28,7 +28,7 @@ import {JwtAuthGuard} from "@src/auth/jwtAuth.guard";
  * MbrController : 회원 API를 관리한다
  */
 @Controller("/mbr")
-@ApiTags("Mbr")
+@ApiTags("Member")
 export class MbrController {
   constructor(
     private readonly authService: AuthService,
