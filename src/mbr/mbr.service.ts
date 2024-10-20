@@ -69,6 +69,7 @@ export class MbrService {
         await entityManager.insert(MbrLogEntity, {
           mbrId: resultCreateMbr.id,
           logType: "C",
+          createdBy: resultCreateMbr.id,
         });
 
         return resultCreateMbr;
@@ -100,6 +101,7 @@ export class MbrService {
         await entityManager.insert(MbrLogEntity, {
           mbrId: joinMbrDto.mbr.id,
           logType: "J",
+          createdBy: joinMbrDto.mbr.id,
         });
 
         return resultCreateMbr;
@@ -117,10 +119,20 @@ export class MbrService {
    * @returns
    * @param upsertMbrDto
    */
-  updateMbr(upsertMbrDto: UpsertMbrDto): Promise<UpdateResult> {
+  updateMbr(
+    upsertMbrDto: UpsertMbrDto,
+    tokenMbrId: string
+  ): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
         const { id, ...updateData } = upsertMbrDto;
+
+        if (tokenMbrId !== id) {
+          throw new HttpException(
+            "수정 권한이 없습니다.",
+            HttpStatus.UNAUTHORIZED
+          );
+        }
 
         // Mbr 수정
         const resultCreateMbr = await entityManager.update(
@@ -133,6 +145,7 @@ export class MbrService {
         await entityManager.insert(MbrLogEntity, {
           mbrId: id,
           logType: "U",
+          createdBy: tokenMbrId,
         });
 
         return resultCreateMbr;
@@ -172,7 +185,7 @@ export class MbrService {
    * 회원 정지
    * @param mbrId
    */
-  async blockMbr(mbrId: string): Promise<UpdateResult> {
+  async blockMbr(mbrId: string, tokenMbrId: string): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
         // Mbr 수정
@@ -186,6 +199,7 @@ export class MbrService {
         await entityManager.insert(MbrLogEntity, {
           mbrId: mbrId,
           logType: "B",
+          createdBy: tokenMbrId,
         });
 
         return resultCreateMbr;
@@ -202,7 +216,7 @@ export class MbrService {
    * 회원 탈퇴
    * @param mbrId
    */
-  async withdrawMbr(mbrId: string): Promise<UpdateResult> {
+  async withdrawMbr(mbrId: string, tokenMbrId: string): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
         // Mbr 수정
@@ -216,6 +230,7 @@ export class MbrService {
         await entityManager.insert(MbrLogEntity, {
           mbrId: mbrId,
           logType: "Q",
+          createdBy: tokenMbrId,
         });
 
         return resultCreateMbr;
@@ -232,7 +247,7 @@ export class MbrService {
    * 회원 복구
    * @param mbrId
    */
-  async recoverMbr(mbrId: string): Promise<UpdateResult> {
+  async recoverMbr(mbrId: string, tokenMbrId: string): Promise<UpdateResult> {
     return this.entityManager.transaction(async (entityManager) => {
       try {
         // Mbr 수정
@@ -246,6 +261,7 @@ export class MbrService {
         await entityManager.insert(MbrLogEntity, {
           mbrId: mbrId,
           logType: "R",
+          createdBy: tokenMbrId,
         });
 
         return resultCreateMbr;
@@ -280,6 +296,7 @@ export class MbrService {
         await entityManager.insert(MbrLogEntity, {
           mbrId: mbrId,
           logType: "P",
+          createdBy: mbrId,
         });
 
         return resultCreateMbr;

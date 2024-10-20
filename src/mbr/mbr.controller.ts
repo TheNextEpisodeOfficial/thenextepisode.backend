@@ -6,7 +6,8 @@ import {
   Post,
   Query,
   Req,
-  Res, UseGuards,
+  Res,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiBody,
@@ -22,7 +23,7 @@ import { InsertResult, UpdateResult } from "typeorm";
 import { JoinMbrDto, UpsertMbrAgreeDto, UpsertMbrDto } from "./dtos/mbr.dto";
 import axios from "axios";
 import { AuthService } from "@src/auth/auth.service";
-import {JwtAuthGuard} from "@src/auth/jwtAuth.guard";
+import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
 
 /**
  * MbrController : 회원 API를 관리한다
@@ -77,6 +78,7 @@ export class MbrController {
    * @returns
    */
   @Post("/updateMbr")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "회원 정보 수정",
     description: "회원의 정보를 수정한다.",
@@ -85,8 +87,12 @@ export class MbrController {
     description: "회원의 정보를 수정한다.",
     type: null,
   })
-  async updateMbr(@Body() mbr: UpsertMbrDto): Promise<UpdateResult> {
-    return this.mbrService.updateMbr(mbr);
+  async updateMbr(
+    @Body() mbr: UpsertMbrDto,
+    @Req() req
+  ): Promise<UpdateResult> {
+    const tokenMbrId = req.user.id;
+    return this.mbrService.updateMbr(mbr, tokenMbrId);
   }
 
   /**
@@ -95,6 +101,7 @@ export class MbrController {
    * @returns
    */
   @Post("/blockMbr")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "회원 차단",
     description: "회원를 차단한다.",
@@ -113,8 +120,12 @@ export class MbrController {
       },
     },
   })
-  async blockMbr(@Body("mbrId") mbrId: string): Promise<UpdateResult> {
-    return this.mbrService.blockMbr(mbrId);
+  async blockMbr(
+    @Body("mbrId") mbrId: string,
+    @Req() req
+  ): Promise<UpdateResult> {
+    const tokenMbrId = req.user.id;
+    return this.mbrService.blockMbr(mbrId, tokenMbrId);
   }
 
   /**
@@ -123,6 +134,7 @@ export class MbrController {
    * @returns
    */
   @Post("/withdrawMbr")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "회원 탈퇴",
     description: "회원를 탈퇴한다.",
@@ -141,8 +153,12 @@ export class MbrController {
       },
     },
   })
-  async withdrawMbr(@Body("mbrId") mbrId: string): Promise<UpdateResult> {
-    return this.mbrService.withdrawMbr(mbrId);
+  async withdrawMbr(
+    @Body("mbrId") mbrId: string,
+    @Req() req
+  ): Promise<UpdateResult> {
+    const tokenMbrId = req.user.id;
+    return this.mbrService.withdrawMbr(mbrId, tokenMbrId);
   }
 
   /**
@@ -151,6 +167,7 @@ export class MbrController {
    * @returns
    */
   @Post("/recoverMbr")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "회원 복구",
     description: "회원를 복구한다.",
@@ -169,8 +186,11 @@ export class MbrController {
       },
     },
   })
-  async recoverMbr(@Body("mbrId") mbrId: string): Promise<UpdateResult> {
-    return this.mbrService.recoverMbr(mbrId);
+  async recoverMbr(
+    @Body("mbrId") mbrId: string,
+    @Req() req
+  ): Promise<UpdateResult> {
+    return this.mbrService.recoverMbr(mbrId, req.user.id);
   }
 
   /**
