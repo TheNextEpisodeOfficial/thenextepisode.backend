@@ -1,4 +1,9 @@
-import {HttpException, HttpStatus, Injectable, UnauthorizedException} from "@nestjs/common";
+import {
+  HttpException,
+  HttpStatus,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import {
   EntityManager,
@@ -21,9 +26,10 @@ import { logger } from "@src/util/logger";
 import { getBttlOptTit } from "@src/util/system";
 import dayjs from "dayjs";
 import { OrdItemEntity } from "@src/ordItem/entities/ordItem.entity";
-import {BttlrEntity} from "@src/bttlr/entities/bttlr.entity";
-import {BttlTeamEntity} from "@src/bttlTeam/entities/bttlTeam.entity";
-import {AdncEntity} from "@src/adnc/entities/adnc.entity";
+import { BttlrEntity } from "@src/bttlr/entities/bttlr.entity";
+import { BttlTeamEntity } from "@src/bttlTeam/entities/bttlTeam.entity";
+import { AdncEntity } from "@src/adnc/entities/adnc.entity";
+import { FavEntity } from "@src/fav/entities/fav.entity";
 
 @Injectable()
 export class PlnService {
@@ -46,6 +52,8 @@ export class PlnService {
     private readonly s3FileRepository: Repository<FileEntity>,
     @InjectRepository(OrdItemEntity)
     private readonly ordItemRepository: Repository<OrdItemEntity>,
+    @InjectRepository(FavEntity)
+    private readonly favRepository: Repository<FavEntity>,
     private readonly entityManager: EntityManager
   ) {}
 
@@ -178,6 +186,15 @@ export class PlnService {
     }
   }
 
+  private async addIsFav(pln: PlnEntity): Promise<void> {
+    if (pln.mbrId) {
+      const isFav = await this.favRepository.findOne({
+        where: { plnId: pln.id, mbrId: pln.mbrId, delYn: "N" },
+      });
+      pln.isFav = isFav ? true : false;
+    }
+  }
+
   /**
    * 플랜 id로 입장 옵션을 조회한다.
    * @param pln
@@ -220,6 +237,7 @@ export class PlnService {
       this.addPlnImgs(pln),
       this.addBttlOpt(pln),
       this.addAdncOpt(pln),
+      this.addIsFav(pln),
     ]).finally(() => logger.log("end", "getPlnDtlById :: 플랜 상세 가져오기"));
     return pln;
   }
@@ -233,21 +251,21 @@ export class PlnService {
 
     if (bttlOpt && bttlOpt.length) {
       // bttlOpt 배열에서 id만 추출
-      const bttlOptIds = bttlOpt.map(opt => opt.id); // opt에서 id만 가져옴
+      const bttlOptIds = bttlOpt.map((opt) => opt.id); // opt에서 id만 가져옴
 
       // IN 절을 사용하여 bttlOptId가 포함된 데이터를 조회
       const bttlTeamList = await this.bttlTeamRepository.find({
         where: {
           bttlOptId: In(bttlOptIds),
-          delYn: 'N'
+          delYn: "N",
         },
-        relations: ['bttlr']  // 하위 bttlr 엔티티를 함께 조회
+        relations: ["bttlr"], // 하위 bttlr 엔티티를 함께 조회
       });
 
       // 각 bttlTeamAndBttlr에 대해 title 설정
-      bttlTeamList.forEach(bttlTeam => {
+      bttlTeamList.forEach((bttlTeam) => {
         // bttlOptId에 맞는 opt 객체를 찾음
-        const opt = bttlOpt.find(o => o.id === bttlTeam.bttlOptId);
+        const opt = bttlOpt.find((o) => o.id === bttlTeam.bttlOptId);
 
         // opt가 존재하면 getBttlOptTit(opt) 실행 후 title 설정
         if (opt) {
@@ -268,23 +286,23 @@ export class PlnService {
 
     if (adncOpt && adncOpt.length) {
       // adncOpt 배열에서 id만 추출
-      const adncOptIds = adncOpt.map(opt => opt.id); // opt에서 id만 가져옴
+      const adncOptIds = adncOpt.map((opt) => opt.id); // opt에서 id만 가져옴
 
       // IN 절을 사용하여 adncOptId가 포함된 데이터를 조회
       const adncList = await this.adncRepository.find({
         where: {
           adncOptId: In(adncOptIds),
-          delYn: 'N'
-        }
+          delYn: "N",
+        },
       });
 
-      adncList.forEach(adnc => {
+      adncList.forEach((adnc) => {
         // adncOptId에 맞는 opt 객체를 찾음
-        const opt = adncOpt.find(o => o.id === adnc.adncOptId);
+        const opt = adncOpt.find((o) => o.id === adnc.adncOptId);
 
         // opt가 존재하면 adnc의 option title 설정
         if (opt) {
-          adnc.optTit = opt.optNm
+          adnc.optTit = opt.optNm;
         }
       });
 
@@ -301,12 +319,14 @@ export class PlnService {
   async getPlndPlnDtlById(plnId: string, mbrId: string): Promise<PlnEntity> {
     logger.log("start", "getPlndPlnDtlById :: 기획한 플랜 상세 가져오기");
     const pln = await this.plnRepository
-        .createQueryBuilder('pln')
-        .addSelect('pln.createdBy')
-        .where('pln.id = :plnId', { plnId })
-        .getOne();
-    if(pln.createdBy != mbrId) {
-      throw new UnauthorizedException("해당 플랜을 기획한 플래너만 조회가 가능합니다.");
+      .createQueryBuilder("pln")
+      .addSelect("pln.createdBy")
+      .where("pln.id = :plnId", { plnId })
+      .getOne();
+    if (pln.createdBy != mbrId) {
+      throw new UnauthorizedException(
+        "해당 플랜을 기획한 플래너만 조회가 가능합니다."
+      );
     }
     if (!pln) {
       throw new HttpException("플랜을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
@@ -317,12 +337,13 @@ export class PlnService {
       this.addPlnImgs(pln),
       this.addBttlOpt(pln),
       this.addAdncOpt(pln),
-    ]).then(async() => {
-      await Promise.all([
-        this.addBttlrList(pln),
-        this.addAdncList(pln),
-      ])
-    }).finally(() => logger.log("end", "getPlndPlnDtlById :: 기획한 플랜 상세 가져오기"));
+    ])
+      .then(async () => {
+        await Promise.all([this.addBttlrList(pln), this.addAdncList(pln)]);
+      })
+      .finally(() =>
+        logger.log("end", "getPlndPlnDtlById :: 기획한 플랜 상세 가져오기")
+      );
     return pln;
   }
 
@@ -348,7 +369,12 @@ export class PlnService {
             HttpStatus.BAD_REQUEST
           );
         }
-        await this.insertBttlOpts(pln.bttlOpt, insertedPln.id, pln.createdBy, entityManager);
+        await this.insertBttlOpts(
+          pln.bttlOpt,
+          insertedPln.id,
+          pln.createdBy,
+          entityManager
+        );
 
         if (!pln.adncOpt.length) {
           throw new HttpException(
@@ -358,13 +384,21 @@ export class PlnService {
         }
         await entityManager.insert(
           AdncOptEntity,
-          pln.adncOpt.map((opt) => ({ ...opt, plnId: insertedPln.id, createdBy: pln.createdBy }))
+          pln.adncOpt.map((opt) => ({
+            ...opt,
+            plnId: insertedPln.id,
+            createdBy: pln.createdBy,
+          }))
         );
 
         if (pln.plnImgs.length) {
           await entityManager.insert(
             FileEntity,
-            pln.plnImgs.map((img) => ({ ...img, fileGrpId, createdBy: pln.createdBy }))
+            pln.plnImgs.map((img) => ({
+              ...img,
+              fileGrpId,
+              createdBy: pln.createdBy,
+            }))
           );
         }
 
@@ -399,14 +433,14 @@ export class PlnService {
         const insertedBttlOpt = await entityManager.insert(BttlOptEntity, {
           ...bttlOpt,
           plnId,
-          createdBy: createdBy
+          createdBy: createdBy,
         });
         await Promise.all(
           bttlOpt.bttlOptRole.map(async (role) => {
             await entityManager.insert(BttlOptRoleEntity, {
               ...role,
               bttlOptId: insertedBttlOpt.generatedMaps[0].id,
-              createdBy: createdBy
+              createdBy: createdBy,
             });
           })
         );

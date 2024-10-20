@@ -17,6 +17,7 @@ import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { UpdateResult } from "typeorm";
 import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
+import { UpsertCartDto } from "@src/cart/dtos/cart.dto";
 /**
  * CartController : 회원 API를 관리한다
  */
@@ -38,12 +39,12 @@ export class CartController {
   })
   @ApiCreatedResponse({
     description: "장바구니에 상품을 추가/업데이트 한다.",
-    type: CartEntity,
+    type: UpsertCartDto,
   })
   async upsertCart(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @Body() cartEntity: CartEntity
+    @Body() cartEntity: UpsertCartDto
   ): Promise<UpdateResult> {
     cartEntity.mbrId = req.user.id;
     return this.cartService.upsertCart(cartEntity, req.user.id);

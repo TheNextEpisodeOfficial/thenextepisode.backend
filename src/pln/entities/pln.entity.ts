@@ -131,4 +131,6 @@ export class PlnEntity extends CommonEntity {
   bttlTeamList?: BttlTeamEntity[]; // 기획한 플랜 상세에서 배틀 팀 리스트 조회
 
   adncList?: AdncEntity[]; // 기획한 플랜 상세에서 관객 리스트 조회
+
+  isFav?: boolean; // 찜 여부
 }
