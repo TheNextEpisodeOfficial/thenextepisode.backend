@@ -1,4 +1,8 @@
-import {ForbiddenException, Injectable, UnauthorizedException} from "@nestjs/common";
+import {
+  ForbiddenException,
+  Injectable,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { MbrService } from "@src/mbr/mbr.service";
 import * as jwt from "jsonwebtoken";
 import { SocialUserAfterAuth } from "./auth.decorator";
@@ -39,6 +43,7 @@ export class AuthService {
         acntPltfrm: flatform,
         lstLgnTm: new Date(),
         mbrSttCd: 0,
+        createdBy: "system",
       });
     }
 
@@ -51,21 +56,15 @@ export class AuthService {
   }
 
   async generateNewToken(user: IJwtPayload) {
-    const accessToken = this.jwtService.sign(
-      user,
-      {
-        secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-        expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
-      }
-    );
+    const accessToken = this.jwtService.sign(user, {
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+      expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRATION_TIME,
+    });
 
-    const refreshToken = this.jwtService.sign(
-      user,
-      {
-        secret: process.env.JWT_REFRESH_TOKEN_SECRET,
-        expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
-      }
-    );
+    const refreshToken = this.jwtService.sign(user, {
+      secret: process.env.JWT_REFRESH_TOKEN_SECRET,
+      expiresIn: process.env.JWT_REFRESH_TOKEN_EXPIRATION_TIME,
+    });
 
     // TODO: redis에 key(mbrId), value(refreshToken) 저장 로직 구현
 
@@ -88,27 +87,29 @@ export class AuthService {
       const mbrAgree = await this.mbrService.getMbrAgree(user.id);
 
       // S : 필수 약관 동의 여부
-      const invalidPolicy = (
-          mbrAgree.termsAcceptYn === "N" ||
-          mbrAgree.privacyAcceptYn === "N" ||
-          mbrAgree.advertisementYn === "N"
-      )
+      const invalidPolicy =
+        mbrAgree.termsAcceptYn === "N" ||
+        mbrAgree.privacyAcceptYn === "N" ||
+        mbrAgree.advertisementYn === "N";
       // E : 필수 약관 동의 여부
 
       // 새로운 액세스 토큰 생성
-      const newAccessToken = this.jwtService.sign({
-        id: user.id,
-        invalidPolicy: invalidPolicy,
-        mbrSttCd: user.mbrSttCd
-      }, {
-        secret: process.env.JWT_ACCESS_TOKEN_SECRET,
-        expiresIn: '1h', // 필요에 따라 만료 시간 설정
-      });
+      const newAccessToken = this.jwtService.sign(
+        {
+          id: user.id,
+          invalidPolicy: invalidPolicy,
+          mbrSttCd: user.mbrSttCd,
+        },
+        {
+          secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+          expiresIn: "1h", // 필요에 따라 만료 시간 설정
+        }
+      );
 
       return newAccessToken;
     } catch (error) {
       // 토큰 만료 여부 확인
-      if (error.name === 'TokenExpiredError') {
+      if (error.name === "TokenExpiredError") {
         throw new ForbiddenException("토큰이 만료되었습니다."); // 403 오류
       } else {
         throw new UnauthorizedException("리프레시 토큰 검증 실패."); // 기타 오류 처리
@@ -137,14 +138,14 @@ export class AuthService {
           throw new UnauthorizedException("회원 상태가 유효하지 않습니다.");
       }
       return {
-        message: '회원 상태가 유효하지 않습니다.',
-        redirectPath: redirectPath
-      }
+        message: "회원 상태가 유효하지 않습니다.",
+        redirectPath: redirectPath,
+      };
     } else {
       return {
-        message: '유저 상태 정상',
-        redirectPath: null
-      }
+        message: "유저 상태 정상",
+        redirectPath: null,
+      };
     }
     // E : 회원 상태 유효성 체크
   }

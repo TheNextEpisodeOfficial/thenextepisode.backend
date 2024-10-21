@@ -19,7 +19,7 @@ import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
  * TcktController : 티켓 API를 관리한다
  */
 @Controller("/tckt")
-@ApiTags("Tckt")
+@ApiTags("Ticket")
 export class TcktController {
   constructor(private readonly tcktService: TcktService) {}
   /**
@@ -52,6 +52,7 @@ export class TcktController {
    * S : getTcktDtlById
    */
   @Get("/getTcktDtlById")
+  @UseGuards(JwtAuthGuard)
   @ApiOperation({
     summary: "티켓 아이디로 티켓 상세 조회",
     description: "티켓 아이디를 기준으로 티켓 상세정보를 가져온다.",
@@ -67,11 +68,12 @@ export class TcktController {
     type: String,
   })
   async getTcktDtlById(
+    @Req() req,
     @Query("tcktId") tcktId: string,
     @I18n() i18n: I18nContext
   ) {
     try {
-      const tcktDtl = await this.tcktService.getTcktDtlById(tcktId);
+      const tcktDtl = await this.tcktService.getTcktDtlById(req.user.id, tcktId);
       return tcktDtl;
     } catch (err) {
       return err;

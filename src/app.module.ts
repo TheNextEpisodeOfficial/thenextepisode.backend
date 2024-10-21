@@ -16,6 +16,7 @@ import { AdncModule } from "./adnc/adnc.module";
 import { OrdModule } from "./ord/ord.module";
 import { TcktModule } from "./tckt/tckt.module";
 import { CartModule } from "@src/cart/cart.module";
+import { FavModule } from "@src/fav/fav.module";
 
 @Module({
   imports: [
@@ -25,6 +26,7 @@ import { CartModule } from "@src/cart/cart.module";
     BttlModule,
     BttlOptRolebModule,
     CartModule,
+    FavModule,
     MbrModule,
     CelebModule,
     AdncModule,

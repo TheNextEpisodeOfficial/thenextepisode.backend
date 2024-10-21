@@ -14,7 +14,7 @@ import { MbrService } from "@src/mbr/mbr.service";
  * BttlOptRoleController : 배틀 옵션으로 등록되는 DJ, MC, JUDGE 를 관리한다.
  */
 @Controller("/bttlOptRole")
-@ApiTags("BttlOptRole")
+@ApiTags("Battle Option Role")
 export class BttlOptRoleController {
   constructor(
     private readonly celebService: CelebService,
