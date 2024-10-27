@@ -123,7 +123,7 @@ export class PlnEntity extends CommonEntity {
   @ApiProperty({ type: [FileEntity], required: false })
   plnImgs: FileEntity[];
 
-  @ManyToOne(() => FavEntity, (fav) => fav.pln)
+  @OneToMany(() => FavEntity, (fav) => fav.pln)
   fav: FavEntity;
 
   thumb: string;

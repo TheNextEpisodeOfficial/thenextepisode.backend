@@ -7,6 +7,7 @@ import { InsertFavDto } from "@src/fav/dtos/fav.dto";
 
 export interface IFav {
   id: string;
+  plnId: string;
   plnNm: string;
   plnDt: string;
   plnStTm: string;
@@ -25,7 +26,7 @@ export class FavService {
   ) {}
 
   /**
-   * 나의 장바구니 리스트 조회
+   * 관심있는 리스트 조회
    * @param mbrId
    */
   async getFavList(mbrId): Promise<IFav[]> {
@@ -35,6 +36,7 @@ export class FavService {
         .select([
           "fav.id AS id",
           "fav.createdAt AS created_at",
+          "pln.id AS pln_id",
           "pln.plnDt AS pln_dt",
           "pln.plnStTm AS pln_st_tm",
           "pln.plnEndTm AS pln_end_tm",
@@ -59,7 +61,7 @@ export class FavService {
   }
 
   /**
-   * 찜한 상품 추가
+   * 관심있는 플랜 추가
    * @param FavEntity
    * @param mbrId
    */
@@ -68,6 +70,17 @@ export class FavService {
     mbrId: string
   ): Promise<InsertResult> {
     try {
+      const existItem = this.favRepository.findOne({
+        where: { plnId: favDto.plnId, mbrId: mbrId, delYn: "N" },
+      });
+
+      if (existItem) {
+        throw new HttpException(
+          "이미 관심있는 플랜에 등록되어있습니다.",
+          HttpStatus.BAD_REQUEST
+        );
+      }
+
       return this.favRepository.insert(favDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -75,7 +88,7 @@ export class FavService {
   }
 
   /**
-   * 찜한 상품 삭제
+   * 관심있는 풀랸 삭제
    * @param id
    */
   async deleteFavById(favId, mbrId) {

@@ -29,7 +29,7 @@ export class FavEntity extends CommonEntity {
   })
   plnId: string;
 
-  @OneToMany(() => PlnEntity, (pln) => pln.fav)
+  @ManyToOne(() => PlnEntity, (pln) => pln.fav)
   @JoinColumn({ name: "pln_id" })
   pln: PlnEntity;
 }
