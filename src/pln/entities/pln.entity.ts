@@ -107,7 +107,7 @@ export class PlnEntity extends CommonEntity {
     type: "varchar",
     length: 1,
     comment: "오픈 승인 여부",
-    default: "N",
+    nullable: true,
   })
   opnAprvYn;
 
@@ -118,6 +118,15 @@ export class PlnEntity extends CommonEntity {
     nullable: true,
   })
   opnAprvAt;
+
+  @ApiProperty({ type: String, required: true, default: "오픈 승인 일시" })
+  @Column({
+    type: "varchar",
+    length: 100,
+    comment: "오픈 반려 사유",
+    nullable: true,
+  })
+  opnRjctMsg;
 
   @ApiProperty({ type: String, required: true, default: "유튜브 채널 url" })
   @Column({
