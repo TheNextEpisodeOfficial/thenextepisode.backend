@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import {Brackets, Repository, UpdateResult} from "typeorm";
+import { Brackets, Repository, UpdateResult } from "typeorm";
 import { CartEntity } from "./entities/cart.entity";
 import { objectToCamel } from "ts-case-convert";
 import { getBttlOptTit } from "@src/util/system";
@@ -56,8 +56,18 @@ export class CartService {
         .leftJoin("adncOpt.pln", "adncPln")
         .leftJoin("cart.bttlOpt", "bttlOpt")
         .leftJoin("bttlOpt.pln", "bttlPln")
-        .leftJoin("bttlPln.file", "bttlFile", "bttlFile.fileTypeCd = :fileTypeCd", { fileTypeCd: "THUMB_MN" })
-        .leftJoin("adncPln.file", "adncFile", "adncFile.fileTypeCd = :fileTypeCd", { fileTypeCd: "THUMB_MN" })
+        .leftJoin(
+          "bttlPln.file",
+          "bttlFile",
+          "bttlFile.fileTypeCd = :fileTypeCd",
+          { fileTypeCd: "THUMB_MN" }
+        )
+        .leftJoin(
+          "adncPln.file",
+          "adncFile",
+          "adncFile.fileTypeCd = :fileTypeCd",
+          { fileTypeCd: "THUMB_MN" }
+        )
         .where("cart.mbrId = :mbrId", { mbrId })
         .andWhere("cart.delYn = :delYn", { delYn: "N" })
         .orderBy("cart.createdAt", "DESC")
@@ -84,27 +94,27 @@ export class CartService {
     }
   }
 
-  async deleteCart(
-    cartId: string,
-    tokenMbrId: string
-  ) {
+  async deleteCart(cartId: string, tokenMbrId: string) {
     const existItem = await this.cartRepository.findOne({
       where: {
-        id: cartId
-      }
+        id: cartId,
+      },
     });
-    if(existItem) {
-      if(existItem.mbrId != tokenMbrId) {
+    if (existItem) {
+      if (existItem.mbrId != tokenMbrId) {
         throw new HttpException(
-            '장바구니 삭제 권한이 없습니다.',
-            HttpStatus.UNAUTHORIZED
+          "장바구니 삭제 권한이 없습니다.",
+          HttpStatus.UNAUTHORIZED
         );
       }
-      return this.cartRepository.update({
-        id: cartId
-      }, {
-        delYn: 'Y'
-      })
+      return this.cartRepository.update(
+        {
+          id: cartId,
+        },
+        {
+          delYn: "Y",
+        }
+      );
     }
   }
 
@@ -167,7 +177,6 @@ export class CartService {
           return this.updateCart(entityManager, cartDto, existItem, mbrId);
           // E : 중복된 bttlOptId나 adncOptId가 있으면 update
         } else {
-
           // 아이템 갯수 유효성 체크
           await this.validateCartItemQty(cartDto);
 
@@ -207,18 +216,18 @@ export class CartService {
   async validateCartItemQty(cartDto) {
     if (!cartDto.qty || cartDto.qty === 0) {
       throw new HttpException(
-          "장바구니 상품의 갯수는 0개일 수 없습니다.",
-          HttpStatus.BAD_REQUEST
+        "장바구니 상품의 갯수는 0개일 수 없습니다.",
+        HttpStatus.BAD_REQUEST
       );
     } else if (cartDto.bttlOptId && cartDto.qty > this.MAX_BTTL_TCKT_CNT) {
       throw new HttpException(
-          `참가 상품의 갯수는 ${this.MAX_BTTL_TCKT_CNT}개를 초과할 수 없습니다.`,
-          HttpStatus.BAD_REQUEST
+        `참가 상품의 갯수는 ${this.MAX_BTTL_TCKT_CNT}개를 초과할 수 없습니다.`,
+        HttpStatus.BAD_REQUEST
       );
     } else if (cartDto.adncOptId && cartDto.qty > this.MAX_ADNC_TCKT_CNT) {
       throw new HttpException(
-          `입장 상품의 갯수는 ${this.MAX_ADNC_TCKT_CNT}개를 초과할 수 없습니다.`,
-          HttpStatus.BAD_REQUEST
+        `입장 상품의 갯수는 ${this.MAX_ADNC_TCKT_CNT}개를 초과할 수 없습니다.`,
+        HttpStatus.BAD_REQUEST
       );
     }
   }
@@ -226,32 +235,8 @@ export class CartService {
   async updateCart(entityManager, cartDto, existItem, mbrId) {
     // S : 장바구니 유효성 체크
     if (cartDto.delYn != "Y") {
-      // deleteCart API 가 아니면
-      if (
-        (existItem.bttlOptId && existItem.qty >= this.MAX_BTTL_TCKT_CNT) ||
-        (existItem.adncOptId && existItem.qty >= this.MAX_ADNC_TCKT_CNT)
-      ) {
-        throw new HttpException(
-          "이미 최대수량만큼 장바구니에 담겨있습니다.",
-          HttpStatus.BAD_REQUEST
-        );
-      }
-
-      // 의도적인 업데이트가 아니고 관객 옵션 상품을 더 추가할 수 있는 경우
-      if (
-        !cartDto.consciousUpdate &&
-        existItem.adncOptId &&
-        existItem.qty < this.MAX_ADNC_TCKT_CNT
-      ) {
-        throw new HttpException(
-          {
-            message:
-              "해당 상품이 이미 장바구니에 존재합니다. 수량을 추가할까요?",
-            currentQty: existItem.qty,
-          },
-          HttpStatus.UNPROCESSABLE_ENTITY
-        );
-      }
+      cartDto.adncOptId = existItem.adncOptId;
+      cartDto.bttlOptId = existItem.bttlOptId;
 
       // 아이템 갯수 유효성 체크
       await this.validateCartItemQty(cartDto);
@@ -261,15 +246,12 @@ export class CartService {
     return await entityManager.update(
       CartEntity,
       {
-        id: cartDto.id,
+        id: existItem.id,
       },
       {
-        ...existItem,
-        bttlOptId: cartDto.bttlOptId,
-        adncOptId: cartDto.adncOptId,
         qty: cartDto.qty,
         updatedBy: mbrId,
-        delYn: existItem.delYn || cartDto.delYn,
+        delYn: cartDto.delYn || existItem.delYn,
       }
     );
   }
