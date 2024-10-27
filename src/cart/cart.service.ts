@@ -18,7 +18,7 @@ export interface ICart {
   bttlMbrCnt: number;
   plnNm: string;
   thumb: string;
-  optFee: number;
+  optFee: number | string;
   itemAmt: number;
 }
 
@@ -86,6 +86,7 @@ export class CartService {
           });
         }
 
+        cart.optFee = parseFloat(String(cart.optFee));
         cart.itemAmt = cart.qty * cart.optFee;
 
         delete cart.bttlGnrCd;
