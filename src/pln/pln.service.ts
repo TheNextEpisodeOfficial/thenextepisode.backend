@@ -554,6 +554,11 @@ export class PlnService {
     });
     if (!pln) {
       throw new HttpException("플랜을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    } else if (pln.opnYn === "Y") {
+      throw new HttpException(
+        "이미 오픈된 신청된 플랜입니다.",
+        HttpStatus.BAD_REQUEST
+      );
     }
     pln.opnYn = "Y";
     pln.opnAt = new Date();

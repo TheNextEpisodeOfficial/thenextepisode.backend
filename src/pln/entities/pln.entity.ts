@@ -102,15 +102,6 @@ export class PlnEntity extends CommonEntity {
   })
   opnAt;
 
-  @ApiProperty({ type: String, required: true, default: "유튜브 채널 url" })
-  @Column({
-    type: "varchar",
-    length: 100,
-    comment: "유튜브 채널 url",
-    nullable: true,
-  })
-  ytbUrl;
-
   @ApiProperty({ type: String, required: true, default: "오픈 승인 여부" })
   @Column({
     type: "varchar",
@@ -127,6 +118,15 @@ export class PlnEntity extends CommonEntity {
     nullable: true,
   })
   opnAprvAt;
+
+  @ApiProperty({ type: String, required: true, default: "유튜브 채널 url" })
+  @Column({
+    type: "varchar",
+    length: 100,
+    comment: "유튜브 채널 url",
+    nullable: true,
+  })
+  ytbUrl;
 
   @ApiProperty({ type: String, required: true, default: "파일그룹 아이디" })
   @Column({
