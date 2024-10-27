@@ -222,13 +222,19 @@ export class PlnController {
   async openPln(
     @Req() req: Request,
     @Query("id") id: string
-  ): Promise<UpdateResult> {
+  ): Promise<ResponseDto<{ openPln: UpdateResult }>> {
     const mbrId = req.user.id;
     const existItem = await this.plnService.getPlndPlnDtlById(id, mbrId);
     if (existItem.createdBy !== mbrId) {
       throw new UnauthorizedException("해당 플랜의 오픈 권한이 없습니다.");
     }
-    return this.plnService.openPln(id);
+
+    const openPln = await this.plnService.openPln(id);
+    return new ResponseDto<{ openPln: UpdateResult }>({
+      status: 200,
+      data: { openPln: openPln },
+      message: "플랜 오픈 신청을 완료하였습니다.",
+    });
   }
   /**
    * E : openPln
