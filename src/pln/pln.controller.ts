@@ -234,6 +234,7 @@ export class PlnController {
       status: 200,
       data: { openPln: openPln },
       message: "플랜 오픈 신청을 완료하였습니다.",
+      isToast: true,
     });
   }
   /**
