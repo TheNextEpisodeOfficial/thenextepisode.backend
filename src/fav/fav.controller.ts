@@ -17,6 +17,7 @@ import { Request, Response } from "express";
 import { UpdateResult } from "typeorm";
 import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
 import { DeleteFavDto, InsertFavDto } from "@src/fav/dtos/fav.dto";
+import {ResponseDto} from "@src/types/response";
 /**
  * CartController : 회원 API를 관리한다
  */
@@ -44,10 +45,16 @@ export class FavController {
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
     @Body() insertFavDto: InsertFavDto
-  ): Promise<UpdateResult> {
+  ): Promise<ResponseDto<{fav: UpdateResult}>> {
     insertFavDto.mbrId = req.user.id;
     insertFavDto.createdBy = req.user.id;
-    return this.favService.insertFavById(insertFavDto, req.user.id);
+    const insertFav = await this.favService.insertFavById(insertFavDto, req.user.id)
+    return new ResponseDto<{ fav: UpdateResult }>({
+      status: 200,
+      data: { fav: insertFav },
+      message: "관심있는 플랜에 추가하였습니다.",
+      isToast: true,
+    });
   }
 
   /**

@@ -1,6 +1,6 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { InsertResult, Repository } from "typeorm";
+import {InsertResult, Repository, UpdateResult} from "typeorm";
 import { FavEntity } from "./entities/fav.entity";
 import { objectToCamel } from "ts-case-convert";
 import { InsertFavDto } from "@src/fav/dtos/fav.dto";
@@ -62,26 +62,26 @@ export class FavService {
 
   /**
    * 관심있는 플랜 추가
-   * @param FavEntity
+   * @param favDto
    * @param mbrId
    */
   async insertFavById(
     favDto: InsertFavDto,
     mbrId: string
-  ): Promise<InsertResult> {
+  ): Promise<InsertResult | UpdateResult> {
     try {
       const existItem = await this.favRepository.findOne({
-        where: { plnId: favDto.plnId, mbrId: mbrId, delYn: "N" },
+        where: { plnId: favDto.plnId, mbrId: mbrId },
       });
 
       if (existItem) {
-        throw new HttpException(
-          "이미 관심있는 플랜에 등록되어있습니다.",
-          HttpStatus.BAD_REQUEST
-        );
+        return this.favRepository.update({ id: existItem.id }, {
+          delYn: 'N'
+        })
+      } else {
+        return this.favRepository.insert(favDto);
       }
 
-      return this.favRepository.insert(favDto);
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
@@ -89,12 +89,13 @@ export class FavService {
 
   /**
    * 관심있는 풀랸 삭제
-   * @param id
+   * @param plnId
+   * @param mbrId
    */
-  async deleteFavById(favId, mbrId) {
+  async deleteFavById(plnId, mbrId) {
     try {
       const existItem = await this.favRepository.findOne({
-        where: { id: favId, delYn: "N" },
+        where: { plnId: plnId, mbrId: mbrId },
       });
       if (!existItem) {
         throw new HttpException(
