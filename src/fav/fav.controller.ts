@@ -59,19 +59,20 @@ export class FavController {
   @Post("/deleteFavById")
   @UseGuards(JwtAuthGuard)
   @ApiOperation({
-    summary: "장바구니 상품 삭제",
-    description: "장바구니에 상품을 논리 삭제한다.",
+    summary: "관심있는 플랜 삭제",
+    description: "관심있는 플랜을 id기준으로 논리 삭제한다.",
   })
   @ApiCreatedResponse({
-    description: "장바구니에 상품을 논리 삭제한다.",
+    description: "관심있는 플랜을 id기준으로 논리 삭제한다.",
     type: FavEntity,
   })
   async deleteFavById(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @Query("favId") favId: string
+    @Query("id") id: string
   ): Promise<UpdateResult> {
-    return this.favService.deleteFavById(favId, req.user.id);
+    const mbrId = req.user.id;
+    return this.favService.deleteFavById(id, mbrId);
   }
 
   /**

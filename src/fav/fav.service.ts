@@ -96,7 +96,7 @@ export class FavService {
       const existItem = await this.favRepository.findOne({
         where: { id: favId, delYn: "N" },
       });
-      if (existItem === undefined) {
+      if (!existItem) {
         throw new HttpException(
           "해당 찜한 플랜 데이터가 존재하지 않습니다.",
           HttpStatus.BAD_REQUEST
