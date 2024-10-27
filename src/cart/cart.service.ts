@@ -74,6 +74,7 @@ export class CartService {
         .where("cart.mbrId = :mbrId", { mbrId })
         .andWhere("cart.delYn = :delYn", { delYn: "N" })
         .orderBy("cart.createdAt", "DESC")
+        .addOrderBy("cart.id", "ASC")
         .getRawMany<ICart>();
 
       const cartList = objectToCamel(cartRawList);
