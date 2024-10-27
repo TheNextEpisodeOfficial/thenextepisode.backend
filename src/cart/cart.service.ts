@@ -37,10 +37,7 @@ export class CartService {
    * 나의 장바구니 리스트 조회
    * @param mbrId
    */
-  async getMyCartList(mbrId): Promise<{
-    itemList: ICart[];
-    totalAmt;
-  }> {
+  async getMyCartList(mbrId): Promise<ICart[]> {
     try {
       const cartRawList = await this.cartRepository
         .createQueryBuilder("cart")
@@ -80,7 +77,6 @@ export class CartService {
         .getRawMany<ICart>();
 
       const cartList = objectToCamel(cartRawList);
-      let totalAmt = 0;
       cartList.map((cart) => {
         if (!cart.optNm) {
           cart.optNm = getBttlOptTit({
@@ -91,17 +87,13 @@ export class CartService {
         }
 
         cart.itemAmt = cart.qty * cart.optFee;
-        totalAmt += cart.qty * cart.optFee;
 
         delete cart.bttlGnrCd;
         delete cart.bttlRule;
         delete cart.bttlMbrCnt;
       });
 
-      return {
-        itemList: cartList,
-        totalAmt: totalAmt,
-      };
+      return cartList;
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }
