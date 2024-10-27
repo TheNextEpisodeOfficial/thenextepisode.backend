@@ -70,7 +70,7 @@ export class FavService {
     mbrId: string
   ): Promise<InsertResult> {
     try {
-      const existItem = this.favRepository.findOne({
+      const existItem = await this.favRepository.findOne({
         where: { plnId: favDto.plnId, mbrId: mbrId, delYn: "N" },
       });
 
