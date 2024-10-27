@@ -12,6 +12,7 @@ import {
   In,
   Repository,
   SelectQueryBuilder,
+  UpdateResult,
 } from "typeorm";
 import { Pagination, paginate } from "nestjs-typeorm-paginate";
 import { randomUUID } from "crypto";
@@ -541,5 +542,22 @@ export class PlnService {
     } else {
       queryBuilder.orderBy("pln.createdAt", "DESC");
     }
+  }
+
+  /**
+   * 플랜을 오픈한다
+   * @param plnId
+   */
+  async openPln(plnId: string): Promise<UpdateResult> {
+    const pln = await this.plnRepository.findOne({
+      where: { id: plnId, delYn: "N" },
+    });
+    if (!pln) {
+      throw new HttpException("플랜을 찾을 수 없습니다.", HttpStatus.NOT_FOUND);
+    }
+    pln.opnYn = "Y";
+    pln.opnAt = new Date();
+
+    return this.plnRepository.update({ id: pln.id }, pln);
   }
 }

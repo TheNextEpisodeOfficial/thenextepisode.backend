@@ -5,7 +5,9 @@ import {
   HttpStatus,
   Post,
   Query,
-  Req, UnauthorizedException, UseGuards,
+  Req,
+  UnauthorizedException,
+  UseGuards,
 } from "@nestjs/common";
 import {
   ApiCreatedResponse,
@@ -17,13 +19,13 @@ import { PlnEntity } from "@src/pln/entities/pln.entity";
 import { PlnService } from "@src/pln/pln.service";
 import { SrchPlnDto } from "./dtos/pln.dto";
 import { Pagination } from "nestjs-typeorm-paginate";
-import { InsertResult } from "typeorm";
+import { InsertResult, UpdateResult } from "typeorm";
 import { I18n, I18nContext } from "nestjs-i18n";
 import { Request } from "express";
 import { ResponseDto } from "@src/types/response";
 import { JwtService } from "@nestjs/jwt";
 import * as process from "process";
-import {JwtAuthGuard} from "@src/auth/jwtAuth.guard";
+import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
 
 /**
  * PlnController : 플랜 API를 관리한다
@@ -59,7 +61,7 @@ export class PlnController {
     @Query("plnId") plnId: string,
     @I18n() i18n: I18nContext
   ) {
-    try{
+    try {
       // FIXME : guard에 걸릴 필요는 없으나 로그인에 따라 선택적으로 로직이 변경되는 경우 구현 필요
       let payload = {
         id: "",
@@ -72,12 +74,12 @@ export class PlnController {
 
       return await this.plnService.getPlnDtlById(plnId, payload.id);
     } catch (error) {
-      if (error.name === 'TokenExpiredError') {
+      if (error.name === "TokenExpiredError") {
         // 토큰 만료 예외를 명시적으로 던짐
-        throw new UnauthorizedException('액세스 토큰이 만료되었습니다.');
+        throw new UnauthorizedException("액세스 토큰이 만료되었습니다.");
       } else {
         // 그 외의 에러는 그대로 처리
-        return error
+        return error;
       }
     }
   }
@@ -105,9 +107,9 @@ export class PlnController {
     type: String,
   })
   async getPlndPlnDtlById(
-      @Req() req: Request,
-      @Query("plnId") plnId: string,
-      @I18n() i18n: I18nContext
+    @Req() req: Request,
+    @Query("plnId") plnId: string,
+    @I18n() i18n: I18nContext
   ) {
     const mbrId = req.user.id;
     return await this.plnService.getPlndPlnDtlById(plnId, mbrId);
@@ -131,9 +133,9 @@ export class PlnController {
     type: null,
   })
   async insertPln(
-      @Body() pln: PlnEntity,
-      @Req() req: Request
-      ): Promise<ResponseDto<InsertResult>> {
+    @Body() pln: PlnEntity,
+    @Req() req: Request
+  ): Promise<ResponseDto<InsertResult>> {
     try {
       pln.createdBy = req.user.id;
       let insertPlnResult = await this.plnService.insertPln(pln);
@@ -189,16 +191,46 @@ export class PlnController {
     type: PlnEntity,
   })
   async getPlndPln(
-      @Req() req: Request,
-      @Query() pln: SrchPlnDto
+    @Req() req: Request,
+    @Query() pln: SrchPlnDto
   ): Promise<Pagination<PlnEntity>> {
     const mbrId = req.user.id;
     return this.plnService.srchPln({
       ...pln,
-      createdBy: mbrId
+      createdBy: mbrId,
     });
   }
   /**
    * E : srchPln
+   */
+
+  /**
+   * S : openPln
+   * @param req
+   * @param pln
+   */
+  @Post("/openPln")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: "플랜 오픈",
+    description: "플랜을 오픈한다.",
+  })
+  @ApiCreatedResponse({
+    description: "플랜을 오픈한다.",
+    type: PlnEntity,
+  })
+  async openPln(
+    @Req() req: Request,
+    @Query("id") id: string
+  ): Promise<UpdateResult> {
+    const mbrId = req.user.id;
+    const existItem = await this.plnService.getPlndPlnDtlById(id, mbrId);
+    if (existItem.createdBy !== mbrId) {
+      throw new UnauthorizedException("해당 플랜의 오픈 권한이 없습니다.");
+    }
+    return this.plnService.openPln(id);
+  }
+  /**
+   * E : openPln
    */
 }
