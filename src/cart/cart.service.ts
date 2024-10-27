@@ -18,6 +18,8 @@ export interface ICart {
   bttlMbrCnt: number;
   plnNm: string;
   thumb: string;
+  optFee: number;
+  itemAmt: number;
 }
 
 @Injectable()
@@ -35,7 +37,10 @@ export class CartService {
    * 나의 장바구니 리스트 조회
    * @param mbrId
    */
-  async getMyCartList(mbrId): Promise<ICart[]> {
+  async getMyCartList(mbrId): Promise<{
+    itemList: ICart[];
+    totalAmt;
+  }> {
     try {
       const cartRawList = await this.cartRepository
         .createQueryBuilder("cart")
@@ -49,6 +54,7 @@ export class CartService {
           "bttlOpt.bttlRule AS bttl_rule",
           "bttlOpt.bttlMbrCnt AS bttl_mbr_cnt",
           "bttlOpt.id AS bttl_opt_id",
+          `COALESCE(adncOpt.optFee, bttlOpt.bttlRsvFee) AS opt_fee`,
           `COALESCE(adncPln.plnNm, bttlPln.plnNm) AS pln_nm`,
           `COALESCE(adncFile.fileNm, bttlFile.fileNm) AS thumb`,
         ])
@@ -74,6 +80,7 @@ export class CartService {
         .getRawMany<ICart>();
 
       const cartList = objectToCamel(cartRawList);
+      let totalAmt = 0;
       cartList.map((cart) => {
         if (!cart.optNm) {
           cart.optNm = getBttlOptTit({
@@ -83,12 +90,18 @@ export class CartService {
           });
         }
 
+        cart.itemAmt = cart.qty * cart.optFee;
+        totalAmt += cart.qty * cart.optFee;
+
         delete cart.bttlGnrCd;
         delete cart.bttlRule;
         delete cart.bttlMbrCnt;
       });
 
-      return cartList;
+      return {
+        itemList: cartList,
+        totalAmt: totalAmt,
+      };
     } catch (error) {
       throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
     }

@@ -109,7 +109,10 @@ export class CartController {
     description: "나의 장바구니 리스트를 조회한다.",
     type: CartEntity,
   })
-  async getMyCartList(@Req() req: Request): Promise<ICart[]> {
+  async getMyCartList(@Req() req: Request): Promise<{
+    itemList: ICart[];
+    totalAmt;
+  }> {
     return this.cartService.getMyCartList(req.user.id);
   }
 }
