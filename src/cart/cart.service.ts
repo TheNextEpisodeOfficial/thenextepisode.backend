@@ -45,6 +45,7 @@ export class CartService {
           "cart.id AS id",
           "cart.qty AS qty",
           "cart.createdAt AS created_at",
+          "cart.checkedYn AS checked_yn",
           "adncOpt.optNm AS opt_nm",
           "adncOpt.id AS adnc_opt_id",
           "bttlOpt.bttlGnrCd AS bttl_gnr_cd",
