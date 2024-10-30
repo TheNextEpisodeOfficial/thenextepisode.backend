@@ -7,3 +7,8 @@ export class UpsertCartDto extends UpsertCommonDto {
   consciousUpdate?: boolean;
   mbrId?: string;
 }
+
+export class UpdateCartCheckedBulkDto {
+  ids: Array<string>;
+  status: 'Y' | 'N';
+}

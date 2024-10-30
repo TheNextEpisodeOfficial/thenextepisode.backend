@@ -53,4 +53,12 @@ export class CartEntity extends CommonEntity {
   @ManyToOne(() => BttlOptEntity, (bttlOpt) => bttlOpt.cart)
   @JoinColumn({ name: "bttl_opt_id" })
   bttlOpt: BttlOptEntity[];
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "체크 여부",
+    default: 'Y'
+  })
+  checkedYn: string;
 }

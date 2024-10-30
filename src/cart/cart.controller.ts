@@ -17,7 +17,7 @@ import { Request, Response } from "express";
 import { SessionData } from "express-session";
 import { EntityManager, UpdateResult } from "typeorm";
 import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
-import { UpsertCartDto } from "@src/cart/dtos/cart.dto";
+import {UpdateCartCheckedBulkDto, UpsertCartDto} from "@src/cart/dtos/cart.dto";
 /**
  * CartController : 회원 API를 관리한다
  */
@@ -111,5 +111,23 @@ export class CartController {
   })
   async getMyCartList(@Req() req: Request): Promise<ICart[]> {
     return this.cartService.getMyCartList(req.user.id);
+  }
+
+  @Post("/updateCheckedBulk")
+  @UseGuards(JwtAuthGuard)
+  @ApiOperation({
+    summary: "장바구니 체크 여부 벌크 업데이트",
+    description: "장바구니 체크 여부를 벌크 업데이트 한다.",
+  })
+  @ApiCreatedResponse({
+    description: "장바구니 체크 여부를 벌크 업데이트 한다.",
+    type: CartEntity,
+  })
+  async updateCheckedBulk(
+      @Req() req: Request,
+      @Res({ passthrough: true }) res: Response,
+      @Body() updateCartCheckedBulk: UpdateCartCheckedBulkDto // 배열 입력
+  ): Promise<UpdateResult> {
+    return this.cartService.updateCheckedBulk(updateCartCheckedBulk, req.user.id);
   }
 }

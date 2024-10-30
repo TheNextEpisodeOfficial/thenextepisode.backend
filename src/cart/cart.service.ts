@@ -1,10 +1,10 @@
 import { HttpException, HttpStatus, Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
-import { Brackets, Repository, UpdateResult } from "typeorm";
+import { Brackets, Repository, UpdateResult, In } from "typeorm";
 import { CartEntity } from "./entities/cart.entity";
 import { objectToCamel } from "ts-case-convert";
 import { getBttlOptTit } from "@src/util/system";
-import { UpsertCartDto } from "@src/cart/dtos/cart.dto";
+import {UpdateCartCheckedBulkDto, UpsertCartDto} from "@src/cart/dtos/cart.dto";
 
 export interface ICart {
   id: string;
@@ -261,5 +261,30 @@ export class CartService {
         delYn: cartDto.delYn || existItem.delYn,
       }
     );
+  }
+
+  /**
+   * 체크박스 Y로 bulk update
+   */
+  async updateCheckedBulk (updateCartCheckedBulk: UpdateCartCheckedBulkDto, mbrId: string) {
+    const {ids, status} = updateCartCheckedBulk;
+    const existItems = await this.cartRepository.find({
+      where: {
+        id: In(ids)
+      }
+    })
+    if(status != 'Y' && status != 'N') {
+      throw new HttpException(`변경 상태는 Y나 N이어야 합니다.`, HttpStatus.BAD_REQUEST);
+    }
+    existItems.map((item) => {
+      if(item.mbrId != mbrId) {
+        throw new HttpException(`${item.id} 아이템에 대한 권한이 없습니다.`, HttpStatus.UNAUTHORIZED);
+      }
+    })
+    return this.cartRepository.update({
+      id: In(ids),
+    }, {
+      checkedYn: status
+    })
   }
 }
