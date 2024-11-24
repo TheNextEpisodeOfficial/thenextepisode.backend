@@ -24,6 +24,7 @@ import { getBttlOptTit } from "@src/util/system";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
 import { AdncOptEntity } from "@src/adncOpt/entities/adncOpt.entity";
 import { TcktEntity } from "@src/tckt/entities/tckt.entity";
+import { CartEntity } from "@src/cart/entities/cart.entity";
 
 @Injectable()
 export class OrdService {
@@ -39,7 +40,7 @@ export class OrdService {
    */
   async createOrdTimer(mbrId): Promise<InsertResult> {
     return this.entityManager.insert(OrdTimerEntity, {
-      createdBy: mbrId
+      createdBy: mbrId,
     });
   }
 
@@ -176,7 +177,7 @@ export class OrdService {
           entityManager,
           item,
           ordId,
-            ord.ordMbrId
+          ord.ordMbrId
         );
         const ordItemId = insertedOrdItem.generatedMaps[0].id;
 
@@ -213,6 +214,31 @@ export class OrdService {
             crntRsvCnt: () => `crnt_rsv_cnt + ${item.qty}`,
           }
         );
+
+        // S : 장바구니에 해당 옵션 상품이 있다면 삭제
+        const cartItem = entityManager.findOne(CartEntity, {
+          where: {
+            mbrId: ord.ordMbrId,
+            [item.adncOptId ? "adncOptId" : "bttlOptId"]:
+              item.adncOptId || item.bttlOptId,
+          },
+        });
+
+        if (cartItem) {
+          await entityManager.update(
+            CartEntity,
+            {
+              mbrId: ord.ordMbrId,
+              [item.adncOptId ? "adncOptId" : "bttlOptId"]:
+                item.adncOptId || item.bttlOptId,
+            },
+            {
+              delYn: "Y",
+              ordDoneFlag: "Y",
+            }
+          );
+        }
+        // E : 장바구니에 해당 옵션 상품이 있다면 삭제
       })
     );
   }
@@ -253,7 +279,7 @@ export class OrdService {
     return entityManager.insert(OrdItemEntity, {
       ...item,
       ordId,
-      createdBy: mbrId
+      createdBy: mbrId,
     });
   }
 
@@ -273,7 +299,7 @@ export class OrdService {
     const adncEntities = Array.from({ length: item.qty }, () => ({
       ...item.adnc[0],
       adncOptId: item.adncOptId,
-      createdBy: tcktHldMbrId
+      createdBy: tcktHldMbrId,
     }));
 
     const adncInsertResult = await entityManager.insert(
@@ -286,7 +312,7 @@ export class OrdService {
       ordItemId: ordItemId,
       adncId: adncId,
       tcktHldMbrId: tcktHldMbrId,
-      createdBy: tcktHldMbrId
+      createdBy: tcktHldMbrId,
     }));
 
     await this.tcktService.createTcktBulk(entityManager, tickets);
@@ -308,7 +334,7 @@ export class OrdService {
     const bttlTeamInsertResult = await entityManager.insert(BttlTeamEntity, {
       ...item.bttlTeam,
       bttlOptId: item.bttlOptId,
-      createdBy: tcktHldMbrId
+      createdBy: tcktHldMbrId,
     });
 
     if (!bttlTeamInsertResult) {
@@ -323,7 +349,7 @@ export class OrdService {
         const bttlrInsertResult = await entityManager.insert(BttlrEntity, {
           ...bttlr,
           bttlTeamId: bttlTeamInsertResult.generatedMaps[0].id,
-          createdBy: tcktHldMbrId
+          createdBy: tcktHldMbrId,
         });
 
         if (!bttlrInsertResult) {
