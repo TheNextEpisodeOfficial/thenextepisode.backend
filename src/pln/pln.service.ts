@@ -117,6 +117,7 @@ export class PlnService {
       }
     }
 
+    // 플랜 옵션 상태 설정
     if (maxRsvCnt - crntRsvCnt === 0) {
       // 최대 신청 팀수와 현재 신청 팀수가 같을 경우 매진
       opt.optSttCd = "SOLDOUT";
@@ -150,6 +151,7 @@ export class PlnService {
   private async addBttlOpt(pln: PlnEntity): Promise<void> {
     const bttlOpt = await this.bttlOptRepository.findBy({ plnId: pln.id });
     if (bttlOpt && bttlOpt.length > 0) {
+      // 배틀 옵션 아이디 조회
       const bttlOptIds = await Promise.all(
         bttlOpt.map(async (opt) => {
           await this.validReserveStt(opt, "bttl", pln.mbrId);
@@ -157,6 +159,7 @@ export class PlnService {
         })
       );
 
+      // 배틀 옵션 아이디로 배틀 옵션 역할 조회
       const bttlOptRoles = await this.bttlOptRoleRepository
         .createQueryBuilder("bor")
         .leftJoinAndSelect("bor.celeb", "c", "bor.role_celeb_id = c.id")
@@ -174,6 +177,7 @@ export class PlnService {
         ])
         .getMany();
 
+      // 배틀 옵션 역할을 bttlOptId로 그룹화
       const rolesGroupedByBttlOptId = bttlOptRoles.reduce((acc, role) => {
         if (!acc[role.bttlOptId]) {
           acc[role.bttlOptId] = [];
@@ -182,6 +186,7 @@ export class PlnService {
         return acc;
       }, {});
 
+      // 각 배틀 옵션에 역할 추가
       await Promise.all(
         bttlOpt.map(async (opt) => {
           opt.optTit = getBttlOptTit(opt);
@@ -192,6 +197,11 @@ export class PlnService {
     }
   }
 
+  /**
+   * 플랜에 즐겨찾기 여부를 추가한다
+   * @param pln
+   * @private
+   */
   private async addIsFav(pln: PlnEntity): Promise<void> {
     if (pln.mbrId) {
       const isFav = await this.favRepository.findOne({
