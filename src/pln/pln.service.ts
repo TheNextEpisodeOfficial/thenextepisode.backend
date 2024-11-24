@@ -106,11 +106,14 @@ export class PlnService {
         })
         .andWhere("ord.ordStt = 'PAID'");
 
-      const ordItemHistory = await queryBuilder.getOne();
-
-      // 예약 가능 매수를 계산
-      if (ordItemHistory) {
-        opt.rsvAbleCnt -= ordItemHistory.qty;
+      try {
+        const ordItemHistory = await queryBuilder.getOne();
+        // 예약 가능 매수를 계산
+        if (ordItemHistory) {
+          opt.rsvAbleCnt -= ordItemHistory.qty;
+        }
+      } catch (error) {
+        console.error("Error during query execution:", error);
       }
     }
 
@@ -147,8 +150,8 @@ export class PlnService {
   private async addBttlOpt(pln: PlnEntity): Promise<void> {
     const bttlOpt = await this.bttlOptRepository.findBy({ plnId: pln.id });
     if (bttlOpt && bttlOpt.length > 0) {
-      const bttlOptIds = bttlOpt.map((opt) => {
-        this.validReserveStt(opt, "bttl", pln.mbrId);
+      const bttlOptIds = bttlOpt.map(async (opt) => {
+        await this.validReserveStt(opt, "bttl", pln.mbrId);
         return opt.id;
       });
 
@@ -202,8 +205,8 @@ export class PlnService {
    */
   private async addAdncOpt(pln: PlnEntity): Promise<void> {
     const adncOpt = await this.adncOptRepository.findBy({ plnId: pln.id });
-    adncOpt.map((opt) => {
-      this.validReserveStt(opt, "adnc", pln.mbrId);
+    adncOpt.map(async (opt) => {
+      await this.validReserveStt(opt, "adnc", pln.mbrId);
     });
     if (adncOpt) pln.adncOpt = adncOpt;
   }
