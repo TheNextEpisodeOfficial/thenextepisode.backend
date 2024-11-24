@@ -20,7 +20,8 @@
     "typeorm": "ts-node ./node_modules/typeorm/cli",
     "typeorm-mig-gen": "yarn typeorm migration:generate ./src/migration/mig -- -d typeorm.config.ts",
     "typeorm-mig-run": "yarn typeorm migration:run -- -d typeorm.config.ts",
-    "database": "cd db && docker-compose up"
+    "database": "cd db && docker-compose up",
+    "elastic": "cd elasticsearch && docker-compose up"
   },
   "dependencies": {
     "@apollo/gateway": "^2.5.5",
