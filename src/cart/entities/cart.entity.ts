@@ -9,10 +9,8 @@ import {
 } from "typeorm";
 import { CommonEntity } from "../../config/entities/common.entity";
 import { MbrEntity } from "@src/mbr/entities/mbr.entity";
-import { PLN_TYPE } from "@src/types/common.type";
 import { AdncOptEntity } from "@src/adncOpt/entities/adncOpt.entity";
 import { BttlOptEntity } from "@src/bttl/entities/bttlOpt.entity";
-import { Exclude, Expose } from "class-transformer";
 
 @Entity("cart")
 export class CartEntity extends CommonEntity {
@@ -58,7 +56,15 @@ export class CartEntity extends CommonEntity {
     type: "varchar",
     length: 1,
     comment: "체크 여부",
-    default: 'Y'
+    default: "Y",
   })
   checkedYn: string;
+
+  @Column({
+    type: "varchar",
+    length: 1,
+    comment: "결제 완료로 인한 삭제 여부",
+    nullable: true,
+  })
+  ordDoneFlag: string;
 }
