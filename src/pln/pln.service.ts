@@ -150,10 +150,12 @@ export class PlnService {
   private async addBttlOpt(pln: PlnEntity): Promise<void> {
     const bttlOpt = await this.bttlOptRepository.findBy({ plnId: pln.id });
     if (bttlOpt && bttlOpt.length > 0) {
-      const bttlOptIds = bttlOpt.map(async (opt) => {
-        await this.validReserveStt(opt, "bttl", pln.mbrId);
-        return opt.id;
-      });
+      const bttlOptIds = await Promise.all(
+        bttlOpt.map(async (opt) => {
+          await this.validReserveStt(opt, "bttl", pln.mbrId);
+          return opt.id;
+        })
+      );
 
       const bttlOptRoles = await this.bttlOptRoleRepository
         .createQueryBuilder("bor")
@@ -205,9 +207,11 @@ export class PlnService {
    */
   private async addAdncOpt(pln: PlnEntity): Promise<void> {
     const adncOpt = await this.adncOptRepository.findBy({ plnId: pln.id });
-    adncOpt.map(async (opt) => {
-      await this.validReserveStt(opt, "adnc", pln.mbrId);
-    });
+    await Promise.all(
+      adncOpt.map(async (opt) => {
+        await this.validReserveStt(opt, "adnc", pln.mbrId);
+      })
+    );
     if (adncOpt) pln.adncOpt = adncOpt;
   }
 
