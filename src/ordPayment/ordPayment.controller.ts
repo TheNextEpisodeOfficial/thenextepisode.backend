@@ -43,11 +43,10 @@ export class OrdPaymentController {
   ): Promise<InsertResult> {
     try {
       ordPayment.createdBy = req.user.id;
-      const ordInsertResult = await this.ordPaymentService.createOrdPayment(
-        ordPayment
-      );
-      if (ordInsertResult) {
-        return ordInsertResult;
+      const ordPaymentInsertResult =
+        await this.ordPaymentService.createOrdPayment(ordPayment);
+      if (ordPaymentInsertResult) {
+        return ordPaymentInsertResult;
       }
     } catch (error) {
       throw new HttpException(error, HttpStatus.INTERNAL_SERVER_ERROR);
