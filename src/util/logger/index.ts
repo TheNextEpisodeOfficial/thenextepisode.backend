@@ -10,18 +10,19 @@ export class CustomLogger implements Logger {
   }
 
   private async sendToElasticsearch(level: string, message: any) {
-    try {
-      await this.elasticsearchClient.index({
-        index: "typeorm-logs", // 원하는 Elasticsearch 인덱스 이름
-        body: {
-          level,
-          ...message, // 메시지 전체를 추가
-          timestamp: new Date().toISOString(),
-        },
-      });
-    } catch (error) {
-      console.error("Failed to send log to Elasticsearch", error);
-    }
+    // TODO: elastic-search 서버 구현 후 주석 해제
+    // try {
+    //   await this.elasticsearchClient.index({
+    //     index: "typeorm-logs", // 원하는 Elasticsearch 인덱스 이름
+    //     body: {
+    //       level,
+    //       ...message, // 메시지 전체를 추가
+    //       timestamp: new Date().toISOString(),
+    //     },
+    //   });
+    // } catch (error) {
+    //   console.error("Failed to send log to Elasticsearch", error);
+    // }
   }
 
   private getQueryType(query: string): string {
