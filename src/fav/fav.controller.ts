@@ -12,11 +12,11 @@ import {
 } from "@nestjs/common";
 import { ApiCreatedResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { FavEntity } from "./entities/fav.entity";
-import { FavService, IFav } from "./fav.service";
+import { FavService } from "./fav.service";
 import { Request, Response } from "express";
 import { UpdateResult } from "typeorm";
 import { JwtAuthGuard } from "@src/auth/jwtAuth.guard";
-import { DeleteFavDto, InsertFavDto } from "@src/fav/dtos/fav.dto";
+import {DeleteFavResDto, FavResDto, FavReqDto, InsertFavResDto} from "@src/fav/dtos/fav.dto";
 import {ResponseDto} from "@src/types/response";
 /**
  * CartController : 회원 API를 관리한다
@@ -44,11 +44,11 @@ export class FavController {
   async insertFavById(
     @Req() req: Request,
     @Res({ passthrough: true }) res: Response,
-    @Body() insertFavDto: InsertFavDto
+    @Body() insertFavResDto: InsertFavResDto
   ): Promise<ResponseDto<{fav: UpdateResult}>> {
-    insertFavDto.mbrId = req.user.id;
-    insertFavDto.createdBy = req.user.id;
-    const insertFav = await this.favService.insertFavById(insertFavDto, req.user.id)
+    insertFavResDto.mbrId = req.user.id;
+    insertFavResDto.createdBy = req.user.id;
+    const insertFav = await this.favService.insertFavById(insertFavResDto, req.user.id)
     return new ResponseDto<{ fav: UpdateResult }>({
       status: 200,
       data: { fav: insertFav },
@@ -85,6 +85,7 @@ export class FavController {
   /**
    * 찜한 플랜 리스트 조회
    * @param req
+   * @param favReqDto
    */
   @Get("/getFavList")
   @UseGuards(JwtAuthGuard)
@@ -96,7 +97,8 @@ export class FavController {
     description: "찜한 플랜을 추가/업데이트 한다.",
     type: FavEntity,
   })
-  async getFavList(@Req() req: Request): Promise<IFav[]> {
-    return this.favService.getFavList(req.user.id);
+  async getFavList(@Req() req: Request, @Query() favReqDto: FavReqDto) {
+    favReqDto.mbrId = req.user.id;
+    return this.favService.getFavList(favReqDto);
   }
 }

@@ -3,20 +3,11 @@ import { InjectRepository } from "@nestjs/typeorm";
 import {InsertResult, Repository, UpdateResult} from "typeorm";
 import { FavEntity } from "./entities/fav.entity";
 import { objectToCamel } from "ts-case-convert";
-import { InsertFavDto } from "@src/fav/dtos/fav.dto";
-
-export interface IFav {
-  id: string;
-  plnId: string;
-  plnNm: string;
-  plnDt: string;
-  plnStTm: string;
-  plnEndTm: string;
-  plnRoadAddr: string;
-  plnAddrDtl: string;
-  thumb: string;
-  createdAt: string;
-}
+import {FavResDto, FavReqDto, InsertFavResDto} from "@src/fav/dtos/fav.dto";
+import {paginate, Pagination} from "nestjs-typeorm-paginate";
+import {TicketListDto} from "@src/tckt/dtos/tckt.dto";
+import {plainToInstance} from "class-transformer";
+import {getBttlOptTit} from "@src/util/system";
 
 @Injectable()
 export class FavService {
@@ -27,47 +18,58 @@ export class FavService {
 
   /**
    * 관심있는 리스트 조회
-   * @param mbrId
+   * @param favReqDto
    */
-  async getFavList(mbrId): Promise<IFav[]> {
-    try {
-      const favRawList = await this.favRepository
-        .createQueryBuilder("fav")
-        .select([
-          "fav.id AS id",
-          "fav.createdAt AS created_at",
-          "pln.id AS pln_id",
-          "pln.plnDt AS pln_dt",
-          "pln.plnStTm AS pln_st_tm",
-          "pln.plnEndTm AS pln_end_tm",
-          "pln.plnTypeCd AS pln_type_cd",
-          "pln.plnNm AS pln_nm",
-          "pln.plnRoadAddr AS pln_road_addr",
-          "pln.plnAddrDtl AS pln_addr_dtl",
-          "file.fileNm AS thumb",
-        ])
-        .leftJoin("fav.pln", "pln")
-        .leftJoin("pln.file", "file")
-        .where("fav.mbrId = :mbrId", { mbrId })
-        .andWhere("fav.delYn = :delYn", { delYn: "N" })
-        .andWhere("file.fileTypeCd = :fileTypeCd", { fileTypeCd: "THMB_MN" })
-        .orderBy("fav.createdAt", "DESC")
-        .getRawMany<IFav>();
+  async getFavList(
+      favReqDto: FavReqDto,
+  ): Promise<Pagination<FavResDto>> {
+      try {
+          const { mbrId } = favReqDto;
+          const queryBuilder = this.favRepository
+              .createQueryBuilder("fav")
+              .select([
+                  "fav.id AS id",
+                  "fav.createdAt AS created_at",
+                  "pln.id AS pln_id",
+                  "pln.plnDt AS pln_dt",
+                  "pln.plnStTm AS pln_st_tm",
+                  "pln.plnEndTm AS pln_end_tm",
+                  "pln.plnTypeCd AS pln_type_cd",
+                  "pln.plnNm AS pln_nm",
+                  "pln.plnRoadAddr AS pln_road_addr",
+                  "pln.plnAddrDtl AS pln_addr_dtl",
+                  "file.fileNm AS thumb",
+              ])
+              .leftJoin("fav.pln", "pln")
+              .leftJoin("pln.file", "file")
+              .where("fav.mbrId = :mbrId", { mbrId })
+              .andWhere("fav.delYn = :delYn", { delYn: "N" })
+              .andWhere("file.fileTypeCd = :fileTypeCd", { fileTypeCd: "THMB_MN" })
+              .orderBy("fav.createdAt", "DESC");
 
-      const favList = objectToCamel(favRawList);
-      return favList;
-    } catch (error) {
-      throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
-    }
+          // 페이지네이션 적용
+          const favListPaginated = await paginate<FavEntity>(queryBuilder, favReqDto);
+
+          if (!favListPaginated.items.length) {
+              return new Pagination<FavResDto>([], favListPaginated.meta);
+          }
+
+          // 결과를 DTO로 변환
+          const favList: FavResDto[] = plainToInstance(FavResDto, favListPaginated.items.map(item => item));
+
+          return new Pagination<FavResDto>(favList, favListPaginated.meta);
+
+      } catch (error) {
+          throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
+      }
   }
-
   /**
    * 관심있는 플랜 추가
    * @param favDto
    * @param mbrId
    */
   async insertFavById(
-    favDto: InsertFavDto,
+    favDto: InsertFavResDto,
     mbrId: string
   ): Promise<InsertResult | UpdateResult> {
     try {

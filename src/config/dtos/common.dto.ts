@@ -6,74 +6,73 @@ import {
   UpdateDateColumn,
 } from "typeorm";
 import { ApiProperty } from "@nestjs/swagger";
-
 export class SrchCommonDto {
   @ApiProperty({ type: String, required: false })
-  id;
+  id?: string;
 
   @ApiProperty({ type: String, required: false })
   @Column({ type: "varchar", length: 1, comment: "삭제여부", default: "N" })
-  delYn;
+  delYn?: string;
 
   @ApiProperty({ type: String, format: "date", required: false })
   @Column({ type: "date", comment: "검색시작일" })
-  srchStDt;
+  srchStDt?: string;
 
   @ApiProperty({ type: String, format: "date", required: false })
   @Column({ type: "date", comment: "검색종료일" })
-  srchEndDt;
+  srchEndDt?: string;
 
   @ApiProperty({ type: String, required: false, format: "date" })
   @CreateDateColumn({ type: "timestamp", comment: "데이터 생성 일시" })
-  createdAt;
+  createdAt?: string;
 
   @ApiProperty({ type: String, required: false })
   @Column({ type: "varchar", length: 100, comment: "데이터 생성자 아이디" })
-  createdBy;
+  createdBy?: string;
 
   @ApiProperty({ type: String, required: false })
   @UpdateDateColumn({ type: "timestamp", comment: "데이터 수정 일시" })
-  updatedAt;
+  updatedAt?: string;
 
   @ApiProperty({ type: String, required: false })
   @Column({ type: "varchar", length: 100, comment: "데이터 수정자 아이디" })
-  updateMbrId;
+  updateMbrId?: string;
 
   @ApiProperty({ type: String, required: false })
-  route;
+  route?: string;
 
   @ApiProperty({ type: Number, required: true })
-  page;
+  page: number;
 
   @ApiProperty({ type: Number, required: true })
-  limit;
+  limit: number;
 
   @ApiProperty({ type: String, required: false })
-  orderBy;
+  orderBy?: string;
 }
 
 export class UpsertCommonDto {
   @PrimaryGeneratedColumn("uuid", { comment: "id" })
   @Column({ type: "varchar", length: 36, comment: "아이디", default: "" })
-  id?;
+  id?: string;
 
   @ApiProperty({ type: String, required: false, default: "N" })
   @Column({ type: "varchar", length: 1, comment: "삭제여부", default: "N" })
-  delYn?;
+  delYn?: string;
 
   @ApiProperty({ type: String, required: false, default: "2024-01-01" })
   @CreateDateColumn({ type: "timestamp", comment: "데이터 생성 일시" })
-  createdAt?;
+  createdAt?: string;
 
   @ApiProperty({ type: String, required: false, default: "userid" })
   @Column({ type: "varchar", length: 100, comment: "데이터 생성자 아이디" })
-  createdBy?;
+  createdBy?: string;
 
   @ApiProperty({ type: String, required: false, default: "2024-01-01" })
   @UpdateDateColumn({ type: "timestamp", comment: "데이터 수정 일시" })
-  updatedAt?;
+  updatedAt?: string;
 
   @ApiProperty({ type: String, required: false, default: "userid" })
   @Column({ type: "varchar", length: 100, comment: "데이터 수정자 아이디" })
-  updatedBy?;
+  updatedBy?: string;
 }
