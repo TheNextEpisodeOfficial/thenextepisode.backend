@@ -25,7 +25,26 @@ export class FavService {
   ): Promise<Pagination<FavResDto>> {
       try {
           const { mbrId } = favReqDto;
-          const queryBuilder = this.favRepository
+
+          // 1단계: ID만 가져와서 페이지네이션 처리
+          const idQueryBuilder = this.favRepository
+              .createQueryBuilder("fav")
+              .select("fav.id")
+              .where("fav.mbrId = :mbrId", { mbrId })
+              .andWhere("fav.delYn = :delYn", { delYn: "N" })
+              .orderBy("fav.createdAt", "DESC");
+
+          const favIdsPaginated = await paginate<{ id: string }>(
+              idQueryBuilder,
+              favReqDto
+          );
+
+          if (!favIdsPaginated.items.length) {
+              return new Pagination<FavResDto>([], favIdsPaginated.meta);
+          }
+
+          // 2단계: 페이지네이션된 ID 목록에 대한 상세 정보 조회
+          const fullQueryBuilder = this.favRepository
               .createQueryBuilder("fav")
               .select([
                   "fav.id AS id",
@@ -42,27 +61,25 @@ export class FavService {
               ])
               .leftJoin("fav.pln", "pln")
               .leftJoin("pln.file", "file")
-              .where("fav.mbrId = :mbrId", { mbrId })
+              .where("fav.id IN (:...ids)", {
+                  ids: favIdsPaginated.items.map((item) => item.id),
+              })
               .andWhere("fav.delYn = :delYn", { delYn: "N" })
               .andWhere("file.fileTypeCd = :fileTypeCd", { fileTypeCd: "THMB_MN" })
               .orderBy("fav.createdAt", "DESC");
 
-          // 페이지네이션 적용
-          const favListPaginated = await paginate<FavEntity>(queryBuilder, favReqDto);
-
-          if (!favListPaginated.items.length) {
-              return new Pagination<FavResDto>([], favListPaginated.meta);
-          }
+          const favList = await fullQueryBuilder.getRawMany();
 
           // 결과를 DTO로 변환
-          const favList: FavResDto[] = plainToInstance(FavResDto, favListPaginated.items.map(item => item));
+          const favResults = plainToInstance(FavResDto, favList);
 
-          return new Pagination<FavResDto>(favList, favListPaginated.meta);
+          return new Pagination<FavResDto>(favResults, favIdsPaginated.meta);
 
       } catch (error) {
           throw new HttpException(error.message, HttpStatus.INTERNAL_SERVER_ERROR);
       }
   }
+
   /**
    * 관심있는 플랜 추가
    * @param favDto
