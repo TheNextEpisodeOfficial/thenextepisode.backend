@@ -67,13 +67,13 @@ export class CartService {
           "bttlPln.file",
           "bttlFile",
           "bttlFile.fileTypeCd = :fileTypeCd",
-          { fileTypeCd: "THUMB_MN" }
+          { fileTypeCd: "THMB_MN" }
         )
         .leftJoin(
           "adncPln.file",
           "adncFile",
           "adncFile.fileTypeCd = :fileTypeCd",
-          { fileTypeCd: "THUMB_MN" }
+          { fileTypeCd: "THMB_MN" }
         )
         .where("cart.mbrId = :mbrId", { mbrId })
         .andWhere("cart.delYn = :delYn", { delYn: "N" })
