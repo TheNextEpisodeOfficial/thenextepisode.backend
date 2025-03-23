@@ -28,7 +28,6 @@ export class CommonEntity extends BaseEntity {
   @CreateDateColumn({
     type: "timestamptz",
     comment: "데이터 생성 일시",
-    select: false,
   })
   createdAt: string;
 
@@ -37,7 +36,6 @@ export class CommonEntity extends BaseEntity {
     length: 36,
     comment: "데이터 생성자 아이디",
     precision: 0,
-    select: false,
   })
   createdBy: string;
 
