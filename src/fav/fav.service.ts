@@ -40,6 +40,7 @@ export class FavService {
           "pln.plnDt AS pln_dt",
           "pln.plnStTm AS pln_st_tm",
           "pln.plnEndTm AS pln_end_tm",
+          "pln.plnTypeCd AS pln_type_cd",
           "pln.plnNm AS pln_nm",
           "pln.plnRoadAddr AS pln_road_addr",
           "pln.plnAddrDtl AS pln_addr_dtl",
